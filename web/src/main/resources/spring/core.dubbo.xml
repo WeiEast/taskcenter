@@ -15,24 +15,23 @@
 
     <!--消费者 -->
 
-    <dubbo:service ref="taskFacde"
+    <dubbo:service ref="taskFacade"
                    interface="com.treefinance.saas.taskcenter.facade.service.TaskFacade"
                    version="1.0.0" validation="true"/>
 
     <dubbo:service ref="taskLogFacade"
                    interface="com.treefinance.saas.taskcenter.facade.service.TaskLogFacade" version="1.0.0"
                    validation="true"/>
-    <dubbo:service ref="taskAttributeFacde"
+    <dubbo:service ref="taskAttributeFacade"
                    interface="com.treefinance.saas.taskcenter.facade.service.TaskAttributeFacade" version="1.0.0"
                    validation="true"/>
-    <dubbo:service ref="taskCallBackLogFacade"
+    <dubbo:service ref="taskCallbackLogFacade"
                    interface="com.treefinance.saas.taskcenter.facade.service.TaskCallbackLogFacade" version="1.0.0"
                    validation="true"/>
 
     <dubbo:service ref="taskBuryPointLogFacade"
                    interface="com.treefinance.saas.taskcenter.facade.service.TaskBuryPointLogFacade" version="1.0.0"
                    validation="true"/>
-
 
 
 </beans>
