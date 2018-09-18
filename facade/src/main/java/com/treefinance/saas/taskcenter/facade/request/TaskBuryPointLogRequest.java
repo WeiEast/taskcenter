@@ -22,6 +22,11 @@ public class TaskBuryPointLogRequest extends BaseRequest{
 
     private Date lastUpdateTime;
 
+    /**
+     * 排序方式
+     */
+    private String orderByClause;
+
     public Long getId() {
         return id;
     }
@@ -70,6 +75,14 @@ public class TaskBuryPointLogRequest extends BaseRequest{
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    public String getOrderByClause() {
+        return orderByClause;
+    }
+
+    public void setOrderByClause(String orderByClause) {
+        orderByClause = orderByClause;
+    }
+
     @Override
     public String toString() {
         return "TaskBuryPointLogRequest{" +
@@ -79,6 +92,7 @@ public class TaskBuryPointLogRequest extends BaseRequest{
                 ", code='" + code + '\'' +
                 ", createTime=" + createTime +
                 ", lastUpdateTime=" + lastUpdateTime +
+                ", orderByClause='" + orderByClause + '\'' +
                 '}';
     }
 }

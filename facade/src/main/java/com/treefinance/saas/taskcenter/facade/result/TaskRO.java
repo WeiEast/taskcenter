@@ -34,6 +34,9 @@ public class TaskRO extends BaseResult {
 
     private Byte saasEnv;
 
+    public TaskRO() {
+    }
+
     public TaskRO(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime, Byte saasEnv) {
         this.id = id;
         this.uniqueId = uniqueId;

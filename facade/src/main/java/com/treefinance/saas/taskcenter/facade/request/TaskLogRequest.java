@@ -30,6 +30,11 @@ public class TaskLogRequest extends  BaseRequest{
 
     private Date lastUpdateTime;
 
+    /**
+     * 排序方式
+     */
+    private String orderByClause;
+
     public Long getId() {
         return id;
     }
@@ -94,6 +99,15 @@ public class TaskLogRequest extends  BaseRequest{
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    public String getOrderByClause() {
+
+        return orderByClause;
+    }
+
+    public void setOrderByClause(String orderByClause) {
+        orderByClause = orderByClause;
+    }
+
     @Override
     public String toString() {
         return "TaskLogRequest{" +
@@ -105,6 +119,7 @@ public class TaskLogRequest extends  BaseRequest{
                 ", errorMsg='" + errorMsg + '\'' +
                 ", createTime=" + createTime +
                 ", lastUpdateTime=" + lastUpdateTime +
+                ", orderByClause='" + orderByClause + '\'' +
                 '}';
     }
 }

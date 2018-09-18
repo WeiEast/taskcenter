@@ -36,6 +36,11 @@ public class TaskRequest extends PageRequest {
 
     private Byte saasEnv;
 
+    /**
+     * 排序方式
+     */
+    private String orderByClause;
+
     public TaskRequest(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime, Byte saasEnv) {
         this.id = id;
         this.uniqueId = uniqueId;
@@ -138,6 +143,14 @@ public class TaskRequest extends PageRequest {
         this.saasEnv = saasEnv;
     }
 
+    public String getOrderByClause() {
+        return orderByClause;
+    }
+
+    public void setOrderByClause(String orderByClause) {
+        orderByClause = orderByClause;
+    }
+
     @Override
     public String toString() {
         return "TaskRequest{" +
@@ -152,6 +165,7 @@ public class TaskRequest extends PageRequest {
                 ", createTime=" + createTime +
                 ", lastUpdateTime=" + lastUpdateTime +
                 ", saasEnv=" + saasEnv +
+                ", orderByClause='" + orderByClause + '\'' +
                 '}';
     }
 }
