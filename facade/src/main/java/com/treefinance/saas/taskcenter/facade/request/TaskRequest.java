@@ -23,6 +23,8 @@ public class TaskRequest extends PageRequest {
 
     private Byte bizType;
 
+    private List<Byte> bizTypeList;
+
     private Byte status;
 
     private String stepCode;
@@ -72,7 +74,13 @@ public class TaskRequest extends PageRequest {
         this.endDate = endDate;
     }
 
+    public List<Byte> getBizTypeList() {
+        return bizTypeList;
+    }
 
+    public void setBizTypeList(List<Byte> bizTypeList) {
+        this.bizTypeList = bizTypeList;
+    }
 
     public TaskRequest(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime, Byte saasEnv) {
         this.id = id;
@@ -193,12 +201,16 @@ public class TaskRequest extends PageRequest {
                 ", accountNo='" + accountNo + '\'' +
                 ", webSite='" + webSite + '\'' +
                 ", bizType=" + bizType +
+                ", bizTypeList=" + bizTypeList +
                 ", status=" + status +
                 ", stepCode='" + stepCode + '\'' +
                 ", createTime=" + createTime +
                 ", lastUpdateTime=" + lastUpdateTime +
                 ", saasEnv=" + saasEnv +
                 ", orderByClause='" + orderByClause + '\'' +
+                ", appIdList=" + appIdList +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
                 '}';
     }
 }

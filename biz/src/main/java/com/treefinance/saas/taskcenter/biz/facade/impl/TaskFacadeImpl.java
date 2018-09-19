@@ -129,8 +129,8 @@ public class TaskFacadeImpl implements TaskFacade {
         if (taskRequest.getId() == null) {
             innerCriteria.andIdEqualTo(taskRequest.getId());
         }
-        if (taskRequest.getBizType() == null) {
-            innerCriteria.andBizTypeEqualTo(taskRequest.getBizType());
+        if (taskRequest.getBizTypeList() == null) {
+            innerCriteria.andBizTypeIn(taskRequest.getBizTypeList());
         }
         if (taskRequest.getSaasEnv() == null) {
             innerCriteria.andSaasEnvEqualTo(taskRequest.getSaasEnv());
