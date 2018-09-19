@@ -66,6 +66,10 @@ public class TaskFacadeImpl implements TaskFacade {
         if (taskRequest.getStatus() == null) {
             innerCriteria.andStatusEqualTo(taskRequest.getStatus());
         }
+        if (taskRequest.getCreateTimeStart() == null) {
+            innerCriteria.andCreateTimeGreaterThanOrEqualTo(taskRequest.getCreateTimeStart());
+            innerCriteria.andCreateTimeLessThanOrEqualTo(taskRequest.getCreateTimeEnd());
+        }
         if (StringUtils.isEmpty(taskRequest.getAccountNo())) {
             innerCriteria.andAccountNoEqualTo(taskRequest.getAccountNo());
         }
@@ -81,6 +85,7 @@ public class TaskFacadeImpl implements TaskFacade {
         if (StringUtils.isEmpty(taskRequest.getUniqueId())) {
             innerCriteria.andUniqueIdEqualTo(taskRequest.getUniqueId());
         }
+
 
 
         List<Task> taskList = taskMapper.selectByExample(criteria);

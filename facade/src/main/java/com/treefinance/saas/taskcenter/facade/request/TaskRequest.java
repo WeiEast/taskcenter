@@ -31,6 +31,10 @@ public class TaskRequest extends PageRequest {
 
     private Date createTime;
 
+    private Date createTimeStart;
+
+    private Date createTimeEnd;
+
     private Date lastUpdateTime;
 
     private Byte saasEnv;
@@ -192,6 +196,22 @@ public class TaskRequest extends PageRequest {
         orderByClause = orderByClause;
     }
 
+    public Date getCreateTimeStart() {
+        return createTimeStart;
+    }
+
+    public void setCreateTimeStart(Date createTimeStart) {
+        this.createTimeStart = createTimeStart;
+    }
+
+    public Date getCreateTimeEnd() {
+        return createTimeEnd;
+    }
+
+    public void setCreateTimeEnd(Date createTimeEnd) {
+        this.createTimeEnd = createTimeEnd;
+    }
+
     @Override
     public String toString() {
         return "TaskRequest{" +
@@ -205,6 +225,8 @@ public class TaskRequest extends PageRequest {
                 ", status=" + status +
                 ", stepCode='" + stepCode + '\'' +
                 ", createTime=" + createTime +
+                ", createTimeStart=" + createTimeStart +
+                ", createTimeEnd=" + createTimeEnd +
                 ", lastUpdateTime=" + lastUpdateTime +
                 ", saasEnv=" + saasEnv +
                 ", orderByClause='" + orderByClause + '\'' +
