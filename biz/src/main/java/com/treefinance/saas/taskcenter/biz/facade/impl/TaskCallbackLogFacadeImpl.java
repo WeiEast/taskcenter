@@ -10,9 +10,11 @@ import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLogCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskBuryPointLogMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskCallbackLogMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskBuryPointLogRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskCallbackLogPageRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskCallbackLogRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskBuryPointLogRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskCallbackLogRO;
+import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskBuryPointLogFacade;
 import com.treefinance.saas.taskcenter.facade.service.TaskCallbackLogFacade;
@@ -85,4 +87,37 @@ public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
         return TaskResult.wrapSuccessfulResult(attributeROList);
     }
 
+
+    @Override
+    public TaskResult<List<TaskCallbackLogRO>> queryTaskCallbackLog(List<Long> taskIdList) {
+
+        TaskCallbackLogCriteria taskCallbackLogCriteria = new TaskCallbackLogCriteria();
+        taskCallbackLogCriteria.createCriteria().andTaskIdIn(taskIdList);
+        List<TaskCallbackLog> list = taskCallbackLogMapper.selectByExample(taskCallbackLogCriteria);
+
+        List<TaskCallbackLogRO> taskCallbackLogROES = DataConverterUtils.convert(list, TaskCallbackLogRO.class);
+
+        return TaskResult.wrapSuccessfulResult(taskCallbackLogROES);
+    }
+
+    @Override
+    public TaskPagingResult<TaskCallbackLogRO> queryTaskCallbackLogPage(TaskCallbackLogPageRequest request) {
+
+
+        TaskCallbackLogCriteria taskCallbackLogCriteria = new TaskCallbackLogCriteria();
+        taskCallbackLogCriteria.setOffset(request.getOffset());
+        taskCallbackLogCriteria.setLimit(request.getPageSize());
+        taskCallbackLogCriteria.createCriteria().andTaskIdIn(request.getTaskIdList());
+        Long count = taskCallbackLogMapper.countByExample(taskCallbackLogCriteria);
+        if (count <= 0) {
+            return TaskPagingResult.wrapSuccessfulResult(null, 0);
+        }
+        List<TaskCallbackLog> taskCallbackLogList = taskCallbackLogMapper.selectPaginationByExample
+                (taskCallbackLogCriteria);
+
+        List<TaskCallbackLogRO> taskCallbackLogROES = DataConverterUtils.convert(taskCallbackLogList, TaskCallbackLogRO.class);
+
+
+        return TaskPagingResult.wrapSuccessfulResult(taskCallbackLogROES, count.intValue());
+    }
 }

@@ -3,13 +3,13 @@ package com.treefinance.saas.taskcenter.facade.request;
 import com.treefinance.saas.knife.request.PageRequest;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author:guoguoyun
  * @date:Created in 2018/9/18上午11:13
  */
 public class TaskRequest extends PageRequest {
-
 
     private Long id;
 
@@ -23,11 +23,9 @@ public class TaskRequest extends PageRequest {
 
     private Byte bizType;
 
-
     private Byte status;
 
     private String stepCode;
-
 
     private Date createTime;
 
@@ -39,6 +37,42 @@ public class TaskRequest extends PageRequest {
      * 排序方式
      */
     private String orderByClause;
+
+    public TaskRequest(){
+
+    }
+
+    private List<String> appIdList;
+
+    private Date startDate;
+
+    private Date endDate;
+
+    public List<String> getAppIdList() {
+        return appIdList;
+    }
+
+    public void setAppIdList(List<String> appIdList) {
+        this.appIdList = appIdList;
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+
 
     public TaskRequest(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime, Byte saasEnv) {
         this.id = id;

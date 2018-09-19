@@ -14,4 +14,10 @@ import java.util.List;
 public interface TaskLogFacade {
 
     TaskResult<List<TaskLogRO>> queryTaskLog(TaskLogRequest taskLogRequest);
+
+    /**
+     * console 请求的任务日志数据
+     * */
+    TaskResult<List<TaskLogRO>> queryTaskLogById(TaskLogRequest taskLogRequest);
+
 }

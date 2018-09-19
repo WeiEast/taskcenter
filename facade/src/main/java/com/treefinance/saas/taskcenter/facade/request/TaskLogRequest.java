@@ -1,6 +1,7 @@
 package com.treefinance.saas.taskcenter.facade.request;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author:guoguoyun
@@ -12,6 +13,8 @@ public class TaskLogRequest extends  BaseRequest{
 
 
     private Long taskId;
+
+    private List<Long> taskIdList;
 
 
     private String stepCode;
@@ -102,6 +105,14 @@ public class TaskLogRequest extends  BaseRequest{
     public String getOrderByClause() {
 
         return orderByClause;
+    }
+
+    public List<Long> getTaskIdList() {
+        return taskIdList;
+    }
+
+    public void setTaskIdList(List<Long> taskIdList) {
+        this.taskIdList = taskIdList;
     }
 
     public void setOrderByClause(String orderByClause) {

@@ -12,6 +12,9 @@ import java.util.List;
  */
 public interface TaskAttributeFacade {
 
-    public TaskResult<List<TaskAttributeRO>> queryTaskAttribute(TaskAttributeRequest taskAttributeRequest);
+    TaskResult<List<TaskAttributeRO>> queryTaskAttribute(TaskAttributeRequest taskAttributeRequest);
+
+
+    TaskResult<List<TaskAttributeRO>> queryTaskAttributeByTaskId(TaskAttributeRequest taskAttributeRequest);
 
 }

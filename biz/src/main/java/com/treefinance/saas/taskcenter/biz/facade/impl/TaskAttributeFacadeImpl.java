@@ -3,6 +3,7 @@ package com.treefinance.saas.taskcenter.biz.facade.impl;
 import com.treefinance.saas.knife.result.Results;
 import com.treefinance.saas.knife.result.SaasResult;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
+import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
@@ -31,7 +32,7 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
     @Autowired
     private TaskAttributeMapper taskAttributeMapper;
 
-
+    @Override
     public TaskResult<List<TaskAttributeRO>> queryTaskAttribute(TaskAttributeRequest taskAttributeRequest) {
         logger.info("查询任务变量信息，传入的请求参数为{}", taskAttributeRequest.toString());
         TaskAttributeCriteria criteria = new TaskAttributeCriteria();
@@ -58,4 +59,20 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
     }
 
 
+    private void ss(){
+
+    }
+
+
+    @Override
+    public TaskResult<List<TaskAttributeRO>> queryTaskAttributeByTaskId(TaskAttributeRequest taskAttributeRequest) {
+
+        TaskAttributeCriteria taskAttributeCriteria = new TaskAttributeCriteria();
+        taskAttributeCriteria.createCriteria().andTaskIdIn(taskAttributeRequest.getTaskIds()).andNameEqualTo(taskAttributeRequest.getName());
+        List<TaskAttribute> list = taskAttributeMapper.selectByExample(taskAttributeCriteria);
+
+        List<TaskAttributeRO> taskAttributeROS = DataConverterUtils.convert(list, TaskAttributeRO.class);
+
+        return TaskResult.wrapSuccessfulResult(taskAttributeROS);
+    }
 }

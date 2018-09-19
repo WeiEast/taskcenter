@@ -75,4 +75,16 @@ public class TaskLogFacadeImpl implements TaskLogFacade {
 
     }
 
+
+    @Override
+    public TaskResult<List<TaskLogRO>> queryTaskLogById(TaskLogRequest taskLogRequest) {
+        TaskLogCriteria taskLogCriteria = new TaskLogCriteria();
+        taskLogCriteria.createCriteria().andTaskIdIn(taskLogRequest.getTaskIdList());
+        taskLogCriteria.setOrderByClause("OccurTime desc, Id desc");
+        List<TaskLog> list = taskLogMapper.selectByExample(taskLogCriteria);
+
+        List<TaskLogRO> taskLogROs = DataConverterUtils.convert(list, TaskLogRO.class);
+
+        return TaskResult.wrapSuccessfulResult(taskLogROs);
+    }
 }

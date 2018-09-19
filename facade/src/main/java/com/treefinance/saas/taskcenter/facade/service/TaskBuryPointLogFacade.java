@@ -19,4 +19,14 @@ public interface TaskBuryPointLogFacade {
      * @return
      */
     TaskResult<List<TaskBuryPointLogRO>> queryTaskBuryPointLog(TaskBuryPointLogRequest taskBuryPointLogRequest);
+
+    /**
+     * console -- 查询某个任务的埋点信息
+     *
+     * */
+    TaskResult<List<TaskBuryPointLogRO>> queryTaskBuryPointLogById(TaskBuryPointLogRequest taskBuryPointLogRequest);
+
+
+
+
 }

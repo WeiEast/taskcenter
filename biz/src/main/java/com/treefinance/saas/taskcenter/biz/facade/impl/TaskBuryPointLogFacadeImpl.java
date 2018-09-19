@@ -3,10 +3,7 @@ package com.treefinance.saas.taskcenter.biz.facade.impl;
 import com.treefinance.saas.knife.result.Results;
 import com.treefinance.saas.knife.result.SaasResult;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
-import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
-import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLogCriteria;
+import com.treefinance.saas.taskcenter.dao.entity.*;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskBuryPointLogMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
@@ -69,4 +66,16 @@ public class TaskBuryPointLogFacadeImpl implements TaskBuryPointLogFacade {
 
     }
 
+    @Override
+    public TaskResult<List<TaskBuryPointLogRO>> queryTaskBuryPointLogById(TaskBuryPointLogRequest taskBuryPointLogRequest) {
+
+        TaskBuryPointLogCriteria taskBuryPointLogCriteria = new TaskBuryPointLogCriteria();
+        taskBuryPointLogCriteria.createCriteria().andTaskIdEqualTo(taskBuryPointLogRequest.getTaskId());
+        taskBuryPointLogCriteria.setOrderByClause("createTime desc, Id desc");
+        List<TaskBuryPointLog> list = taskBuryPointLogMapper.selectByExample(taskBuryPointLogCriteria);
+
+        List<TaskBuryPointLogRO> attributeROList = DataConverterUtils.convert(list, TaskBuryPointLogRO.class);
+
+        return TaskResult.wrapSuccessfulResult(attributeROList);
+    }
 }

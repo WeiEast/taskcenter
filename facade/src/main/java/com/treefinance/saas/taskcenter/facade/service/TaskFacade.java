@@ -2,6 +2,7 @@ package com.treefinance.saas.taskcenter.facade.service;
 
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
+import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 
 import java.util.List;
@@ -35,5 +36,19 @@ public interface TaskFacade {
      */
     TaskResult<List<TaskRO>> queryTaskWithPagination(TaskRequest taskRequest);
 
+    /**
+     * console -- 查询任务列表
+     *
+     * @param request
+     * @return
+     */
+    TaskPagingResult<TaskRO> queryTaskListPage(TaskRequest request);
+
+    /**
+     * console -- 查询任务列表数据
+     * @param taskRequest
+     * @return
+     */
+    TaskResult<List<TaskRO>> queryTaskList(TaskRequest taskRequest);
 
 }
