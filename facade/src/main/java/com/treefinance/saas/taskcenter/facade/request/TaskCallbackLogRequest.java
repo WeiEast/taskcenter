@@ -3,6 +3,7 @@ package com.treefinance.saas.taskcenter.facade.request;
 import com.treefinance.saas.taskcenter.facade.result.common.BaseResult;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author:guoguoyun
@@ -13,6 +14,8 @@ public class TaskCallbackLogRequest extends BaseRequest{
     private Long id;
 
     private Long taskId;
+
+    private List<Long> taskIdList;
 
     private Long configId;
 
@@ -155,11 +158,20 @@ public class TaskCallbackLogRequest extends BaseRequest{
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    public List<Long> getTaskIdList() {
+        return taskIdList;
+    }
+
+    public void setTaskIdList(List<Long> taskIdList) {
+        this.taskIdList = taskIdList;
+    }
+
     @Override
     public String toString() {
         return "TaskCallbackLogRequest{" +
                 "id=" + id +
                 ", taskId=" + taskId +
+                ", taskIdList=" + taskIdList +
                 ", configId=" + configId +
                 ", type=" + type +
                 ", url='" + url + '\'' +
