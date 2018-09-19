@@ -9,6 +9,7 @@ import com.treefinance.saas.taskcenter.facade.result.TaskNextDirectiveRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskNextDirectiveFacade;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ import java.util.List;
  * @author chengtong
  * @date 18/9/19 18:03
  */
+@Service
 public class TaskNextDirectiveFacadeImpl implements TaskNextDirectiveFacade {
 
 
