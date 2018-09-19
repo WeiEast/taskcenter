@@ -1,11 +1,19 @@
 package com.treefinance.saas.taskcenter.biz.facade.impl;
 
+import com.google.common.collect.Maps;
+import com.treefinance.saas.merchant.center.facade.request.common.BaseRequest;
+import com.treefinance.saas.merchant.center.facade.result.console.AppBizTypeResult;
+import com.treefinance.saas.merchant.center.facade.result.console.MerchantResult;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
 import com.treefinance.saas.taskcenter.common.exception.BusinessCheckFailException;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
+import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCriteria;
+import com.treefinance.saas.taskcenter.dao.mapper.TaskAndTaskAttributeMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
+import com.treefinance.saas.taskcenter.facade.request.TaskAndAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
+import com.treefinance.saas.taskcenter.facade.result.TaskAndAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
@@ -20,7 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author:guoguoyun
@@ -32,6 +42,8 @@ public class TaskFacadeImpl implements TaskFacade {
 
     @Autowired
     TaskMapper taskMapper;
+    @Autowired
+    TaskAndTaskAttributeMapper taskAndTaskAttributeMapper;
 
     @Override
     public TaskResult<Object> testAop(String a, String b) {
@@ -230,5 +242,75 @@ public class TaskFacadeImpl implements TaskFacade {
 
     }
 
+    @Override
+    public TaskPagingResult<TaskAndAttributeRO> queryTaskAndTaskAttribute(TaskAndAttributeRequest request) {
+        Map<String, Object> map = Maps.newHashMap();
 
+        map.put("appId", request.getAppId());
+        if (request.getSaasEnv() != 0) {
+            map.put("saasEnv", request.getSaasEnv());
+        }
+        map.put("name", request.getName());
+//        if (request.getStatType() == 2) {
+//            //失败的任务
+//            map.put("status", 3);
+//        } else if (request.getStatType() == 3) {
+//            //取消的任务
+//            map.put("status", 1);
+//        } else if (request.getStatType() == 1) {
+//            //成功的任务
+//            map.put("status", 2);
+//        } else {
+//            throw new IllegalArgumentException("statType参数有误");
+//        }
+        map.put("status", request.getStatus());
+
+        if (request.getBizType() == null) {
+            map.put("bizTypeList", request.getBizTypeList());
+        } else {
+            map.put("bizType", request.getBizType());
+        }
+
+//        if (request.getBizType() == 0) {
+//            MerchantResult<List<AppBizTypeResult>> merchantResult = appBizTypeFacade.queryAllAppBizType(new BaseRequest());
+//            List<AppBizType> list = DataConverterUtils.convert(merchantResult.getData(), AppBizType.class);
+//            List<Byte> bizTypeList = list.stream().map(AppBizType::getBizType).collect(Collectors.toList());
+//            map.put("bizTypeList", bizTypeList);
+//        } else {
+//            map.put("bizType", request.getBizType());
+//        }
+
+
+        if (StringUtils.isNotBlank(request.getWebSite())) {
+            map.put("webSite", request.getWebSite());
+            map.put("value", request.getValue());
+        }
+
+//        if (request.getStartTime() != null && request.getEndTime() != null) {
+//            map.put("startTime", request.getStartTime());
+//            map.put("endTime", request.getEndTime());
+//        } else if (request.getDate() != null) {
+//            map.put("startTime", DateUtils.getTodayBeginDate(request.getDate()));
+//            map.put("endTime", DateUtils.getTomorrowBeginDate(request.getDate()));
+//        }
+
+        map.put("startTime", request.getStartTime());
+        map.put("endTime", request.getEndTime());
+
+
+        map.put("start", request.getOffset());
+        map.put("limit", request.getPageSize());
+        map.put("orderStr", "createTime desc");
+
+        Long total = taskAndTaskAttributeMapper.countByExample(map);
+        if (total <= 0) {
+            return TaskPagingResult.wrapSuccessfulResult(null, 0);
+        }
+        List<TaskAndTaskAttribute> list = taskAndTaskAttributeMapper.getByExample(map);
+
+        List<TaskAndAttributeRO> taskList = DataConverterUtils.convert(list, TaskAndAttributeRO.class);
+
+        return TaskPagingResult.wrapSuccessfulResult(taskList, total.intValue());
+
+    }
 }

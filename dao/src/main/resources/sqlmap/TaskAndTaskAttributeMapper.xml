@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.treefinance.saas.taskcenter.dao.mapper.TaskAndTaskAttributeMapper">
+    <resultMap id="BaseResultMap" type="com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute">
+
+        <id column="Id" jdbcType="BIGINT" property="id"/>
+        <result column="UniqueId" jdbcType="VARCHAR" property="uniqueId"/>
+        <result column="AppId" jdbcType="VARCHAR" property="appId"/>
+        <result column="AccountNo" jdbcType="VARCHAR" property="accountNo"/>
+        <result column="WebSite" jdbcType="VARCHAR" property="webSite"/>
+        <result column="BizType" jdbcType="TINYINT" property="bizType"/>
+        <result column="Status" jdbcType="TINYINT" property="status"/>
+        <result column="StepCode" jdbcType="VARCHAR" property="stepCode"/>
+        <result column="CreateTime" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="LastUpdateTime" jdbcType="TIMESTAMP" property="lastUpdateTime"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="value" jdbcType="VARCHAR" property="value"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        task.Id AS Id,UniqueId,AppId,AccountNo,WebSite,BizType,Status,StepCode,
+        task.CreateTime AS CreateTime, task.LastUpdateTime AS LastUpdateTime,name,value
+    </sql>
+
+    <select id="countByExample" resultType="java.lang.Long">
+        SELECT
+        count(task.Id)
+        FROM task task
+        LEFT JOIN task_attribute attribute ON task.id = attribute.taskId AND attribute.name = #{name}
+        WHERE 1=1
+        <if test="appId != null">
+            and task.appId = #{appId}
+        </if>
+        <if test="status != null">
+            and task.status = #{status}
+        </if>
+        <if test="bizType != null">
+            and task.bizType = #{bizType}
+        </if>
+        <if test="saasEnv != null">
+            and task.saasEnv = #{saasEnv}
+        </if>
+        <if test="bizTypeList != null">
+            and task.bizType in
+            (
+            <foreach collection="bizTypeList" index="index" item="tag" separator=",">
+                #{tag}
+            </foreach>
+            )
+        </if>
+        <if test="startTime != null and endTime != null">
+            and task.lastUpdateTime BETWEEN #{startTime} AND #{endTime}
+        </if>
+        <if test="webSite != null and value != null and name != null">
+            and ( task.webSite like CONCAT('%',#{webSite},'%') or attribute.value like CONCAT('%',#{value},'%') )
+        </if>
+
+    </select>
+
+    <select id="getByExample" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM task task
+        LEFT JOIN task_attribute attribute ON task.id = attribute.taskId and attribute.name = #{name}
+        where 1=1
+        <if test="appId != null">
+            and task.appId = #{appId}
+        </if>
+        <if test="status != null">
+            and task.status = #{status}
+        </if>
+        <if test="saasEnv != null">
+            and task.saasEnv = #{saasEnv}
+        </if>
+        <if test="bizType != null">
+            and task.bizType = #{bizType}
+        </if>
+        <if test="bizTypeList != null">
+            and task.bizType in
+            (
+            <foreach collection="bizTypeList" index="index" item="tag" separator=",">
+                #{tag}
+            </foreach>
+            )
+        </if>
+        <if test="startTime != null and endTime != null">
+            and task.lastUpdateTime BETWEEN #{startTime} AND #{endTime}
+        </if>
+        <if test="webSite != null and value != null">
+            and ( task.webSite like CONCAT('%',#{webSite},'%') or attribute.value like CONCAT('%',#{value},'%') )
+        </if>
+        <if test="orderStr != null">
+            order by ${orderStr}
+        </if>
+        <if test="start != null or limit != null">
+            limit ${start}, ${limit}
+        </if>
+    </select>
+
+
+</mapper>

@@ -1,6 +1,8 @@
 package com.treefinance.saas.taskcenter.facade.service;
 
+import com.treefinance.saas.taskcenter.facade.request.TaskAndAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
+import com.treefinance.saas.taskcenter.facade.result.TaskAndAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
@@ -50,5 +52,8 @@ public interface TaskFacade {
      * @return
      */
     TaskResult<List<TaskRO>> queryTaskList(TaskRequest taskRequest);
+
+
+    TaskPagingResult<TaskAndAttributeRO> queryTaskAndTaskAttribute(TaskAndAttributeRequest request);
 
 }
