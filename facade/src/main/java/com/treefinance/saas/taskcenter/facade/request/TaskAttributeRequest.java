@@ -1,6 +1,7 @@
 package com.treefinance.saas.taskcenter.facade.request;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author:guoguoyun
@@ -12,7 +13,7 @@ public class TaskAttributeRequest extends BaseRequest{
     private Long id;
 
 
-    private Long taskId;
+    private List<Long> taskIds;
 
 
     private String name;
@@ -34,12 +35,12 @@ public class TaskAttributeRequest extends BaseRequest{
         this.id = id;
     }
 
-    public Long getTaskId() {
-        return taskId;
+    public List<Long> getTaskIds() {
+        return taskIds;
     }
 
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
+    public void setTaskIds(List<Long> taskIds) {
+        this.taskIds = taskIds;
     }
 
     public String getName() {
@@ -78,7 +79,7 @@ public class TaskAttributeRequest extends BaseRequest{
     public String toString() {
         return "TaskAttributeRequest{" +
                 "id=" + id +
-                ", taskId=" + taskId +
+                ", taskIds=" + taskIds +
                 ", name='" + name + '\'' +
                 ", value='" + value + '\'' +
                 ", createTime=" + createTime +

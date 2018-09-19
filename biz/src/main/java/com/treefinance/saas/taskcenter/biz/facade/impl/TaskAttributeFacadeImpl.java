@@ -42,8 +42,8 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
         if (StringUtils.isEmpty(taskAttributeRequest.getName())) {
             innerCriteria.andNameEqualTo(taskAttributeRequest.getName());
         }
-        if (taskAttributeRequest.getTaskId() == null) {
-            innerCriteria.andTaskIdEqualTo(taskAttributeRequest.getTaskId());
+        if (taskAttributeRequest.getTaskIds() == null) {
+            innerCriteria.andTaskIdIn(taskAttributeRequest.getTaskIds());
         }
         if (StringUtils.isEmpty(taskAttributeRequest.getValue())) {
             innerCriteria.andValueEqualTo(taskAttributeRequest.getValue());
