@@ -1,12 +1,14 @@
 package com.treefinance.saas.taskcenter.facade.result;
 
+import com.treefinance.saas.taskcenter.facade.result.common.BaseResult;
+
 import java.util.Date;
 
 /**
  * @author:guoguoyun
  * @date:Created in 2018/9/18下午2:08
  */
-public class TaskBuryPointLogRO {
+public class TaskBuryPointLogRO extends BaseResult {
 
     private Long id;
 
