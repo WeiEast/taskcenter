@@ -4,7 +4,7 @@ package com.treefinance.saas.taskcenter.facade.request;
  * @author chengtong
  * @date 18/9/19 17:44
  */
-public class TaskNextDirectiveRequest {
+public class TaskNextDirectiveRequest extends BaseRequest {
 
     private Long taskId;
 

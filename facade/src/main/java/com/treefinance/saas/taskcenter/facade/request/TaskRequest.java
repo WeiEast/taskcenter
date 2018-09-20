@@ -2,6 +2,7 @@ package com.treefinance.saas.taskcenter.facade.request;
 
 import com.treefinance.saas.knife.request.PageRequest;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
  * @author:guoguoyun
  * @date:Created in 2018/9/18上午11:13
  */
-public class TaskRequest extends PageRequest {
+public class TaskRequest extends PageRequest implements Serializable{
 
     private Long id;
 
