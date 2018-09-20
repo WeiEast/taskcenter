@@ -65,6 +65,9 @@ public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
         if (StringUtils.isEmpty(taskCallbackLogRequest.getCallbackCode())) {
             innerCriteria.andCallbackCodeEqualTo(taskCallbackLogRequest.getCallbackCode());
         }
+        if (taskCallbackLogRequest.getTaskId() == null) {
+            innerCriteria.andTaskIdEqualTo(taskCallbackLogRequest.getTaskId());
+        }
         if (taskCallbackLogRequest.getTaskIdList() == null) {
             innerCriteria.andTaskIdIn(taskCallbackLogRequest.getTaskIdList());
         }

@@ -55,6 +55,9 @@ public class TaskLogFacadeImpl implements TaskLogFacade {
         if (StringUtils.isEmpty(taskLogRequest.getErrorMsg())) {
             innerCriteria.andErrorMsgEqualTo(taskLogRequest.getErrorMsg());
         }
+        if (taskLogRequest.getTaskId() == null) {
+            innerCriteria.andTaskIdEqualTo(taskLogRequest.getTaskId());
+        }
         if (taskLogRequest.getTaskIdList() == null) {
             innerCriteria.andTaskIdIn(taskLogRequest.getTaskIdList());
         }
