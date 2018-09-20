@@ -66,38 +66,38 @@ public class TaskFacadeImpl implements TaskFacade {
         }
         TaskCriteria.Criteria innerCriteria = criteria.createCriteria();
 
-        if (taskRequest.getId() == null) {
+        if (taskRequest.getId() != null) {
             innerCriteria.andIdEqualTo(taskRequest.getId());
         }
-        if (taskRequest.getBizType() == null) {
+        if (taskRequest.getBizType() != null) {
             innerCriteria.andBizTypeEqualTo(taskRequest.getBizType());
         }
-        if (taskRequest.getBizTypeList() == null) {
+        if (taskRequest.getBizTypeList() != null) {
             innerCriteria.andBizTypeIn(taskRequest.getBizTypeList());
         }
-        if (taskRequest.getSaasEnv() == null) {
+        if (taskRequest.getSaasEnv() != null) {
             innerCriteria.andSaasEnvEqualTo(taskRequest.getSaasEnv());
         }
-        if (taskRequest.getStatus() == null) {
+        if (taskRequest.getStatus() != null) {
             innerCriteria.andStatusEqualTo(taskRequest.getStatus());
         }
-        if (taskRequest.getCreateTimeStart() == null) {
+        if (taskRequest.getCreateTimeStart() != null) {
             innerCriteria.andCreateTimeGreaterThanOrEqualTo(taskRequest.getCreateTimeStart());
             innerCriteria.andCreateTimeLessThanOrEqualTo(taskRequest.getCreateTimeEnd());
         }
-        if (StringUtils.isEmpty(taskRequest.getAccountNo())) {
+        if (StringUtils.isNotEmpty(taskRequest.getAccountNo())) {
             innerCriteria.andAccountNoEqualTo(taskRequest.getAccountNo());
         }
-        if (StringUtils.isEmpty(taskRequest.getAppId())) {
+        if (StringUtils.isNotEmpty(taskRequest.getAppId())) {
             innerCriteria.andAppIdEqualTo(taskRequest.getAppId());
         }
-        if (StringUtils.isEmpty(taskRequest.getStepCode())) {
+        if (StringUtils.isNotEmpty(taskRequest.getStepCode())) {
             innerCriteria.andStepCodeEqualTo(taskRequest.getStepCode());
         }
-        if (StringUtils.isEmpty(taskRequest.getWebSite())) {
+        if (StringUtils.isNotEmpty(taskRequest.getWebSite())) {
             innerCriteria.andWebSiteEqualTo(taskRequest.getWebSite());
         }
-        if (StringUtils.isEmpty(taskRequest.getUniqueId())) {
+        if (StringUtils.isNotEmpty(taskRequest.getUniqueId())) {
             innerCriteria.andUniqueIdEqualTo(taskRequest.getUniqueId());
         }
 
@@ -146,38 +146,38 @@ public class TaskFacadeImpl implements TaskFacade {
         criteria.setOffset(taskRequest.getOffset());
         TaskCriteria.Criteria innerCriteria = criteria.createCriteria();
 
-        if (taskRequest.getId() == null) {
+        if (taskRequest.getId() != null) {
             innerCriteria.andIdEqualTo(taskRequest.getId());
         }
-        if (taskRequest.getBizType() == null) {
+        if (taskRequest.getBizType() != null) {
             innerCriteria.andBizTypeEqualTo(taskRequest.getBizType());
         }
-        if (taskRequest.getBizTypeList() == null) {
+        if (taskRequest.getBizTypeList() != null) {
             innerCriteria.andBizTypeIn(taskRequest.getBizTypeList());
         }
-        if (taskRequest.getSaasEnv() == null) {
+        if (taskRequest.getSaasEnv() != null) {
             innerCriteria.andSaasEnvEqualTo(taskRequest.getSaasEnv());
         }
-        if (taskRequest.getStatus() == null) {
+        if (taskRequest.getStatus() != null) {
             innerCriteria.andStatusEqualTo(taskRequest.getStatus());
         }
-        if (taskRequest.getCreateTimeStart() == null) {
+        if (taskRequest.getCreateTimeStart() != null) {
             innerCriteria.andCreateTimeGreaterThanOrEqualTo(taskRequest.getCreateTimeStart());
             innerCriteria.andCreateTimeLessThanOrEqualTo(taskRequest.getCreateTimeEnd());
         }
-        if (StringUtils.isEmpty(taskRequest.getAccountNo())) {
+        if (StringUtils.isNotEmpty(taskRequest.getAccountNo())) {
             innerCriteria.andAccountNoEqualTo(taskRequest.getAccountNo());
         }
-        if (StringUtils.isEmpty(taskRequest.getAppId())) {
+        if (StringUtils.isNotEmpty(taskRequest.getAppId())) {
             innerCriteria.andAppIdEqualTo(taskRequest.getAppId());
         }
-        if (StringUtils.isEmpty(taskRequest.getStepCode())) {
+        if (StringUtils.isNotEmpty(taskRequest.getStepCode())) {
             innerCriteria.andStepCodeEqualTo(taskRequest.getStepCode());
         }
-        if (StringUtils.isEmpty(taskRequest.getWebSite())) {
+        if (StringUtils.isNotEmpty(taskRequest.getWebSite())) {
             innerCriteria.andWebSiteEqualTo(taskRequest.getWebSite());
         }
-        if (StringUtils.isEmpty(taskRequest.getUniqueId())) {
+        if (StringUtils.isNotEmpty(taskRequest.getUniqueId())) {
             innerCriteria.andUniqueIdEqualTo(taskRequest.getUniqueId());
         }
 

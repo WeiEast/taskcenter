@@ -37,16 +37,16 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
         logger.info("查询任务变量信息，传入的请求参数为{}", taskAttributeRequest.toString());
         TaskAttributeCriteria criteria = new TaskAttributeCriteria();
         TaskAttributeCriteria.Criteria innerCriteria = criteria.createCriteria();
-        if (taskAttributeRequest.getId() == null) {
+        if (taskAttributeRequest.getId() != null) {
             innerCriteria.andIdEqualTo(taskAttributeRequest.getId());
         }
-        if (StringUtils.isEmpty(taskAttributeRequest.getName())) {
+        if (StringUtils.isNotEmpty(taskAttributeRequest.getName())) {
             innerCriteria.andNameEqualTo(taskAttributeRequest.getName());
         }
-        if (taskAttributeRequest.getTaskIds() == null) {
+        if (taskAttributeRequest.getTaskIds() != null) {
             innerCriteria.andTaskIdIn(taskAttributeRequest.getTaskIds());
         }
-        if (StringUtils.isEmpty(taskAttributeRequest.getValue())) {
+        if (StringUtils.isNotEmpty(taskAttributeRequest.getValue())) {
             innerCriteria.andValueEqualTo(taskAttributeRequest.getValue());
         }
 

@@ -44,43 +44,43 @@ public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
         logger.info("查询任务回调日志信息，传入的请求参数为{}", taskCallbackLogRequest.toString());
         TaskCallbackLogCriteria criteria = new TaskCallbackLogCriteria();
         TaskCallbackLogCriteria.Criteria innerCriteria = criteria.createCriteria();
-        if (taskCallbackLogRequest.getId() == null) {
+        if (taskCallbackLogRequest.getId() != null) {
             innerCriteria.andIdEqualTo(taskCallbackLogRequest.getId());
         }
-        if (taskCallbackLogRequest.getConfigId() == null) {
+        if (taskCallbackLogRequest.getConfigId() != null) {
             innerCriteria.andConfigIdEqualTo(taskCallbackLogRequest.getConfigId());
         }
-        if (taskCallbackLogRequest.getHttpCode() == null) {
+        if (taskCallbackLogRequest.getHttpCode() != null) {
             innerCriteria.andHttpCodeEqualTo(taskCallbackLogRequest.getHttpCode());
         }
-        if (taskCallbackLogRequest.getFailureReason() == null) {
+        if (taskCallbackLogRequest.getFailureReason() != null) {
             innerCriteria.andFailureReasonEqualTo(taskCallbackLogRequest.getFailureReason());
         }
-        if (taskCallbackLogRequest.getType() == null) {
+        if (taskCallbackLogRequest.getType() != null) {
             innerCriteria.andTypeEqualTo(taskCallbackLogRequest.getType());
         }
-        if (taskCallbackLogRequest.getConsumeTime() == null) {
+        if (taskCallbackLogRequest.getConsumeTime() != null) {
             innerCriteria.andConsumeTimeEqualTo(taskCallbackLogRequest.getConsumeTime());
         }
-        if (StringUtils.isEmpty(taskCallbackLogRequest.getCallbackCode())) {
+        if (StringUtils.isNotEmpty(taskCallbackLogRequest.getCallbackCode())) {
             innerCriteria.andCallbackCodeEqualTo(taskCallbackLogRequest.getCallbackCode());
         }
-        if (taskCallbackLogRequest.getTaskId() == null) {
+        if (taskCallbackLogRequest.getTaskId() != null) {
             innerCriteria.andTaskIdEqualTo(taskCallbackLogRequest.getTaskId());
         }
-        if (taskCallbackLogRequest.getTaskIdList() == null) {
+        if (taskCallbackLogRequest.getTaskIdList() != null) {
             innerCriteria.andTaskIdIn(taskCallbackLogRequest.getTaskIdList());
         }
-        if (StringUtils.isEmpty(taskCallbackLogRequest.getCallbackMsg())) {
+        if (StringUtils.isNotEmpty(taskCallbackLogRequest.getCallbackMsg())) {
             innerCriteria.andCallbackMsgEqualTo(taskCallbackLogRequest.getCallbackMsg());
         }
-        if (StringUtils.isEmpty(taskCallbackLogRequest.getRequestParam())) {
+        if (StringUtils.isNotEmpty(taskCallbackLogRequest.getRequestParam())) {
             innerCriteria.andRequestParamEqualTo(taskCallbackLogRequest.getRequestParam());
         }
-        if (StringUtils.isEmpty(taskCallbackLogRequest.getResponseData())) {
+        if (StringUtils.isNotEmpty(taskCallbackLogRequest.getResponseData())) {
             innerCriteria.andResponseDataEqualTo(taskCallbackLogRequest.getResponseData());
         }
-        if (StringUtils.isEmpty(taskCallbackLogRequest.getUrl())) {
+        if (StringUtils.isNotEmpty(taskCallbackLogRequest.getUrl())) {
             innerCriteria.andUrlEqualTo(taskCallbackLogRequest.getUrl());
         }
 

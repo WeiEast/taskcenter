@@ -49,25 +49,25 @@ public class TaskLogFacadeImpl implements TaskLogFacade {
         TaskLogCriteria.Criteria innerCriteria = criteria.createCriteria();
 
 
-        if (taskLogRequest.getId() == null) {
+        if (taskLogRequest.getId() != null) {
             innerCriteria.andIdEqualTo(taskLogRequest.getId());
         }
-        if (StringUtils.isEmpty(taskLogRequest.getErrorMsg())) {
+        if (StringUtils.isNotEmpty(taskLogRequest.getErrorMsg())) {
             innerCriteria.andErrorMsgEqualTo(taskLogRequest.getErrorMsg());
         }
-        if (taskLogRequest.getTaskId() == null) {
+        if (taskLogRequest.getTaskId() != null) {
             innerCriteria.andTaskIdEqualTo(taskLogRequest.getTaskId());
         }
-        if (taskLogRequest.getTaskIdList() == null) {
+        if (taskLogRequest.getTaskIdList() != null) {
             innerCriteria.andTaskIdIn(taskLogRequest.getTaskIdList());
         }
-        if (StringUtils.isEmpty(taskLogRequest.getMsg())) {
+        if (StringUtils.isNotEmpty(taskLogRequest.getMsg())) {
             innerCriteria.andMsgEqualTo(taskLogRequest.getMsg());
         }
-        if (StringUtils.isEmpty(taskLogRequest.getStepCode())) {
+        if (StringUtils.isNotEmpty(taskLogRequest.getStepCode())) {
             innerCriteria.andStepCodeEqualTo(taskLogRequest.getStepCode());
         }
-        if (taskLogRequest.getOccurTime() == null) {
+        if (taskLogRequest.getOccurTime() != null) {
             innerCriteria.andOccurTimeEqualTo(taskLogRequest.getOccurTime());
         }
 

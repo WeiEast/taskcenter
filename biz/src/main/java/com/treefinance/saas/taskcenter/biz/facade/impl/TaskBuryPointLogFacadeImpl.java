@@ -45,16 +45,16 @@ public class TaskBuryPointLogFacadeImpl implements TaskBuryPointLogFacade {
         TaskBuryPointLogCriteria.Criteria innerCriteria = criteria.createCriteria();
 
 
-        if (taskBuryPointLogRequest.getId() == null) {
+        if (taskBuryPointLogRequest.getId() != null) {
             innerCriteria.andIdEqualTo(taskBuryPointLogRequest.getId());
         }
-        if (StringUtils.isEmpty(taskBuryPointLogRequest.getAppId())) {
+        if (StringUtils.isNotEmpty(taskBuryPointLogRequest.getAppId())) {
             innerCriteria.andAppIdEqualTo(taskBuryPointLogRequest.getAppId());
         }
-        if (taskBuryPointLogRequest.getTaskId() == null) {
+        if (taskBuryPointLogRequest.getTaskId() != null) {
             innerCriteria.andTaskIdEqualTo(taskBuryPointLogRequest.getTaskId());
         }
-        if (StringUtils.isEmpty(taskBuryPointLogRequest.getCode())) {
+        if (StringUtils.isNotEmpty(taskBuryPointLogRequest.getCode())) {
             innerCriteria.andCodeEqualTo(taskBuryPointLogRequest.getCode());
         }
 
