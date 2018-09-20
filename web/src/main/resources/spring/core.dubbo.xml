@@ -33,6 +33,9 @@
                    interface="com.treefinance.saas.taskcenter.facade.service.TaskBuryPointLogFacade" version="1.0.0"
                    validation="true"/>
 
+    <dubbo:service ref="taskNextDirectiveFacade"
+                   interface="com.treefinance.saas.taskcenter.facade.service.TaskNextDirectiveFacade" version="1.0.0"
+                   validation="true"/>
 
 </beans>
 
