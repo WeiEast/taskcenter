@@ -36,7 +36,7 @@ public interface TaskFacade {
      * @param taskRequest
      * @return
      */
-    TaskResult<List<TaskRO>> queryTaskWithPagination(TaskRequest taskRequest);
+    TaskPagingResult<TaskRO> queryTaskWithPagination(TaskRequest taskRequest);
 
     /**
      * console -- 查询任务列表

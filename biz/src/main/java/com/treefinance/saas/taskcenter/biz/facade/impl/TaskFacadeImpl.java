@@ -129,7 +129,7 @@ public class TaskFacadeImpl implements TaskFacade {
     }
 
     @Override
-    public TaskResult<List<TaskRO>> queryTaskWithPagination(TaskRequest taskRequest) {
+    public TaskPagingResult<TaskRO> queryTaskWithPagination(TaskRequest taskRequest) {
         logger.info("分页条件查询任务传入的参数为{}", taskRequest.toString());
 
         TaskCriteria criteria = new TaskCriteria();
@@ -155,6 +155,10 @@ public class TaskFacadeImpl implements TaskFacade {
         if (taskRequest.getStatus() == null) {
             innerCriteria.andStatusEqualTo(taskRequest.getStatus());
         }
+        if (taskRequest.getCreateTimeStart() == null) {
+            innerCriteria.andCreateTimeGreaterThanOrEqualTo(taskRequest.getCreateTimeStart());
+            innerCriteria.andCreateTimeLessThanOrEqualTo(taskRequest.getCreateTimeEnd());
+        }
         if (StringUtils.isEmpty(taskRequest.getAccountNo())) {
             innerCriteria.andAccountNoEqualTo(taskRequest.getAccountNo());
         }
@@ -171,15 +175,16 @@ public class TaskFacadeImpl implements TaskFacade {
             innerCriteria.andUniqueIdEqualTo(taskRequest.getUniqueId());
         }
 
+        int count = (int)taskMapper.countByExample(criteria);
 
         List<Task> taskList = taskMapper.selectPaginationByExample(criteria);
         if (CollectionUtils.isEmpty(taskList)) {
 
-            return TaskResult.wrapErrorResult("失败", "找不到相关数据");
+            return TaskPagingResult.wrapErrorResult("失败", "找不到相关数据");
         }
         List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
 
-        return TaskResult.wrapSuccessfulResult(taskROList);
+        return TaskPagingResult.wrapSuccessfulResult(taskROList,count);
 
     }
 
