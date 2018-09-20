@@ -17,7 +17,7 @@ import java.util.List;
  * @author chengtong
  * @date 18/9/19 18:03
  */
-@Service
+@Service("taskNextDirectiveFacade")
 public class TaskNextDirectiveFacadeImpl implements TaskNextDirectiveFacade {
 
 
