@@ -21,9 +21,9 @@ public class TaskAndAttributeRequest extends PageRequest implements Serializable
 
     private Integer status;
 
-    private Integer bizType;
+    private Byte bizType;
 
-    private List<Integer> bizTypeList;
+    private List<Byte> bizTypeList;
 
     private String webSite;
     private String value;
@@ -67,19 +67,19 @@ public class TaskAndAttributeRequest extends PageRequest implements Serializable
         this.status = status;
     }
 
-    public Integer getBizType() {
+    public Byte getBizType() {
         return bizType;
     }
 
-    public void setBizType(Integer bizType) {
+    public void setBizType(Byte bizType) {
         this.bizType = bizType;
     }
 
-    public List<Integer> getBizTypeList() {
+    public List<Byte> getBizTypeList() {
         return bizTypeList;
     }
 
-    public void setBizTypeList(List<Integer> bizTypeList) {
+    public void setBizTypeList(List<Byte> bizTypeList) {
         this.bizTypeList = bizTypeList;
     }
 
