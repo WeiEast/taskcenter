@@ -3,6 +3,7 @@
        xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
+
     <dubbo:application name="task-center"/>
 
     <!--<dubbo:monitor protocol="registry"/>-->
@@ -13,8 +14,8 @@
 
     <dubbo:consumer check="false"/>
 
-    <!--消费者 -->
-
+    <import resource="classpath*:spring/core.dubbo.consumer.*.xml"/>
+    <!--提供者-->
     <dubbo:service ref="taskFacade"
                    interface="com.treefinance.saas.taskcenter.facade.service.TaskFacade"
                    version="1.0.0" validation="true"/>
@@ -35,6 +36,10 @@
 
     <dubbo:service ref="taskNextDirectiveFacade"
                    interface="com.treefinance.saas.taskcenter.facade.service.TaskNextDirectiveFacade" version="1.0.0"
+                   validation="true"/>
+
+    <dubbo:service ref="carInfoFacade"
+                   interface="com.treefinance.saas.taskcenter.facade.service.CarInfoFacade" version="1.0.0"
                    validation="true"/>
 
 </beans>

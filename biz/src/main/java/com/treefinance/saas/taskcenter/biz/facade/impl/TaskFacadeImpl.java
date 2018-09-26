@@ -1,9 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.facade.impl;
 
 import com.google.common.collect.Maps;
-import com.treefinance.saas.merchant.center.facade.request.common.BaseRequest;
-import com.treefinance.saas.merchant.center.facade.result.console.AppBizTypeResult;
-import com.treefinance.saas.merchant.center.facade.result.console.MerchantResult;
+import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
 import com.treefinance.saas.taskcenter.common.exception.BusinessCheckFailException;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
@@ -12,6 +10,7 @@ import com.treefinance.saas.taskcenter.dao.entity.TaskCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAndTaskAttributeMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskAndAttributeRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskCreateRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskAndAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
@@ -30,7 +29,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author:guoguoyun
@@ -41,18 +39,12 @@ public class TaskFacadeImpl implements TaskFacade {
     private static final Logger logger = LoggerFactory.getLogger(TaskFacade.class);
 
     @Autowired
-    TaskMapper taskMapper;
+    private TaskMapper taskMapper;
     @Autowired
-    TaskAndTaskAttributeMapper taskAndTaskAttributeMapper;
+    private TaskAndTaskAttributeMapper taskAndTaskAttributeMapper;
+    @Autowired
+    private TaskService taskService;
 
-    @Override
-    public TaskResult<Object> testAop(String a, String b) {
-        if ("hao".equals(a)) {
-            throw new BusinessCheckFailException("-1", "参数异常");
-        }
-        System.out.println("a=" + a);
-        return TaskResult.wrapSuccessfulResult(a);
-    }
 
     @Override
     public TaskResult<List<TaskRO>> queryTask(TaskRequest taskRequest) {
@@ -102,7 +94,6 @@ public class TaskFacadeImpl implements TaskFacade {
         }
 
 
-
         List<Task> taskList = taskMapper.selectByExample(criteria);
         if (CollectionUtils.isEmpty(taskList)) {
 
@@ -113,6 +104,30 @@ public class TaskFacadeImpl implements TaskFacade {
         return TaskResult.wrapSuccessfulResult(taskROList);
 
 
+    }
+
+    @Override
+    public TaskResult<Long> createTask(TaskCreateRequest taskCreateRequest) {
+        if (taskCreateRequest == null) {
+            throw new BusinessCheckFailException("-1", "请求参数不能为空");
+        }
+        if (StringUtils.isBlank(taskCreateRequest.getAppId())) {
+            throw new BusinessCheckFailException("-1", "appId不能为空");
+        }
+        if (taskCreateRequest.getBizType() == null) {
+            throw new BusinessCheckFailException("-1", "业务类型不能为空");
+        }
+        Long taskId = taskService.createTask(taskCreateRequest);
+        return TaskResult.wrapSuccessfulResult(taskId);
+    }
+
+    @Override
+    public TaskResult<Void> cancelTask(Long taskId) {
+        if (taskId == null) {
+            throw new BusinessCheckFailException("-1", "任务id不能为空");
+        }
+        taskService.cancelTask(taskId);
+        return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override
@@ -181,7 +196,7 @@ public class TaskFacadeImpl implements TaskFacade {
             innerCriteria.andUniqueIdEqualTo(taskRequest.getUniqueId());
         }
 
-        int count = (int)taskMapper.countByExample(criteria);
+        int count = (int) taskMapper.countByExample(criteria);
 
         List<Task> taskList = taskMapper.selectPaginationByExample(criteria);
         if (CollectionUtils.isEmpty(taskList)) {
@@ -190,7 +205,7 @@ public class TaskFacadeImpl implements TaskFacade {
         }
         List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
 
-        return TaskPagingResult.wrapSuccessfulResult(taskROList,count);
+        return TaskPagingResult.wrapSuccessfulResult(taskROList, count);
 
     }
 

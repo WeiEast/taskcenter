@@ -15,6 +15,11 @@
             <groupId>com.treefinance.saas</groupId>
             <artifactId>taskcenter-facade</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.datatrees.spider</groupId>
+            <artifactId>spider-share-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.github.stuxuhai</groupId>
             <artifactId>jpinyin</artifactId>

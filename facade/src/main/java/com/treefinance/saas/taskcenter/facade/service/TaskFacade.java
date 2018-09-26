@@ -1,6 +1,7 @@
 package com.treefinance.saas.taskcenter.facade.service;
 
 import com.treefinance.saas.taskcenter.facade.request.TaskAndAttributeRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskCreateRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskAndAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
@@ -15,17 +16,33 @@ import java.util.List;
  */
 public interface TaskFacade {
 
-    TaskResult<Object> testAop(String a, String b);
-
     /**
      * 条件查询任务列表
+     *
      * @param taskRequest
      * @return
      */
     TaskResult<List<TaskRO>> queryTask(TaskRequest taskRequest);
 
     /**
+     * 创建任务
+     *
+     * @param taskCreateRequest
+     * @return
+     */
+    TaskResult<Long> createTask(TaskCreateRequest taskCreateRequest);
+
+    /**
+     * 取消任务
+     *
+     * @param taskId
+     * @return
+     */
+    TaskResult<Void> cancelTask(Long taskId);
+
+    /**
      * 根据id获得任务详情
+     *
      * @param taskRequest
      * @return
      */
@@ -33,6 +50,7 @@ public interface TaskFacade {
 
     /**
      * 条件查询任务列表（分页）
+     *
      * @param taskRequest
      * @return
      */
@@ -41,6 +59,7 @@ public interface TaskFacade {
     /**
      * console -- 查询任务列表
      * /saas/console/tasks
+     *
      * @param request
      * @return
      */
@@ -48,6 +67,7 @@ public interface TaskFacade {
 
     /**
      * console -- 查询任务列表数据
+     *
      * @param taskRequest
      * @return
      */
