@@ -122,6 +122,37 @@ public class TaskFacadeImpl implements TaskFacade {
     }
 
     @Override
+    public TaskResult<Void> updateTask(Long taskId, String accountNo, String webSite) {
+        taskService.updateTask(taskId, accountNo, webSite);
+        return TaskResult.wrapSuccessfulResult(null);
+    }
+
+    @Override
+    public TaskResult<Integer> updateUnfinishedTask(TaskCreateRequest taskRequest) {
+        Task task = DataConverterUtils.convert(taskRequest, Task.class);
+        int id = taskService.updateUnfinishedTask(task);
+        return TaskResult.wrapSuccessfulResult(id);
+    }
+
+    @Override
+    public TaskResult<String> failTaskWithStep(Long taskId) {
+        String result = taskService.failTaskWithStep(taskId);
+        return TaskResult.wrapSuccessfulResult(result);
+    }
+
+    @Override
+    public TaskResult<String> cancelTaskWithStep(Long taskId) {
+        String result = taskService.cancelTaskWithStep(taskId);
+        return TaskResult.wrapSuccessfulResult(result);
+    }
+
+    @Override
+    public TaskResult<String> updateTaskStatusWithStep(Long taskId, Byte status) {
+        String result = taskService.updateTaskStatusWithStep(taskId, status);
+        return TaskResult.wrapSuccessfulResult(result);
+    }
+
+    @Override
     public TaskResult<Void> cancelTask(Long taskId) {
         if (taskId == null) {
             throw new BusinessCheckFailException("-1", "任务id不能为空");

@@ -1,27 +1,23 @@
 package com.treefinance.saas.taskcenter.biz.facade.impl;
 
-import com.treefinance.saas.knife.result.Results;
-import com.treefinance.saas.knife.result.SaasResult;
+import com.google.common.collect.Lists;
+import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
-import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
-import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLogCriteria;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLogCriteria;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskBuryPointLogMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskLogMapper;
-import com.treefinance.saas.taskcenter.facade.request.TaskBuryPointLogRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskLogRequest;
-import com.treefinance.saas.taskcenter.facade.result.TaskBuryPointLogRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskLogRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
-import com.treefinance.saas.taskcenter.facade.service.TaskBuryPointLogFacade;
 import com.treefinance.saas.taskcenter.facade.service.TaskLogFacade;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,6 +32,8 @@ public class TaskLogFacadeImpl implements TaskLogFacade {
 
     @Autowired
     private TaskLogMapper taskLogMapper;
+    @Autowired
+    private TaskLogService taskLogService;
 
 
     @Override
@@ -90,4 +88,31 @@ public class TaskLogFacadeImpl implements TaskLogFacade {
 
         return TaskResult.wrapSuccessfulResult(taskLogROs);
     }
+
+    @Override
+    public TaskResult<TaskLogRO> queryLastestErrorLog(Long taskId) {
+        TaskLog taskLog = taskLogService.queryLastestErrorLog(taskId);
+        if (taskLog == null) {
+            return TaskResult.wrapSuccessfulResult(null);
+        }
+        TaskLogRO taskLogRO = DataConverterUtils.convert(taskLog, TaskLogRO.class);
+        return TaskResult.wrapSuccessfulResult(taskLogRO);
+    }
+
+    @Override
+    public TaskResult<Long> insert(Long taskId, String msg, Date processTime, String errorMsg) {
+        long id = taskLogService.insert(taskId, msg, processTime, errorMsg);
+        return TaskResult.wrapSuccessfulResult(id);
+    }
+
+    @Override
+    public TaskResult<List<TaskLogRO>> queryTaskLog(Long taskId, String msg) {
+        List<TaskLog> taskLogList = taskLogService.queryTaskLog(taskId, msg);
+        if (CollectionUtils.isEmpty(taskLogList)) {
+            return TaskResult.wrapSuccessfulResult(Lists.newArrayList());
+        }
+        List<TaskLogRO> taskLogROList = DataConverterUtils.convert(taskLogList, TaskLogRO.class);
+        return TaskResult.wrapSuccessfulResult(taskLogROList);
+    }
+
 }

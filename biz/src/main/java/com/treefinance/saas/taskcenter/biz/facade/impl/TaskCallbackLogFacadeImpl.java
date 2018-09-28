@@ -1,23 +1,19 @@
 package com.treefinance.saas.taskcenter.biz.facade.impl;
 
-import com.treefinance.saas.knife.result.Results;
-import com.treefinance.saas.knife.result.SaasResult;
+import com.google.common.collect.Lists;
+import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
-import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
-import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLogCriteria;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLogCriteria;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskBuryPointLogMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskCallbackLogMapper;
-import com.treefinance.saas.taskcenter.facade.request.TaskBuryPointLogRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskCallbackLogPageRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskCallbackLogRequest;
-import com.treefinance.saas.taskcenter.facade.result.TaskBuryPointLogRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskCallbackLogRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskBuryPointLogFacade;
 import com.treefinance.saas.taskcenter.facade.service.TaskCallbackLogFacade;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +33,8 @@ public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
 
     @Autowired
     private TaskCallbackLogMapper taskCallbackLogMapper;
+    @Autowired
+    private TaskCallbackLogService taskCallbackLogService;
 
 
     @Override
@@ -123,4 +121,15 @@ public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
 
         return TaskPagingResult.wrapSuccessfulResult(taskCallbackLogROES, count.intValue());
     }
+
+    @Override
+    public TaskResult<List<TaskCallbackLogRO>> getTaskCallbackLogs(Long taskId, List<Long> configIds) {
+        List<TaskCallbackLog> taskCallbackLogList = taskCallbackLogService.getTaskCallbackLogs(taskId, configIds);
+        if (CollectionUtils.isEmpty(taskCallbackLogList)) {
+            return TaskResult.wrapSuccessfulResult(Lists.newArrayList());
+        }
+        List<TaskCallbackLogRO> taskCallbackLogROList = DataConverterUtils.convert(taskCallbackLogList, TaskCallbackLogRO.class);
+        return TaskResult.wrapSuccessfulResult(taskCallbackLogROList);
+    }
+
 }

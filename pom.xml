@@ -55,6 +55,7 @@
         <assistant.version>1.0.10</assistant.version>
         <assistant-monitor.version>1.1.0-SNAPSHOT</assistant-monitor.version>
         <merchant-center.version>1.0.6-SNAPSHOT</merchant-center.version>
+        <grap-server-facade.version>1.1.0-SNAPSHOT</grap-server-facade.version>
         <rawdatacentral-api.version>3.1.2-SNAPSHOT</rawdatacentral-api.version>
     </properties>
 
@@ -267,6 +268,12 @@
             <groupId>com.treefinance.saas</groupId>
             <artifactId>merchant-center-facade</artifactId>
             <version>${merchant-center.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.treefinance.saas</groupId>
+            <artifactId>grap-server-facade</artifactId>
+            <version>${grap-server-facade.version}</version>
         </dependency>
 
 

@@ -1,9 +1,8 @@
 package com.treefinance.saas.taskcenter.biz.facade.impl;
 
-import com.treefinance.saas.knife.result.Results;
-import com.treefinance.saas.knife.result.SaasResult;
+import com.google.common.collect.Maps;
+import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
-import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
@@ -18,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author:guoguoyun
@@ -31,6 +31,8 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
 
     @Autowired
     private TaskAttributeMapper taskAttributeMapper;
+    @Autowired
+    private TaskAttributeService taskAttributeService;
 
     @Override
     public TaskResult<List<TaskAttributeRO>> queryTaskAttribute(TaskAttributeRequest taskAttributeRequest) {
@@ -59,11 +61,6 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
     }
 
 
-    private void ss(){
-
-    }
-
-
     @Override
     public TaskResult<List<TaskAttributeRO>> queryTaskAttributeByTaskId(TaskAttributeRequest taskAttributeRequest) {
 
@@ -74,5 +71,49 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
         List<TaskAttributeRO> taskAttributeROS = DataConverterUtils.convert(list, TaskAttributeRO.class);
 
         return TaskResult.wrapSuccessfulResult(taskAttributeROS);
+    }
+
+    @Override
+    public TaskResult<Map<String, TaskAttributeRO>> findByNames(Long taskId, boolean decrypt, String... names) {
+        Map<String, TaskAttribute> map = taskAttributeService.findByNames(taskId, decrypt, names);
+        Map<String, TaskAttributeRO> result = Maps.newHashMap();
+        for (Map.Entry<String, TaskAttribute> taskAttributeEntry : map.entrySet()) {
+            TaskAttributeRO taskAttributeRO = DataConverterUtils.convert(taskAttributeEntry.getValue(), TaskAttributeRO.class);
+            result.put(taskAttributeEntry.getKey(), taskAttributeRO);
+        }
+        return TaskResult.wrapSuccessfulResult(result);
+    }
+
+    @Override
+    public TaskResult<Long> insert(Long taskId, String name, String value) {
+        Long id = taskAttributeService.insert(taskId, name, value);
+        return TaskResult.wrapSuccessfulResult(id);
+    }
+
+    @Override
+    public TaskResult<Void> insertOrUpdateSelective(Long taskId, String name, String value) {
+        taskAttributeService.insertOrUpdateSelective(taskId, name, value);
+        return TaskResult.wrapSuccessfulResult(null);
+    }
+
+    @Override
+    public TaskResult<TaskAttributeRO> findByName(Long taskId, String name, boolean decrypt) {
+        TaskAttribute taskAttribute = taskAttributeService.findByName(taskId, name, decrypt);
+        TaskAttributeRO attributeRO = DataConverterUtils.convert(taskAttribute, TaskAttributeRO.class);
+        return TaskResult.wrapSuccessfulResult(attributeRO);
+    }
+
+    @Override
+    public TaskResult<TaskAttributeRO> findByNameAndValue(String name, String value, boolean encrypt) {
+        TaskAttribute taskAttribute = taskAttributeService.findByNameAndValue(name, value, encrypt);
+        TaskAttributeRO taskAttributeRO = DataConverterUtils.convert(taskAttribute, TaskAttributeRO.class);
+        return TaskResult.wrapSuccessfulResult(taskAttributeRO);
+    }
+
+    @Override
+    public TaskResult<List<TaskAttributeRO>> findByTaskId(Long taskId) {
+        List<TaskAttribute> taskAttributeList = taskAttributeService.findByTaskId(taskId);
+        List<TaskAttributeRO> taskAttributeROList = DataConverterUtils.convert(taskAttributeList, TaskAttributeRO.class);
+        return TaskResult.wrapSuccessfulResult(taskAttributeROList);
     }
 }

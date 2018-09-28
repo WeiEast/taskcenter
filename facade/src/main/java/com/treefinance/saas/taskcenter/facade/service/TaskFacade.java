@@ -33,6 +33,25 @@ public interface TaskFacade {
     TaskResult<Long> createTask(TaskCreateRequest taskCreateRequest);
 
     /**
+     * 更新任务
+     *
+     * @param taskId    必填
+     * @param accountNo 必填
+     * @param webSite
+     * @return
+     */
+    TaskResult<Void> updateTask(Long taskId, String accountNo, String webSite);
+
+    TaskResult<Integer> updateUnfinishedTask(TaskCreateRequest taskRequest);
+
+    TaskResult<String> failTaskWithStep(Long taskId);
+
+    TaskResult<String> cancelTaskWithStep(Long taskId);
+
+    TaskResult<String> updateTaskStatusWithStep(Long taskId, Byte status);
+
+
+    /**
      * 取消任务
      *
      * @param taskId

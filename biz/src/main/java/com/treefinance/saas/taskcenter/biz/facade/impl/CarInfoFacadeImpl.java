@@ -16,7 +16,7 @@ import java.util.List;
  * @author haojiahong
  * @date 2018/9/26
  */
-@Component
+@Component("carInfoFacade")
 public class CarInfoFacadeImpl implements CarInfoFacade {
 
     @Autowired

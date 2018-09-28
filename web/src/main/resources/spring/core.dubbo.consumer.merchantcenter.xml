@@ -13,6 +13,9 @@
 
     <dubbo:reference id="appLicenseFacade"
                      interface="com.treefinance.saas.merchant.center.facade.service.AppLicenseFacade" version="1.0.0"/>
+
+    <dubbo:reference interface="com.treefinance.saas.merchant.center.facade.service.AppBizTypeFacade"
+                     id="appBizTypeFacade" version="1.0.0"/>
 </beans>
 
 

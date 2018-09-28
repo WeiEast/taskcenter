@@ -1,17 +1,13 @@
 package com.treefinance.saas.taskcenter.biz.facade.impl;
 
-import com.treefinance.saas.knife.result.Results;
-import com.treefinance.saas.knife.result.SaasResult;
+import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
-import com.treefinance.saas.taskcenter.dao.entity.*;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
+import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
+import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLogCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskBuryPointLogMapper;
-import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskBuryPointLogRequest;
-import com.treefinance.saas.taskcenter.facade.result.TaskAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskBuryPointLogRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
-import com.treefinance.saas.taskcenter.facade.service.TaskAttributeFacade;
 import com.treefinance.saas.taskcenter.facade.service.TaskBuryPointLogFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,6 +28,8 @@ public class TaskBuryPointLogFacadeImpl implements TaskBuryPointLogFacade {
 
     @Autowired
     private TaskBuryPointLogMapper taskBuryPointLogMapper;
+    @Autowired
+    private TaskBuryPointLogService taskBuryPointLogService;
 
 
     @Override
@@ -77,5 +75,17 @@ public class TaskBuryPointLogFacadeImpl implements TaskBuryPointLogFacade {
         List<TaskBuryPointLogRO> attributeROList = DataConverterUtils.convert(list, TaskBuryPointLogRO.class);
 
         return TaskResult.wrapSuccessfulResult(attributeROList);
+    }
+
+    @Override
+    public TaskResult<Void> pushTaskBuryPointLog(Long taskId, String appId, String code) {
+        taskBuryPointLogService.pushTaskBuryPointLog(taskId, appId, code);
+        return TaskResult.wrapSuccessfulResult(null);
+    }
+
+    @Override
+    public TaskResult<Void> logTaskOperatorMaintainUser(Long taskId, String appId, String extra) {
+        taskBuryPointLogService.logTaskOperatorMaintainUser(taskId, appId, extra);
+        return TaskResult.wrapSuccessfulResult(null);
     }
 }

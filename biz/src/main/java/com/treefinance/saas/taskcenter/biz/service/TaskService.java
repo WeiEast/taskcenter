@@ -51,6 +51,7 @@ public class TaskService {
     @Autowired
     private DirectiveService directiveService;
 
+
     /**
      * 创建任务
      *
@@ -188,7 +189,7 @@ public class TaskService {
      * @param task
      * @return
      */
-    private int updateUnfinishedTask(Task task) {
+    public int updateUnfinishedTask(Task task) {
         TaskCriteria taskCriteria = new TaskCriteria();
         taskCriteria.createCriteria().andIdEqualTo(task.getId())
                 .andStatusNotIn(Lists.newArrayList(ETaskStatus.CANCEL.getStatus(),
@@ -251,4 +252,45 @@ public class TaskService {
 
         return updateUnfinishedTask(task);
     }
+
+    public int setAccountNo(Long taskId, String accountNo) {
+        Task existTask = taskMapper.selectByPrimaryKey(taskId);
+        if (existTask != null && StringUtils.isEmpty(existTask.getAccountNo())) {
+            Task task = new Task();
+            task.setId(taskId);
+            task.setAccountNo(securityCryptoService.encrypt(accountNo, EncryptionIntensityEnum.NORMAL));
+            return updateUnfinishedTask(task);
+        } else {
+            return -1;
+        }
+    }
+
+    public int updateWebSite(Long taskId, String webSite) {
+        Task task = new Task();
+        task.setId(taskId);
+        task.setWebSite(webSite);
+
+        return updateUnfinishedTask(task);
+    }
+
+    /**
+     * 更新AccountNo
+     *
+     * @param taskId
+     * @param accountNo
+     * @param webSite
+     */
+    public void updateTask(Long taskId, String accountNo, String webSite) {
+        if (taskId == null || StringUtils.isEmpty(accountNo)) {
+            return;
+        }
+        String _accountNo = securityCryptoService.encrypt(accountNo, EncryptionIntensityEnum.NORMAL);
+        Task task = new Task();
+        task.setId(taskId);
+        task.setAccountNo(_accountNo);
+        task.setWebSite(webSite);
+        updateUnfinishedTask(task);
+    }
+
+
 }

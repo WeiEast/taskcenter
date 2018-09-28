@@ -1,10 +1,10 @@
 package com.treefinance.saas.taskcenter.facade.service;
 
-import com.treefinance.saas.knife.result.SaasResult;
 import com.treefinance.saas.taskcenter.facade.request.TaskLogRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskLogRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,7 +17,13 @@ public interface TaskLogFacade {
 
     /**
      * console 请求的任务日志数据
-     * */
+     */
     TaskResult<List<TaskLogRO>> queryTaskLogById(TaskLogRequest taskLogRequest);
+
+    TaskResult<TaskLogRO> queryLastestErrorLog(Long taskId);
+
+    TaskResult<Long> insert(Long taskId, String msg, Date processTime, String errorMsg);
+
+    TaskResult<List<TaskLogRO>> queryTaskLog(Long taskId, String msg);
 
 }

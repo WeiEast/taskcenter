@@ -42,6 +42,22 @@
                    interface="com.treefinance.saas.taskcenter.facade.service.CarInfoFacade" version="1.0.0"
                    validation="true"/>
 
+    <dubbo:service ref="acquisitionFacade"
+                   interface="com.treefinance.saas.taskcenter.facade.service.AcquisitionFacade" version="1.0.0"
+                   validation="true"/>
+
+    <dubbo:service ref="taskTimeFacade"
+                   interface="com.treefinance.saas.taskcenter.facade.service.TaskTimeFacade" version="1.0.0"
+                   validation="true"/>
+
+    <dubbo:service ref="moxieTaskEventNoticeFacade"
+                   interface="com.treefinance.saas.taskcenter.facade.service.MoxieTaskEventNoticeFacade" version="1.0.0"
+                   validation="true"/>
+
+    <dubbo:service ref="moxieTimeoutFacade"
+                   interface="com.treefinance.saas.taskcenter.facade.service.MoxieTimeoutFacade" version="1.0.0"
+                   validation="true"/>
+
 </beans>
 
 
