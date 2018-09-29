@@ -22,4 +22,6 @@ public interface TaskTimeFacade {
 
     TaskResult<Void> handleTaskTimeout(Long taskId);
 
+    TaskResult<Void> handleTaskAliveTimeout(Long taskId, Date startTime);
+
 }

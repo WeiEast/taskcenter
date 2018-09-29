@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.treefinance.saas.grapserver.dao.mapper.TaskAttributeUpdateMapper">
+<mapper namespace="com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeUpdateMapper">
     <!-- 总计数据 -->
     <insert id="insertOrUpdateSelective" parameterType="com.treefinance.saas.taskcenter.dao.entity.TaskAttribute">
         insert into task_attribute

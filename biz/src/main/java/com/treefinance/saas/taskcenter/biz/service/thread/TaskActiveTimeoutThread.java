@@ -8,7 +8,6 @@ import com.treefinance.saas.taskcenter.biz.service.TaskAliveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.utils.RedisKeyUtils;
 import com.treefinance.saas.taskcenter.biz.utils.SpringUtils;
-import com.treefinance.saas.taskcenter.dao.entity.Task;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,15 +30,15 @@ public class TaskActiveTimeoutThread implements Runnable {
     private TaskService taskService;
     private DiamondConfig diamondConfig;
     private RedisDao redisDao;
-    private Task task;
+    private Long taskId;
     private Date startTime;
 
-    public TaskActiveTimeoutThread(Task task, Date startTime) {
+    public TaskActiveTimeoutThread(Long taskId, Date startTime) {
         this.taskAliveService = (TaskAliveService) SpringUtils.getBean("taskAliveService");
         this.taskService = (TaskService) SpringUtils.getBean("taskService");
         this.diamondConfig = (DiamondConfig) SpringUtils.getBean("diamondConfig");
         this.redisDao = (RedisDao) SpringUtils.getBean("redisDao");
-        this.task = task;
+        this.taskId = taskId;
         this.startTime = startTime;
     }
 
@@ -47,25 +46,25 @@ public class TaskActiveTimeoutThread implements Runnable {
     public void run() {
         //保证取消任务只会执行一次
         Map<String, Object> lockMap = Maps.newHashMap();
-        String lockKey = RedisKeyUtils.genRedisLockKey("task-alive-time-job-task", Constants.SAAS_ENV_VALUE, String.valueOf(task.getId()));
+        String lockKey = RedisKeyUtils.genRedisLockKey("task-alive-time-job-task", Constants.SAAS_ENV_VALUE, String.valueOf(taskId));
         try {
             lockMap = redisDao.acquireLock(lockKey, 3 * 60 * 1000L);
             if (MapUtils.isEmpty(lockMap)) {
                 return;
             }
-            String valueStr = taskAliveService.getTaskAliveTime(task.getId());
+            String valueStr = taskAliveService.getTaskAliveTime(taskId);
             if (StringUtils.isBlank(valueStr)) {
-                logger.info("任务已经被取消了taskId={}", task.getId());
+                logger.info("任务已经被取消了taskId={}", taskId);
                 return;
             }
 
             Long lastActiveTime = Long.parseLong(valueStr);
             long diff = diamondConfig.getTaskMaxAliveTime();
             if (startTime.getTime() - lastActiveTime > diff) {
-                logger.info("任务活跃时间超时,取消任务,taskId={}", task.getId());
-                taskService.cancelTask(task.getId());
+                logger.info("任务活跃时间超时,取消任务,taskId={}", taskId);
+                taskService.cancelTask(taskId);
                 //删除记录的任务活跃时间
-                taskAliveService.deleteTaskAliveTime(task.getId());
+                taskAliveService.deleteTaskAliveTime(taskId);
             }
         } finally {
             redisDao.releaseLock(lockKey, lockMap, 3 * 60 * 1000L);

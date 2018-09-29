@@ -1,8 +1,10 @@
 package com.treefinance.saas.taskcenter.biz.facade.impl;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.exception.BusinessCheckFailException;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
@@ -26,6 +28,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -380,6 +383,21 @@ public class TaskFacadeImpl implements TaskFacade {
     public TaskResult<List<Long>> getUserTaskIdList(Long taskId) {
         List<Long> taskIdList = taskService.getUserTaskIdList(taskId);
         return TaskResult.wrapSuccessfulResult(taskIdList);
+    }
+
+    @Override
+    public TaskResult<List<TaskRO>> selectRecentRunningTaskList(Byte saasEnv, Date startTime, Date endTime) {
+        TaskCriteria criteria = new TaskCriteria();
+        criteria.createCriteria().andStatusEqualTo(ETaskStatus.RUNNING.getStatus())
+                .andSaasEnvEqualTo(saasEnv)
+                .andCreateTimeGreaterThanOrEqualTo(endTime)
+                .andCreateTimeLessThan(startTime);
+        List<Task> taskList = taskMapper.selectByExample(criteria);
+        if (CollectionUtils.isEmpty(taskList)) {
+            return TaskResult.wrapSuccessfulResult(Lists.newArrayList());
+        }
+        List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
+        return TaskResult.wrapSuccessfulResult(taskROList);
     }
 
 }

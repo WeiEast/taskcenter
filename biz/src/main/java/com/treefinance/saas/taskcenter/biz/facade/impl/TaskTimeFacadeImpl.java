@@ -35,4 +35,10 @@ public class TaskTimeFacadeImpl implements TaskTimeFacade {
         taskTimeService.handleTaskTimeout(taskId);
         return TaskResult.wrapSuccessfulResult(null);
     }
+
+    @Override
+    public TaskResult<Void> handleTaskAliveTimeout(Long taskId, Date startTime) {
+        taskTimeService.handleTaskAliveTimeout(taskId, startTime);
+        return TaskResult.wrapSuccessfulResult(null);
+    }
 }

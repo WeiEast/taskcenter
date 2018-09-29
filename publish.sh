@@ -1,6 +1,6 @@
 #!/bin/sh
 
-server_ip="192.168.5.15"
+server_ip="192.168.5.25"
 server_application="/dashu/application/taskcenter"
 server_log_path="/dashu/log/"
 
@@ -23,7 +23,7 @@ fi
 #mvn clean package -DskipTests
 
 # 3.delete old package
-sshpass -p dashu0701 ssh root@192.168.5.15 << EOF
+sshpass -p Dashu0701 ssh root@192.168.5.25 << EOF
     if [ ! -d "$server_application" ] ; then mkdir -p $server_application ;fi;
     cd $server_application
     rm -rf *.jar;
@@ -33,19 +33,19 @@ EOF
 
 # 4.upload
 echo "upload web/target/taskcenter-web-1.0.0-SNAPSHOT.jar ..."
-sshpass -p dashu0701 scp  web/target/taskcenter-web-1.0.0-SNAPSHOT.jar root@$server_ip:$server_application
-sshpass -p dashu0701 scp  app.sh root@$server_ip:$server_application/
+sshpass -p Dashu0701 scp  web/target/taskcenter-web-1.0.0-SNAPSHOT.jar root@$server_ip:$server_application
+sshpass -p Dashu0701 scp  app.sh root@$server_ip:$server_application/
 
 # start
 echo "start app..."
-sshpass -p dashu0701 ssh  root@192.168.5.15 << EOF
+sshpass -p Dashu0701 ssh  root@192.168.5.25 << EOF
 	cd $server_application;
 	sh app.sh start;
 	exit;
 EOF
 
 #open new terminal
-sshpass -p dashu0701 ssh  root@192.168.5.15 << EOF
+sshpass -p Dashu0701 ssh  root@192.168.5.25 << EOF
 	tail -500f $server_log_path/taskcenter.log
 EOF
 

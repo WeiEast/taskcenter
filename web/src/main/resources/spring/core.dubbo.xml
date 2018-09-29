@@ -13,6 +13,7 @@
     <dubbo:protocol name="dubbo" port="20296"/>
 
     <dubbo:consumer check="false"/>
+    <dubbo:provider timeout="10000"/>
 
     <import resource="classpath*:spring/core.dubbo.consumer.*.xml"/>
     <!--提供者-->
@@ -64,6 +65,10 @@
 
     <dubbo:service ref="taskSupportFacade"
                    interface="com.treefinance.saas.taskcenter.facade.service.TaskSupportFacade" version="1.0.0"
+                   validation="true"/>
+
+    <dubbo:service ref="taskAliveFacade"
+                   interface="com.treefinance.saas.taskcenter.facade.service.TaskAliveFacade" version="1.0.0"
                    validation="true"/>
 
 </beans>

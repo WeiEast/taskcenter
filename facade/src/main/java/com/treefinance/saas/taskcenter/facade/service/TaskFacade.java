@@ -8,6 +8,7 @@ import com.treefinance.saas.taskcenter.facade.result.TaskRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -96,6 +97,8 @@ public interface TaskFacade {
     TaskPagingResult<TaskAndAttributeRO> queryTaskAndTaskAttribute(TaskAndAttributeRequest request);
 
     TaskResult<List<Long>> getUserTaskIdList(Long taskId);
+
+    TaskResult<List<TaskRO>> selectRecentRunningTaskList(Byte saasEnv, Date startTime, Date endTime);
 
 
 }
