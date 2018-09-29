@@ -95,4 +95,7 @@ public interface TaskFacade {
 
     TaskPagingResult<TaskAndAttributeRO> queryTaskAndTaskAttribute(TaskAndAttributeRequest request);
 
+    TaskResult<List<Long>> getUserTaskIdList(Long taskId);
+
+
 }

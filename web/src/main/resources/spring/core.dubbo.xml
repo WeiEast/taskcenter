@@ -58,6 +58,14 @@
                    interface="com.treefinance.saas.taskcenter.facade.service.MoxieTimeoutFacade" version="1.0.0"
                    validation="true"/>
 
+    <dubbo:service ref="taskDeviceFacade"
+                   interface="com.treefinance.saas.taskcenter.facade.service.TaskDeviceFacade" version="1.0.0"
+                   validation="true"/>
+
+    <dubbo:service ref="taskSupportFacade"
+                   interface="com.treefinance.saas.taskcenter.facade.service.TaskSupportFacade" version="1.0.0"
+                   validation="true"/>
+
 </beans>
 
 

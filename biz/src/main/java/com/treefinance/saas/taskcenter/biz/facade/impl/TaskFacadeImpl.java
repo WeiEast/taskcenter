@@ -375,4 +375,11 @@ public class TaskFacadeImpl implements TaskFacade {
         return TaskPagingResult.wrapSuccessfulResult(taskList, total.intValue());
 
     }
+
+    @Override
+    public TaskResult<List<Long>> getUserTaskIdList(Long taskId) {
+        List<Long> taskIdList = taskService.getUserTaskIdList(taskId);
+        return TaskResult.wrapSuccessfulResult(taskIdList);
+    }
+
 }

@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
 import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
 import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.saas.assistant.httpinvoker.utils.CollectionUtils;
 import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
 import com.treefinance.saas.taskcenter.biz.utils.CommonUtils;
@@ -30,7 +31,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ValidationException;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author haojiahong
@@ -290,6 +293,21 @@ public class TaskService {
         task.setAccountNo(_accountNo);
         task.setWebSite(webSite);
         updateUnfinishedTask(task);
+    }
+
+    public List<Long> getUserTaskIdList(Long taskId) {
+        Task task = taskMapper.selectByPrimaryKey(taskId);
+        TaskCriteria taskCriteria = new TaskCriteria();
+        taskCriteria.createCriteria()
+                .andUniqueIdEqualTo(task.getUniqueId())
+                .andAppIdEqualTo(task.getAppId())
+                .andBizTypeEqualTo(task.getBizType());
+        List<Long> list = Lists.newArrayList();
+        List<Task> tasks = taskMapper.selectByExample(taskCriteria);
+        if (CollectionUtils.isNotEmpty(tasks)) {
+            list = tasks.stream().map(Task::getId).collect(Collectors.toList());
+        }
+        return list;
     }
 
 
