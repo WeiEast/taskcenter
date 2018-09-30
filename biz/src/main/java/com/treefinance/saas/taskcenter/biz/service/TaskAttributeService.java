@@ -85,7 +85,7 @@ public class TaskAttributeService {
         List<TaskAttribute> attributeList = taskAttributeMapper.selectByExample(criteria);
         TaskAttribute taskAttribute = CollectionUtils.isEmpty(attributeList) ? null : attributeList.get(0);
         if (taskAttribute == null) {
-            return taskAttribute;
+            return null;
         }
         if (decrypt && StringUtils.isNotEmpty(taskAttribute.getValue())) {
             taskAttribute.setValue(securityCryptoService.decrypt(taskAttribute.getValue(), EncryptionIntensityEnum.NORMAL));

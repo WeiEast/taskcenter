@@ -99,6 +99,9 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
     @Override
     public TaskResult<TaskAttributeRO> findByName(Long taskId, String name, boolean decrypt) {
         TaskAttribute taskAttribute = taskAttributeService.findByName(taskId, name, decrypt);
+        if (taskAttribute == null) {
+            return TaskResult.wrapSuccessfulResult(null);
+        }
         TaskAttributeRO attributeRO = DataConverterUtils.convert(taskAttribute, TaskAttributeRO.class);
         return TaskResult.wrapSuccessfulResult(attributeRO);
     }
