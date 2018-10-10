@@ -14,6 +14,7 @@ import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskAndAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskCreateRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskUpdateRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskAndAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
@@ -131,7 +132,7 @@ public class TaskFacadeImpl implements TaskFacade {
     }
 
     @Override
-    public TaskResult<Integer> updateUnfinishedTask(TaskCreateRequest taskRequest) {
+    public TaskResult<Integer> updateUnfinishedTask(TaskUpdateRequest taskRequest) {
         Task task = DataConverterUtils.convert(taskRequest, Task.class);
         int id = taskService.updateUnfinishedTask(task);
         return TaskResult.wrapSuccessfulResult(id);

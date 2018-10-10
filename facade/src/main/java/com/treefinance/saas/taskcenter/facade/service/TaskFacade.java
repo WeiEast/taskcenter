@@ -3,6 +3,7 @@ package com.treefinance.saas.taskcenter.facade.service;
 import com.treefinance.saas.taskcenter.facade.request.TaskAndAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskCreateRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskUpdateRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskAndAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
@@ -43,7 +44,7 @@ public interface TaskFacade {
      */
     TaskResult<Void> updateTask(Long taskId, String accountNo, String webSite);
 
-    TaskResult<Integer> updateUnfinishedTask(TaskCreateRequest taskRequest);
+    TaskResult<Integer> updateUnfinishedTask(TaskUpdateRequest taskRequest);
 
     TaskResult<String> failTaskWithStep(Long taskId);
 
