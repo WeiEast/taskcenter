@@ -364,8 +364,8 @@ public class TaskFacadeImpl implements TaskFacade {
         map.put("endTime", request.getEndTime());
 
 
-        map.put("start", request.getOffset());
-        map.put("limit", request.getPageSize());
+        map.put("start", request.getStart());
+        map.put("limit", request.getLimit());
         map.put("orderStr", "createTime desc");
 
         Long total = taskAndTaskAttributeMapper.countByExample(map);
