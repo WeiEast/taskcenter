@@ -7,7 +7,6 @@ import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEn
 import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.assistant.httpinvoker.utils.CollectionUtils;
-import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
 import com.treefinance.saas.taskcenter.biz.utils.CommonUtils;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
@@ -72,7 +71,7 @@ public class TaskService {
             task.setWebSite(taskCreateRequest.getWebsite());
         }
         task.setId(id);
-        task.setSaasEnv(Byte.valueOf(Constants.SAAS_ENV_VALUE));
+        task.setSaasEnv(taskCreateRequest.getSaasEnv());
         taskMapper.insertSelective(task);
         if (StringUtils.isNotBlank(taskCreateRequest.getExtra())) {
             JSONObject jsonObject = JSON.parseObject(taskCreateRequest.getExtra());
