@@ -109,13 +109,14 @@ public class TaskBuryPointLogService {
             map = objectMapper.readValue(extra, Map.class);
         } catch (IOException e) {
             logger.error("运营商正在维护,记录用户信息,extra={}解析出错", extra, e);
-            e.printStackTrace();
         }
         if (MapUtils.isEmpty(map)) {
             return;
         }
-        String mobile = map.get("mobile") == null ? "" : String.valueOf(map.get("mobile"));
-        String operatorName = map.get("operatorName") == null ? "" : String.valueOf(map.get("operatorName"));
+        Object mobileObj = map.get("mobile");
+        String mobile = mobileObj == null ? "" : String.valueOf(mobileObj);
+        Object operatorNameObj = map.get("operatorName");
+        String operatorName = operatorNameObj == null ? "" : String.valueOf(operatorNameObj);
         if (StringUtils.isBlank(mobile)) {
             logger.error("运营商正在维护,记录用户信息,extra={}中未传入mobile信息", extra);
             return;

@@ -120,8 +120,7 @@ public class TaskService {
         if (task == null) {
             return null;
         }
-        TaskDTO result = DataConverterUtils.convert(task, TaskDTO.class);
-        return result;
+        return DataConverterUtils.convert(task, TaskDTO.class);
     }
 
 
@@ -140,12 +139,9 @@ public class TaskService {
             return false;
         }
         Byte status = existTask.getStatus();
-        if (ETaskStatus.CANCEL.getStatus().equals(status)
-                || ETaskStatus.FAIL.getStatus().equals(status)
-                || ETaskStatus.SUCCESS.getStatus().equals(status)) {
-            return true;
-        }
-        return false;
+        return ETaskStatus.CANCEL.getStatus().equals(status)
+            || ETaskStatus.FAIL.getStatus().equals(status)
+            || ETaskStatus.SUCCESS.getStatus().equals(status);
     }
 
 

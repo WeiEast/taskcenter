@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
 import com.treefinance.saas.merchant.facade.request.common.BaseRequest;
 import com.treefinance.saas.merchant.facade.request.grapserver.GetAppBizTypeRequest;
 import com.treefinance.saas.merchant.facade.result.console.AppBizTypeResult;
@@ -18,6 +17,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -72,15 +72,6 @@ public class AppBizTypeService implements InitializingBean {
             logger.error("getAppBizType error :  bizType=" + bizType, e);
         }
         return null;
-    }
-
-    /**
-     * 获取所有类型
-     *
-     * @return
-     */
-    public List<AppBizType> getAllAppBizType() {
-        return Lists.newArrayList(cache.asMap().values());
     }
 
     @Override

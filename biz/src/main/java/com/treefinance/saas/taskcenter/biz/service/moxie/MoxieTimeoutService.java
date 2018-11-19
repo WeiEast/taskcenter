@@ -45,8 +45,6 @@ public class MoxieTimeoutService {
 
     private static String LOGIN_TIME_PREFIX = "saas-grap-server-moxie-login-time:";
 
-    private static int LOGIN_TIME_TIMEOUT = 90;//登录超时时间90s
-
     @Autowired
     private TaskMapper taskMapper;
     @Autowired
@@ -68,28 +66,6 @@ public class MoxieTimeoutService {
             .maximumSize(20000)
             .build(CacheLoader.from(taskid -> taskMapper.selectByPrimaryKey(taskid)));
 
-
-    /**
-     * 登录是否超时,即等待魔蝎登录状态接口回调是否超时
-     *
-     * @param taskId
-     * @return
-     */
-    public boolean isLoginTaskTimeout(Long taskId) {
-        Date date = this.getLoginTime(taskId);
-        if (date == null) {
-            logger.info("公积金登录超时,taskId={}未查询到登录时间,需检查魔蝎登录状态回调接口是否异常", taskId);
-            return true;
-        }
-        Date timeoutDate = DateUtils.addSeconds(date, LOGIN_TIME_TIMEOUT);
-        Date nowDate = GrapDateUtils.nowDateTime();
-        if (nowDate.after(timeoutDate)) {
-            logger.info("公积金登录超时,taskId={}登录时间超过{}s,登录时间为value={},需检查魔蝎登录状态回调接口是否异常",
-                    taskId, LOGIN_TIME_TIMEOUT, GrapDateUtils.getDateStrByDate(date));
-            return true;
-        }
-        return false;
-    }
 
     /**
      * 记录魔蝎任务创建时间,即开始登录时间.
@@ -144,33 +120,6 @@ public class MoxieTimeoutService {
         this.logLoginTime(taskId);
     }
 
-
-    public boolean isTaskTimeout(Long taskId) {
-        try {
-            Task task = cache.get(taskId);
-            AppBizType bizType = appBizTypeService.getAppBizType(task.getBizType());
-            if (bizType == null || bizType.getTimeout() == null) {
-                return false;
-            }
-            // 超时时间秒
-            int timeout = bizType.getTimeout();
-            Date loginTime = this.getLoginTime(taskId);
-            if (loginTime == null) {
-                return false;
-            }
-            // 未超时: 登录时间+超时时间 < 当前时间
-            Date timeoutDate = DateUtils.addSeconds(loginTime, timeout);
-            Date current = GrapDateUtils.nowDateTime();
-            logger.info("moxie isTaskTimeout: taskId={}，loginTime={},current={},timeout={}",
-                    taskId, GrapDateUtils.getDateStrByDate(loginTime), GrapDateUtils.getDateStrByDate(current), timeout);
-            if (timeoutDate.after(current)) {
-                return false;
-            }
-        } catch (ExecutionException e) {
-            logger.error("taskId={} is not exists...", taskId, e);
-        }
-        return true;
-    }
 
     public void handleTaskTimeout(Long taskId) {
         Task task = null;

@@ -309,9 +309,6 @@ public abstract class CallbackableDirectiveProcessor {
                         dataMap.put("taskStatus", EGrapStatus.RESULT_EMPTY.getCode());
                         flushData(dataMap, appLicense, directiveDTO);
                     }
-//                    if (logger.isDebugEnabled()) {
-//                        logger.debug("download data success : {}  >>>>>>> {}", JSON.toJSONString(dataMap), data);
-//                    }
                 } catch (HttpException e) {
                     logger.error("download data failed : data={}", JSON.toJSONString(dataMap));
                     dataMap.put("taskErrorMsg", "下载数据失败");
@@ -344,7 +341,6 @@ public abstract class CallbackableDirectiveProcessor {
      */
     protected String encryptParams(Map<String, Object> dataMap, AppLicenseDTO appLicense, AppCallbackConfigDTO config) throws Exception {
         String params = null;
-        String appId = config.getAppId();
 
         // 2.获取商户密钥、回调密钥
         CallBackLicenseDTO callbackLicense = appLicenseService.getCallbackLicense(config.getId());
@@ -382,8 +378,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @throws CallbackEncryptException
      */
     private String encryptByAES(Map<String, Object> dataMap, String aesDataKey) throws CallbackEncryptException {
-        String params = callbackSecureHandler.encryptByAES(dataMap, aesDataKey);
-        return params;
+        return callbackSecureHandler.encryptByAES(dataMap, aesDataKey);
     }
 
     /**
@@ -445,8 +440,6 @@ public abstract class CallbackableDirectiveProcessor {
             throw e;
         } finally {
             long consumeTime = System.currentTimeMillis() - startTime;
-            // 保存的参数（含dataUrl）
-//            String paramsForLog = this.encryptParams(originalDataMap, appLicense, config);
             // 记录回调日志
             taskCallbackLogService.insert(config, directiveDTO.getTaskId(), (byte) 1, JSON.toJSONString(originalDataMap),
                     result, consumeTime, httpCode);

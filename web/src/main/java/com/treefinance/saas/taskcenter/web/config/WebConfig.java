@@ -35,8 +35,6 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         decimalSimpleModule.addSerializer(BigDecimal.class, ToStringSerializer.instance);
         objectMapper.registerModule(decimalSimpleModule);
 
-//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        objectMapper.setDateFormat(dateFormat);
         jackson2HttpMessageConverter.setObjectMapper(objectMapper);
         converters.add(jackson2HttpMessageConverter);
     }

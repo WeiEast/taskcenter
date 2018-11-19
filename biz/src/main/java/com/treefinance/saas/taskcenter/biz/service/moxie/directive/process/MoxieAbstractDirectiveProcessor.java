@@ -89,6 +89,7 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
     }
 
 
+    @Override
     protected <T> T ifNull(T value, T defaultValue) {
         return value == null ? defaultValue : value;
     }

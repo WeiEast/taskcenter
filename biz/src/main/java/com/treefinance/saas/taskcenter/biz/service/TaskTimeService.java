@@ -7,7 +7,6 @@ import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
 import com.treefinance.saas.taskcenter.biz.service.thread.TaskActiveTimeoutThread;
 import com.treefinance.saas.taskcenter.biz.service.thread.TaskCrawlerTimeoutThread;
-import com.treefinance.saas.taskcenter.biz.utils.CommonUtils;
 import com.treefinance.saas.taskcenter.biz.utils.GrapDateUtils;
 import com.treefinance.saas.taskcenter.biz.utils.RedisKeyUtils;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
@@ -16,7 +15,6 @@ import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,25 +101,6 @@ public class TaskTimeService {
     }
 
     /**
-     * 获取任务抓取超时时间
-     *
-     * @param taskId
-     * @return
-     */
-    public Date getCrawlerTimeoutTime(Long taskId) {
-        Date loginTime = this.getLoginTime(taskId);
-        if (loginTime == null) {
-            return null;
-        }
-        Integer timeoutSeconds = this.getCrawlerTimeoutSeconds(taskId);
-        if (timeoutSeconds == null) {
-            return null;
-        }
-        Date timeoutDate = DateUtils.addSeconds(loginTime, timeoutSeconds);
-        return timeoutDate;
-    }
-
-    /**
      * 获取设置的任务抓取超时时长
      *
      * @param taskId
@@ -145,25 +124,6 @@ public class TaskTimeService {
         return bizType.getTimeout();
     }
 
-    /**
-     * 任务抓取是否超时
-     *
-     * @param taskId
-     * @return
-     */
-    public boolean isTaskTimeout(Long taskId) {
-        Date current = new Date();
-        Date timeoutTime = this.getCrawlerTimeoutTime(taskId);
-        if (timeoutTime == null) {
-            return false;
-        }
-        if (timeoutTime.after(current)) {
-            return false;
-        }
-        logger.info("任务抓取超时:taskId={},currentTime={},timeoutTime={}",
-                taskId, CommonUtils.date2Str(current), CommonUtils.date2Str(timeoutTime));
-        return true;
-    }
 
     /**
      * 处理任务抓取超时

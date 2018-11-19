@@ -470,20 +470,11 @@ public class HttpClientUtils {
             String json = JsonUtils.toJsonString(params);
             StringEntity s = new StringEntity(json, ContentType.APPLICATION_JSON);
             s.setContentEncoding("UTF-8");
-//            s.setContentType("application/json");
-//            post.setEntity(s);
-//            List<NameValuePair> pairList = new ArrayList<>(params.size());
-//            for (Map.Entry<String, Object> entry : params.entrySet()) {
-//                NameValuePair pair = new BasicNameValuePair(entry.getKey(), entry
-//                        .getValue().toString());
-//                pairList.add(pair);
-//            }
             List<Header> headerList = Lists.newArrayList();
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 Header header = new BasicHeader(entry.getKey(), entry.getValue());
                 headerList.add(header);
             }
-//            httpPost.setEntity(new UrlEncodedFormEntity(pairList, Charset.forName("UTF-8")));
             httpPost.setEntity(s);
             Header[] headerArray = new Header[headerList.size()];
             headerArray = headerList.toArray(headerArray);
@@ -566,23 +557,6 @@ public class HttpClientUtils {
                 logger.error(" closeResponse failed", e);
             }
         }
-    }
-
-    public static void main(String[] args) {
-
-//        Map<String, String> headers = Maps.newHashMap();
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("apiKey").append(" ").append("11112222");
-//        headers.put("Authorization", sb.toString());
-//        Map<String, Object> params = Maps.newHashMap();
-//        params.put("input", "好号浩耗");
-//        System.out.println(HttpClientUtils.doPostWithHeaders("http://127.0.0.1:8443/saas/console/data/moxie/test", params, headers));
-//        System.out.println(HttpClientUtils.doGet("http://n171t90503.iask.in:19859/p2pactivemq/gfd/callback/result"));
-//        System.out.println(HttpClientUtils.doGet("http://www.baidu.com"));
-//        Map<String, Object> map = Maps.newHashMap();
-//        map.put("kw", "%E7%AC%AC%E4%B8%89%E6%96%B9%E7%9A%84");
-//        map.put("fr", "wwwt");
-//        System.out.println(HttpClientUtils.doGet("https://tieba.baidu.com/f?", map));
     }
 
 }

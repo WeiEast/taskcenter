@@ -93,16 +93,8 @@ public class JsonUtils {
     }
 
     public static <K, V> Map<K, V> toMap(String jsonStr, Class<K> kClass, Class<V> vClass) {
-        Map<K, V> map = JSON.parseObject(jsonStr, new TypeReference<Map<K, V>>() {
+        return JSON.parseObject(jsonStr, new TypeReference<Map<K, V>>() {
         });
-        return map;
     }
 
-    public static void main(String[] args) {
-//        String str = "{\"test1\":{\"name\":\"zhangsan\"},\"test2\":{\"name\":\"lisi\"},\"test3\":{\"name\":\"wanger\"}}";
-        String str = "{\"test1\":\"zhangsan\",\"test2\":\"lisi\",\"test3\":\"wanger\"}";
-        Map<String, String> map = JsonUtils.toMap(str, String.class, String.class);
-        System.out.println(map);
-
-    }
 }

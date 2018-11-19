@@ -16,20 +16,11 @@
 
 package com.treefinance.saas.taskcenter.biz.cache.redis;
 
-import org.springframework.data.redis.core.RedisTemplate;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public interface RedisDao {
-
-    /**
-     * 获取redisTemplate
-     *
-     * @return
-     */
-    RedisTemplate<String, String> getRedisTemplate();
 
     /**
      * 删除key

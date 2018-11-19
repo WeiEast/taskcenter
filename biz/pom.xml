@@ -74,19 +74,6 @@
             <artifactId>rocketmq-client</artifactId>
         </dependency>
 
-
-        <dependency>
-            <groupId>com.datatrees.rawdatacentral</groupId>
-            <artifactId>rawdatacentral-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.datatrees.basisdata</groupId>
-            <artifactId>basisdata-operator-common-facade</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.treefinance.commonservice</groupId>
-            <artifactId>common-service-facade</artifactId>
-        </dependency>
         <dependency>
             <groupId>com.treefinance.commonservice</groupId>
             <artifactId>guid-service-facade</artifactId>

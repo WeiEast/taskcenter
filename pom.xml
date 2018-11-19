@@ -26,28 +26,10 @@
     <properties>
         <merchant-center.version>1.1.0-SNAPSHOT</merchant-center.version>
         <grap-server-facade.version>1.1.0-SNAPSHOT</grap-server-facade.version>
-        <rawdatacentral-api.version>3.1.2-SNAPSHOT</rawdatacentral-api.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-
-            <dependency>
-                <groupId>com.datatrees.rawdatacentral</groupId>
-                <artifactId>rawdatacentral-api</artifactId>
-                <version>${rawdatacentral-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.treefinance.proxy</groupId>
-                <artifactId>proxy-api</artifactId>
-                <version>2.2.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.datatrees.basisdata</groupId>
-                <artifactId>basisdata-operator-common-facade</artifactId>
-                <version>2.2.8-SNAPSHOT</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.treefinance.saas.processor.thirdparty</groupId>
                 <artifactId>processor-thirdparty-facade</artifactId>
