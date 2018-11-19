@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.datatrees.spider.share.api.SpiderTaskApi;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.biz.service.common.AsycExcutor;
+import com.treefinance.saas.taskcenter.biz.service.common.AsyncExecutor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
@@ -23,7 +23,7 @@ public class CancelDirectiveProcessor extends AbstractDirectiveProcessor {
     @Autowired
     protected MonitorService monitorService;
     @Autowired
-    private AsycExcutor asycExcutor;
+    private AsyncExecutor asyncExecutor;
     @Autowired
     private SpiderTaskApi spiderTaskApi;
 
@@ -39,7 +39,7 @@ public class CancelDirectiveProcessor extends AbstractDirectiveProcessor {
         monitorService.sendMonitorMessage(taskDTO.getId());
 
         // 异步触发触发回调
-        asycExcutor.runAsyc(directiveDTO, _directiveDTO -> callback(_directiveDTO));
+        asyncExecutor.runAsync(directiveDTO, _directiveDTO -> callback(_directiveDTO));
     }
 
 

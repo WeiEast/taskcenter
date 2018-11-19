@@ -5,8 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
 import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
-import com.treefinance.commonservice.uid.UidGenerator;
-import com.treefinance.saas.assistant.httpinvoker.utils.CollectionUtils;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
 import com.treefinance.saas.taskcenter.biz.utils.CommonUtils;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
@@ -22,6 +21,7 @@ import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskCreateRequest;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +52,8 @@ public class TaskService {
     private TaskLogService taskLogService;
     @Autowired
     private DirectiveService directiveService;
+    @Autowired
+    private UidService uidService;
 
 
     /**
@@ -61,7 +63,7 @@ public class TaskService {
      */
     @Transactional
     public Long createTask(TaskCreateRequest taskCreateRequest) {
-        long id = UidGenerator.getId();
+        long id = uidService.getId();
         Task task = new Task();
         task.setUniqueId(taskCreateRequest.getUniqueId());
         task.setAppId(taskCreateRequest.getAppId());

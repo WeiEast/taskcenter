@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.biz.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.assistant.model.TaskCallbackFailureReasonMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
@@ -44,6 +44,8 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
     private TaskAttributeService taskAttributeService;
     @Autowired
     private MonitorMessageProducer monitorMessageProducer;
+    @Autowired
+    private UidService uidService;
 
     private static final Logger logger = LoggerFactory.getLogger(CallbackFailureReasonMessageListener.class);
 
@@ -56,7 +58,7 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
         CallbackFailureReasonDTO callbackFailureReasonDTO = JSON.parseObject(message, CallbackFailureReasonDTO.class);
         //更新回调日志表
         TaskCallbackLog taskCallbackLog = new TaskCallbackLog();
-        taskCallbackLog.setId(UidGenerator.getId());
+        taskCallbackLog.setId(uidService.getId());
         taskCallbackLog.setTaskId(callbackFailureReasonDTO.getTaskId());
         taskCallbackLog.setConfigId(callbackFailureReasonDTO.getCallbackConfigId());
         taskCallbackLog.setFailureReason(callbackFailureReasonDTO.getFailureReason());

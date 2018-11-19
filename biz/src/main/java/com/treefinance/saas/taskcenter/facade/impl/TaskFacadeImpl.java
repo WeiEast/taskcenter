@@ -1,4 +1,4 @@
-package com.treefinance.saas.taskcenter.biz.facade.impl;
+package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -38,7 +39,7 @@ import java.util.Objects;
  * @author:guoguoyun
  * @date:Created in 2018/9/18上午10:24
  */
-@Service("taskFacade")
+@Component("taskFacade")
 public class TaskFacadeImpl implements TaskFacade {
     private static final Logger logger = LoggerFactory.getLogger(TaskFacade.class);
 

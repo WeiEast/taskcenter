@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
 import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLogCriteria;
 import com.treefinance.saas.taskcenter.dao.entity.TaskOperatorMaintainUserLog;
@@ -43,6 +43,8 @@ public class TaskBuryPointLogService {
     private TaskOperatorMaintainUserLogMapper taskOperatorMaintainUserLogMapper;
     @Autowired
     private ISecurityCryptoService iSecurityCryptoService;
+    @Autowired
+    private UidService uidService;
 
 
     @Scheduled(fixedRate = 1000)
@@ -73,7 +75,7 @@ public class TaskBuryPointLogService {
 
     public void pushTaskBuryPointLog(Long taskId, String appId, String code) {
         TaskBuryPointLog log = new TaskBuryPointLog();
-        log.setId(UidGenerator.getId());
+        log.setId(uidService.getId());
         log.setTaskId(taskId);
         log.setAppId(appId);
         log.setCode(code);
@@ -119,7 +121,7 @@ public class TaskBuryPointLogService {
             return;
         }
         TaskOperatorMaintainUserLog log = new TaskOperatorMaintainUserLog();
-        log.setId(UidGenerator.getId());
+        log.setId(uidService.getId());
         log.setTaskId(taskId);
         log.setAppId(appId);
         log.setMobile(iSecurityCryptoService.encrypt(mobile, EncryptionIntensityEnum.NORMAL));

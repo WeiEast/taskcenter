@@ -1,4 +1,4 @@
-package com.treefinance.saas.taskcenter.biz.interceptor;
+package com.treefinance.saas.taskcenter.facade.aop;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -23,13 +23,11 @@ public class DubboServiceInterceptor {
 
     private static final Logger log = LoggerFactory.getLogger(DubboServiceInterceptor.class);
 
+    @Pointcut("execution(* com.treefinance.saas.taskcenter.facade.impl..*.*(..))")
+    public void facadePointcut() {}
 
-    @Pointcut("execution(* com.treefinance.saas.taskcenter.biz.facade..*.*(..))")
-    public void interceptorCut() {
-    }
-
-    @Around("interceptorCut()")
-    public Object invoke(ProceedingJoinPoint jpj) throws Throwable {
+    @Around("facadePointcut()")
+    public Object triggerAround(ProceedingJoinPoint jpj) throws Throwable {
         long startTime = System.currentTimeMillis();
         Object result = null;
         try {

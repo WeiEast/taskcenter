@@ -6,12 +6,13 @@ package com.treefinance.saas.taskcenter.biz.service;
 import com.google.common.collect.Maps;
 import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
 import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeUpdateMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -34,6 +35,8 @@ public class TaskAttributeService {
     private TaskAttributeUpdateMapper taskAttributeUpdateMapper;
     @Autowired
     private ISecurityCryptoService securityCryptoService;
+    @Autowired
+    private UidService uidService;
 
     /**
      * 保存属性
@@ -44,7 +47,7 @@ public class TaskAttributeService {
      * @return
      */
     public Long insert(Long taskId, String name, String value) {
-        long id = UidGenerator.getId();
+        long id = uidService.getId();
         TaskAttribute target = new TaskAttribute();
         target.setId(id);
         target.setTaskId(taskId);
@@ -62,7 +65,7 @@ public class TaskAttributeService {
      * @param value
      */
     public void insertOrUpdateSelective(Long taskId, String name, String value) {
-        long id = UidGenerator.getId();
+        long id = uidService.getId();
         TaskAttribute target = new TaskAttribute();
         target.setId(id);
         target.setTaskId(taskId);

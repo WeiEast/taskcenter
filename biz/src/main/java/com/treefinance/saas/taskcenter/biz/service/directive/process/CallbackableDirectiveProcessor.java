@@ -5,18 +5,34 @@ import com.alibaba.rocketmq.shade.io.netty.util.internal.StringUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.knife.result.SimpleResult;
-import com.treefinance.saas.taskcenter.biz.service.*;
+import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
+import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
+import com.treefinance.saas.taskcenter.biz.service.CallbackResultService;
+import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
+import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
+import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.common.CallbackSecureHandler;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
-import com.treefinance.saas.taskcenter.common.enums.*;
+import com.treefinance.saas.taskcenter.common.enums.EBizType;
+import com.treefinance.saas.taskcenter.common.enums.EDataType;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
+import com.treefinance.saas.taskcenter.common.enums.EGrapStatus;
+import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.exception.CallbackEncryptException;
 import com.treefinance.saas.taskcenter.common.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.common.model.Constants;
-import com.treefinance.saas.taskcenter.common.model.dto.*;
+import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.common.model.dto.AppLicenseDTO;
+import com.treefinance.saas.taskcenter.common.model.dto.CallBackLicenseDTO;
+import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.common.utils.HttpClientUtils;
 import com.treefinance.saas.taskcenter.common.utils.RemoteDataDownloadUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
+import com.treefinance.toolkit.util.http.exception.HttpException;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -24,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Date;
@@ -297,7 +312,7 @@ public abstract class CallbackableDirectiveProcessor {
 //                    if (logger.isDebugEnabled()) {
 //                        logger.debug("download data success : {}  >>>>>>> {}", JSON.toJSONString(dataMap), data);
 //                    }
-                } catch (IOException e) {
+                } catch (HttpException e) {
                     logger.error("download data failed : data={}", JSON.toJSONString(dataMap));
                     dataMap.put("taskErrorMsg", "下载数据失败");
                     dataMap.put("taskStatus", EGrapStatus.FAIL.getCode());

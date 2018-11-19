@@ -1,9 +1,9 @@
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.datatrees.common.util.GsonUtils;
 import com.google.gson.reflect.TypeToken;
 import com.treefinance.saas.taskcenter.biz.mq.MessageProducer;
 import com.treefinance.saas.taskcenter.biz.mq.model.LoginMessage;
+import com.treefinance.toolkit.util.json.GsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

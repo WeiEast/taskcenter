@@ -4,44 +4,33 @@
     <parent>
         <groupId>com.treefinance.saas</groupId>
         <artifactId>taskcenter</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>taskcenter-biz</artifactId>
 
     <dependencies>
-    	
         <dependency>
             <groupId>com.treefinance.saas</groupId>
             <artifactId>taskcenter-facade</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.treefinance.saas</groupId>
+            <artifactId>taskcenter-dao</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.treefinance.saas</groupId>
+            <artifactId>taskcenter-common</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>com.datatrees.spider</groupId>
             <artifactId>spider-share-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.github.stuxuhai</groupId>
-            <artifactId>jpinyin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.treefinance.saas</groupId>
-            <artifactId>taskcenter-dao</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.treefinance.saas</groupId>
-            <artifactId>taskcenter-common</artifactId>
-        </dependency>
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.datatrees.common</groupId>
-            <artifactId>common-util</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -55,45 +44,24 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-aspects</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjtools</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis-spring</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.101tec</groupId>
             <artifactId>zkclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
         </dependency>
 
         <dependency>
@@ -106,10 +74,6 @@
             <artifactId>rocketmq-client</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>com.datatrees.rawdatacentral</groupId>
@@ -125,18 +89,12 @@
         </dependency>
         <dependency>
             <groupId>com.treefinance.commonservice</groupId>
-            <artifactId>uid-worker</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.datatrees.toolkits</groupId>
-            <artifactId>toolkits</artifactId>
+            <artifactId>guid-service-facade</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.treefinance.basicservice.security</groupId>
             <artifactId>security-crypto-facade</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <dependency>
@@ -147,28 +105,22 @@
             <groupId>com.treefinance.saas</groupId>
             <artifactId>assistant-httpinvoker</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.treefinance.saas</groupId>
+            <artifactId>assistant-monitor</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.treefinance.saas.processor.thirdparty</groupId>
             <artifactId>processor-thirdparty-facade</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.16.16</version>
+            <groupId>com.treefinance.saas</groupId>
+            <artifactId>merchant-center-facade</artifactId>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>4.3.13.RELEASE</version>
+            <groupId>com.treefinance.saas</groupId>
+            <artifactId>grap-server-facade</artifactId>
         </dependency>
 
         <dependency>
@@ -185,12 +137,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>

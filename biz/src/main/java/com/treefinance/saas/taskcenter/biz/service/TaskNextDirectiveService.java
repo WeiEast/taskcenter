@@ -1,13 +1,14 @@
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.common.utils.JsonUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirectiveCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskNextDirectiveMapper;
-import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,6 +30,8 @@ public class TaskNextDirectiveService {
     private TaskNextDirectiveMapper taskNextDirectiveMapper;
     @Autowired
     private RedisDao redisDao;
+    @Autowired
+    private UidService uidService;
 
     private final static int DAY_SECOND = 24 * 60 * 60;
 
@@ -45,7 +48,7 @@ public class TaskNextDirectiveService {
      */
     public Long insert(Long taskId, String directive, String remark) {
         TaskNextDirective taskNextDirective = new TaskNextDirective();
-        long id = UidGenerator.getId();
+        long id = uidService.getId();
         taskNextDirective.setId(id);
         taskNextDirective.setTaskId(taskId);
         taskNextDirective.setDirective(directive);
@@ -133,8 +136,8 @@ public class TaskNextDirectiveService {
         if (StringUtils.isNotEmpty(directive)) {
             String value = this.getNextDirective(taskId);
             if (StringUtils.isNotEmpty(value)) {
-                JSONObject jasonObject = JSONObject.fromObject(value);
-                String existDirective = jasonObject.get("directive").toString();
+                JSONObject jasonObject = JSON.parseObject(value);
+                String existDirective = jasonObject.getString("directive");
                 if (directive.equals(existDirective)) {
                     this.deleteNextDirective(taskId);
                     logger.info("taskId={},下一指令信息={}已删除", taskId, existDirective);

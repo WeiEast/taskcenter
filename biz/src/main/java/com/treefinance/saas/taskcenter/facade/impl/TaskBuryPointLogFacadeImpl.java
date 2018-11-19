@@ -1,4 +1,4 @@
-package com.treefinance.saas.taskcenter.biz.facade.impl;
+package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ import java.util.List;
  * @author:guoguoyun
  * @date:Created in 2018/9/18上午10:27
  */
-@Service("taskBuryPointLogFacade")
+@Component("taskBuryPointLogFacade")
 public class TaskBuryPointLogFacadeImpl implements TaskBuryPointLogFacade {
     private static final Logger logger = LoggerFactory.getLogger(TaskBuryPointLogFacade.class);
 

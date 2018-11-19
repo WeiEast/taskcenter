@@ -8,6 +8,7 @@
     <dubbo:reference interface="com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService"
                      id="securityCryptoService"/>
 
+    <dubbo:reference interface="com.treefinance.commonservice.uid.UidService" id="uidService"/>
 </beans>
 
 

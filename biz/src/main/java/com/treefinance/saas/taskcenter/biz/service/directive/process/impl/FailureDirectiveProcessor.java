@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.biz.service.common.AsycExcutor;
+import com.treefinance.saas.taskcenter.biz.service.common.AsyncExecutor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
@@ -25,7 +25,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
     @Autowired
     protected MonitorService monitorService;
     @Autowired
-    private AsycExcutor asycExcutor;
+    private AsyncExecutor asyncExecutor;
 
     @Override
     protected void doProcess(EDirective directive, DirectiveDTO directiveDTO) {
@@ -49,7 +49,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
 
         handleTaskFailMsg(directiveDTO, taskDTO);
         // 7.异步触发触发回调
-        asycExcutor.runAsyc(directiveDTO, _directiveDTO -> {
+        asyncExecutor.runAsync(directiveDTO, _directiveDTO -> {
             callback(dataMap, appLicense, _directiveDTO);
         });
     }

@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.biz.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLogCriteria;
@@ -28,11 +28,13 @@ public class TaskCallbackLogService {
     protected TaskCallbackLogMapper taskCallbackLogMapper;
     @Autowired
     private TaskCallbackLogUpdateMapper taskCallbackLogUpdateMapper;
+    @Autowired
+    private UidService uidService;
 
     public void insert(AppCallbackConfigDTO config, Long taskId, Byte type, String params, String result,
                        long consumeTime, int httpCode) {
         TaskCallbackLog taskCallbackLog = new TaskCallbackLog();
-        taskCallbackLog.setId(UidGenerator.getId());
+        taskCallbackLog.setId(uidService.getId());
         taskCallbackLog.setTaskId(taskId);
         if (config != null) {
             taskCallbackLog.setConfigId(Long.valueOf(config.getId()));

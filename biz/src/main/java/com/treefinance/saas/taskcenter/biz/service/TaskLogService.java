@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.biz.service;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.TaskRealTimeStatMonitorService;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
@@ -43,6 +43,8 @@ public class TaskLogService {
     private TaskAliveService taskAliveService;
     @Autowired
     private TaskRealTimeStatMonitorService taskRealTimeStatMonitorService;
+    @Autowired
+    private UidService uidService;
 
 
     /**
@@ -54,7 +56,7 @@ public class TaskLogService {
      * @return
      */
     public Long insert(Long taskId, String msg, Date processTime, String errorMsg) {
-        long id = UidGenerator.getId();
+        long id = uidService.getId();
         Date dataTime = new Date();
         TaskLog taskLog = new TaskLog();
         taskLog.setId(id);

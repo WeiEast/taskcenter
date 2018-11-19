@@ -18,14 +18,12 @@ package com.treefinance.saas.taskcenter.biz.service;
 
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.merchant.center.facade.request.grapserver.GetAppLicenseRequest;
-import com.treefinance.saas.merchant.center.facade.request.grapserver.GetCallbackLicenseRequest;
-import com.treefinance.saas.merchant.center.facade.request.grapserver.SetAppLicenseRequest;
-import com.treefinance.saas.merchant.center.facade.result.console.MerchantResult;
-import com.treefinance.saas.merchant.center.facade.result.grapsever.AppLicenseResult;
-import com.treefinance.saas.merchant.center.facade.result.grapsever.CallbackLicenseResult;
-import com.treefinance.saas.merchant.center.facade.result.grapsever.SetAppLicenseResult;
-import com.treefinance.saas.merchant.center.facade.service.AppLicenseFacade;
+import com.treefinance.saas.merchant.facade.request.grapserver.GetAppLicenseRequest;
+import com.treefinance.saas.merchant.facade.request.grapserver.GetCallbackLicenseRequest;
+import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
+import com.treefinance.saas.merchant.facade.result.grapsever.AppLicenseResult;
+import com.treefinance.saas.merchant.facade.result.grapsever.CallbackLicenseResult;
+import com.treefinance.saas.merchant.facade.service.AppLicenseFacade;
 import com.treefinance.saas.taskcenter.common.model.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.common.model.dto.CallBackLicenseDTO;
 import org.slf4j.Logger;
@@ -71,36 +69,6 @@ public class AppLicenseService {
         logger.info(JSON.toJSONString(appLicense));
 
         return appLicense;
-    }
-
-    public String setAppLicense(AppLicenseDTO appLicense) {
-
-        SetAppLicenseRequest request = new SetAppLicenseRequest();
-
-        BeanUtils.copyProperties(appLicense, request);
-
-        MerchantResult<SetAppLicenseResult> result;
-        try {
-            result = appLicenseFacade.setAppLicense(request);
-        } catch (RpcException e) {
-            logger.error("获取appLicense失败，错误信息：{}", e.getMessage());
-            return null;
-        }
-        if (!result.isSuccess()) {
-            return null;
-        }
-
-        SetAppLicenseResult appLicenseResult = result.getData();
-
-        return appLicenseResult.getKey();
-    }
-
-    public String getDataKey(String appId) {
-        AppLicenseDTO appLicense = this.getAppLicense(appId);
-        if (appLicense == null) {
-            return null;
-        }
-        return appLicense.getDataSecretKey();
     }
 
     /**

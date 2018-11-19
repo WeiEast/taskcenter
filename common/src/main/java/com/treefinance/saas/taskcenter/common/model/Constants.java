@@ -1,6 +1,6 @@
 package com.treefinance.saas.taskcenter.common.model;
 
-import com.datatrees.common.conf.PropertiesConfiguration;
+import com.treefinance.b2b.saas.conf.PropertiesConfiguration;
 
 public interface Constants {
 

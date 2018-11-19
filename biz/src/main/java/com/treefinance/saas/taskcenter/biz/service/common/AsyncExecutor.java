@@ -13,7 +13,7 @@ import java.util.function.Consumer;
  * Created by yh-treefinance on 2017/7/10.
  */
 @Component
-public class AsycExcutor {
+public class AsyncExecutor {
     /**
      * logger
      */
@@ -27,7 +27,7 @@ public class AsycExcutor {
      * @param <T>
      */
     @Async
-    public <T> void runAsyc(T t, Consumer<T> consumer) {
+    public <T> void runAsync(T t, Consumer<T> consumer) {
         if (logger.isDebugEnabled()) {
             logger.debug("{} is running with data={} ", Thread.currentThread().getName(), JSON.toJSONString(t));
         }

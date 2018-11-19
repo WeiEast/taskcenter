@@ -1,6 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.common.AsycExcutor;
+import com.treefinance.saas.taskcenter.biz.service.common.AsyncExecutor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.MoxieAbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
@@ -19,7 +19,7 @@ import java.util.Map;
 @Component
 public class MoxieFailureDirectiveProcessor extends MoxieAbstractDirectiveProcessor {
     @Autowired
-    private AsycExcutor asycExcutor;
+    private AsyncExecutor asyncExecutor;
     @Autowired
     private MonitorService monitorService;
 
@@ -45,7 +45,7 @@ public class MoxieFailureDirectiveProcessor extends MoxieAbstractDirectiveProces
         //回调之前预处理
         precallback(dataMap, appLicense, directiveDTO);
         //异步触发触发回调
-        asycExcutor.runAsyc(directiveDTO, _directiveDTO -> {
+        asyncExecutor.runAsync(directiveDTO, _directiveDTO -> {
             callback(dataMap, appLicense, _directiveDTO);
         });
 
