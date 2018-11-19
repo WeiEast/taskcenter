@@ -1,6 +1,6 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
-import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
+import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskDevice;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskDeviceMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskDeviceRequest;

@@ -1,4 +1,4 @@
-package com.treefinance.saas.taskcenter.common.utils;
+package com.treefinance.saas.taskcenter.common.util;
 
 import com.treefinance.toolkit.util.http.client.MoreHttp;
 import com.treefinance.toolkit.util.http.client.MoreHttpFactory;

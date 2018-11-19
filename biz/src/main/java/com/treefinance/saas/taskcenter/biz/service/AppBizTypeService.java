@@ -9,7 +9,7 @@ import com.treefinance.saas.merchant.facade.request.grapserver.GetAppBizTypeRequ
 import com.treefinance.saas.merchant.facade.result.console.AppBizTypeResult;
 import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
 import com.treefinance.saas.merchant.facade.service.AppBizTypeFacade;
-import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
+import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.common.model.dto.AppBizType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

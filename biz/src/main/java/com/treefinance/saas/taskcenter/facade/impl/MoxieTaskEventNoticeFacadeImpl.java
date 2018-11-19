@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.moxie.MoxieBusinessService;
-import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
+import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.common.model.moxie.MoxieTaskEventNoticeDTO;
 import com.treefinance.saas.taskcenter.facade.request.MoxieTaskEventNoticeRequest;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;

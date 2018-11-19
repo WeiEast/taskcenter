@@ -3,7 +3,7 @@ package com.treefinance.saas.taskcenter.biz.service.common;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.common.exception.CallbackEncryptException;
 import com.treefinance.saas.taskcenter.common.exception.CryptorException;
-import com.treefinance.saas.taskcenter.common.utils.AESSecureUtils;
+import com.treefinance.saas.taskcenter.common.util.AESSecureUtils;
 import com.treefinance.toolkit.util.Base64Codec;
 import com.treefinance.toolkit.util.crypto.RSA;
 import com.treefinance.toolkit.util.crypto.core.Decryptor;

@@ -11,7 +11,7 @@ import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.enums.moxie.EMoxieDirective;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.common.model.moxie.MoxieDirectiveDTO;
-import com.treefinance.saas.taskcenter.common.utils.JsonUtils;
+import com.treefinance.saas.taskcenter.common.util.JsonUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.treefinance.saas.taskcenter.common.utils;
+package com.treefinance.saas.taskcenter.common.util;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
@@ -58,7 +58,7 @@ public class HttpClientUtils {
     static {
 
         //采用绕过验证的方式处理https请求
-        SSLContext sslcontext = null;
+        SSLContext sslcontext;
         try {
             sslcontext = createIgnoreVerifySSL();
         } catch (Exception e) {

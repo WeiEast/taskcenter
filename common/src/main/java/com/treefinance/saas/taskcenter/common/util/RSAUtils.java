@@ -1,4 +1,20 @@
-package com.treefinance.saas.taskcenter.biz.utils;
+/*
+ * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.treefinance.saas.taskcenter.common.util;
 
 /**
  * Created by yh-treefinance on 2017/10/19.
@@ -20,16 +36,6 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class RSAUtils {
-    /**
-     * @param args
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-        String params = "EOzn179mcRJfOaYYQo7fMvR%2BvcY1%2FMRL%2FBbEMT9nwg9fExwbedLyn8XnNHmLV8nfZG5xZXvtbsLvld5UHcION041XQO17HTiAkWHkbeLmbUlO80D9Qb5W4KgAzLDElyNMYxbzjz4drR464Y0j8hwa2gqX5ZQEWvghFvNlHoqZsvQGo%2FsJ4B8VyWfwcljo5O3o4iGOFZUQ2CnPb4JvhX3Hvi045utS%2B1ND8Trs658fy707s%2FqxhMgsPp357uSm%2FQS4oKVksuHvOJQeQIrvTyBlIhLA%2BuBMHoMcbZ70810O8Bl2sZ%2FjCSzjAwMqMNT%2BiDirAP7ypIPZLfen5Os1DtsVlKHYk%2FXwSRir4lnHmFdLPNaWoAhlqplVVAopVT3ybRmQAGtOxRfAgCq2xlzUtbpuKP8%2FcWo2MA6zzbBg9i43eY0M%2Bh7PGIbJSlUFqdfeYGundEuvj5Fj1qeyf3yXO%2F1QGxaRh3v71bak6a0I4T7daAF4htK93yll0M1U5x9c3LalUw3ERi1Puw9vVkyWPljnIPEJq1sOkeOaWQEqLVbPeEH5NxFouRvynH7AH92n9fpQFaGkN84BJ0ibs3tfY9APxqvPuLOmh%2FgvHgasaWxpS1btxlZrQATOO2IQ8TVjAo2RPdbSSvtt1KzqFLMbWTHWAZuEr1e71%2FTD43jTPWKVeM%3D";
-        String key = "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBANtHr+JgvD7vAgxmPma1R1Ta23rn/eu+5GahlDicFWY7zrmRw3nAW0B1GachmbQr4Sg3F0Mw6ID7ep9mUwl/BWJEob7Idf+SIc9d8bTI5Y0Gi+Nkoi/NSAx1pW3Mu6yGSGXGAN5jA6vFYlJBJaGx2Bl4TiSxMEaxofYoYt6Qz71/AgMBAAECgYB8jDMyeY9yj36yXECFReHGKKkRHkPzavF/+baekMj20HGSpWBJ/x/VdK2laEhNNb8lgGUOHPFykWQMtankcuky4mGExLyGWfG75+MHY1wgVVENvM9Wviv+aOEn+jsLO+P9c9PzgW3HLXfF2yZLAy3sSWDD+bhB/xw/zZsyfmJMAQJBAPI/PrGcd2+31Uqt4Z26PoI+u84C4tF5RwSV756Rr7toa52+UwKFGXm0FRlv08diveMliJBhdxRCFbLySRKj+EECQQDnuqU9FBrg8Q+9xhz1jqTwybHrQq430FXUwbDwW5OMw75aiXeyyvzX/AMJJYELkq+nxmuj1Q65nGeEDdNSkEW/AkAR2nNmZ5+tziCcFmCQXU+KDdGNh0zsH0IKpno4d4g6CaIUyBgaEXElNQ5xB3rWMQLJoNSFv4klJxGuVIjqJMeBAkEAzl61m8CU83EbwLl3vuRrVhl5/veiagh6+AALUPNtYzZMBxtX433NUZiZJ4Mj+qeHEdaus/ghpgF5WuxpH6VmxwJAC3AmtJ7UTOdT3zcTGB3auvwe+AScXJgs208yuaHs84iILJzEnAVtOFWQ+atqNZc1c4pz4eKJwwM0LWYyFocVpA==";
-        String data = decrytData(params, key);
-        System.out.println(data);
-    }
 
     /**
      * 解密数据
@@ -39,7 +45,7 @@ public class RSAUtils {
      * @return
      * @throws Exception
      */
-    public static String decrytData(String params, String key) throws Exception {
+    public static String decryptData(String params, String key) throws Exception {
         // 1.decode
         params = URLDecoder.decode(params, "utf-8");
         // 2.base64

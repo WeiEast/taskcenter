@@ -1,13 +1,27 @@
-package com.treefinance.saas.taskcenter.biz.utils;
+/*
+ * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.treefinance.saas.taskcenter.common.util;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.springframework.cglib.beans.BeanCopier;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 /**
  *
@@ -20,7 +34,7 @@ public final class BeanUtils {
 
     }
 
-    private static final Map<String, BeanCopier> beanCopierMap = new ConcurrentHashMap<>();
+    private static final Map<String, BeanCopier> BEAN_COPIER_MAP = new ConcurrentHashMap<>();
 
     /**
      * 基于CGLIB的bean properties 的拷贝，性能要远优于{@code org.springframework.beans.BeanUtils.copyProperties}
@@ -30,16 +44,15 @@ public final class BeanUtils {
      */
     public static void copyProperties(Object source, Object target) {
         if (source == null || target == null) {
-            target = null;
             return;
         }
 
         String key = String.format("%s:%s", source.getClass().getName(), target.getClass().getName());
-        if (!beanCopierMap.containsKey(key)) {
+        if (!BEAN_COPIER_MAP.containsKey(key)) {
             BeanCopier beanCopier = BeanCopier.create(source.getClass(), target.getClass(), false);
-            beanCopierMap.putIfAbsent(key, beanCopier);
+            BEAN_COPIER_MAP.putIfAbsent(key, beanCopier);
         }
-        BeanCopier beanCopier = beanCopierMap.get(key);
+        BeanCopier beanCopier = BEAN_COPIER_MAP.get(key);
         beanCopier.copy(source, target, null);
     }
 
@@ -70,22 +83,4 @@ public final class BeanUtils {
         return result;
     }
 
-    public static <T> T checkNull(Supplier<T> t) {
-        try {
-            return t.get();
-        } catch (NullPointerException e) {
-
-        }
-        return null;
-    }
-
-    public static void main(String[] args) {
-        Map<String, List<String>> map = Maps.newHashMap();
-        map.put("1", Lists.newArrayList("1"));
-        String str = checkNull(() -> map.get("2").get(0));
-        String str1 = checkNull(() -> map.get("1").get(1));
-        System.out.println(str);
-        if (str == null)
-            return;
-    }
 }

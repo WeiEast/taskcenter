@@ -1,4 +1,4 @@
-package com.treefinance.saas.taskcenter.common.utils;
+package com.treefinance.saas.taskcenter.common.util;
 
 import com.treefinance.toolkit.util.crypto.AES;
 import com.treefinance.toolkit.util.crypto.core.EnhancedEncryptor;

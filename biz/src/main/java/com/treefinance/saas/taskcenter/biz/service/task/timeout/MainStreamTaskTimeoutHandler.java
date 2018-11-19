@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
-import com.treefinance.saas.taskcenter.biz.utils.CommonUtils;
+import com.treefinance.saas.taskcenter.common.util.CommonUtils;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;

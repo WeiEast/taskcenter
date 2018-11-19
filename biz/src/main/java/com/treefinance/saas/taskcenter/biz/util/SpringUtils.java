@@ -1,4 +1,4 @@
-package com.treefinance.saas.taskcenter.biz.utils;
+package com.treefinance.saas.taskcenter.biz.util;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

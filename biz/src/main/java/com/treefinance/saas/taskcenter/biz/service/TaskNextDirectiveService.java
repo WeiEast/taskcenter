@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.common.utils.JsonUtils;
+import com.treefinance.saas.taskcenter.common.util.JsonUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirectiveCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskNextDirectiveMapper;

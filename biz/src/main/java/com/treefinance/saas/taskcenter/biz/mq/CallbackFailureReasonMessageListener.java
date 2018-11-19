@@ -7,7 +7,7 @@ import com.treefinance.saas.assistant.model.TaskCallbackFailureReasonMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
+import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.model.dto.CallbackFailureReasonDTO;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;

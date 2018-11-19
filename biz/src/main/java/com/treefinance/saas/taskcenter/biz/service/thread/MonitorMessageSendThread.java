@@ -6,7 +6,7 @@ import com.treefinance.saas.taskcenter.biz.service.monitor.EcommerceMonitorServi
 import com.treefinance.saas.taskcenter.biz.service.monitor.EmailMonitorService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorPluginService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.OperatorMonitorService;
-import com.treefinance.saas.taskcenter.biz.utils.SpringUtils;
+import com.treefinance.saas.taskcenter.biz.util.SpringUtils;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
