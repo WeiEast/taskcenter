@@ -1,21 +1,20 @@
 package com.treefinance.saas.taskcenter.facade.impl;
-
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.dao.domain.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskAttributeFacade;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -28,45 +27,29 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskAttributeFacade.class);
 
-
-    @Autowired
-    private TaskAttributeMapper taskAttributeMapper;
     @Autowired
     private TaskAttributeService taskAttributeService;
 
     @Override
-    public TaskResult<List<TaskAttributeRO>> queryTaskAttribute(TaskAttributeRequest taskAttributeRequest) {
-        logger.info("查询任务变量信息，传入的请求参数为{}", taskAttributeRequest.toString());
-        TaskAttributeCriteria criteria = new TaskAttributeCriteria();
-        TaskAttributeCriteria.Criteria innerCriteria = criteria.createCriteria();
-        if (taskAttributeRequest.getId() != null) {
-            innerCriteria.andIdEqualTo(taskAttributeRequest.getId());
-        }
-        if (StringUtils.isNotEmpty(taskAttributeRequest.getName())) {
-            innerCriteria.andNameEqualTo(taskAttributeRequest.getName());
-        }
-        if (taskAttributeRequest.getTaskIds() != null) {
-            innerCriteria.andTaskIdIn(taskAttributeRequest.getTaskIds());
-        }
-        if (StringUtils.isNotEmpty(taskAttributeRequest.getValue())) {
-            innerCriteria.andValueEqualTo(taskAttributeRequest.getValue());
-        }
+    public TaskResult<List<TaskAttributeRO>> queryTaskAttribute(TaskAttributeRequest request) {
+        logger.info("查询任务变量信息，传入的请求参数为{}", request.toString());
+        TaskAttributeQuery query = new TaskAttributeQuery();
+        query.setId(request.getId());
+        query.setTaskIds(request.getTaskIds());
+        query.setName(request.getName());
+        query.setValue(request.getValue());
 
+        List<TaskAttribute> list = taskAttributeService.queryTaskAttributes(query);
 
-        List<TaskAttribute> list = taskAttributeMapper.selectByExample(criteria);
         List<TaskAttributeRO> attributeROList = DataConverterUtils.convert(list, TaskAttributeRO.class);
 
         return TaskResult.wrapSuccessfulResult(attributeROList);
-
     }
 
 
     @Override
-    public TaskResult<List<TaskAttributeRO>> queryTaskAttributeByTaskId(TaskAttributeRequest taskAttributeRequest) {
-
-        TaskAttributeCriteria taskAttributeCriteria = new TaskAttributeCriteria();
-        taskAttributeCriteria.createCriteria().andTaskIdIn(taskAttributeRequest.getTaskIds()).andNameEqualTo(taskAttributeRequest.getName());
-        List<TaskAttribute> list = taskAttributeMapper.selectByExample(taskAttributeCriteria);
+    public TaskResult<List<TaskAttributeRO>> queryTaskAttributeByTaskId(TaskAttributeRequest request) {
+        List<TaskAttribute> list = taskAttributeService.listTaskAttributesByNameAndInTaskIds(request.getName(), request.getTaskIds());
 
         List<TaskAttributeRO> taskAttributeROS = DataConverterUtils.convert(list, TaskAttributeRO.class);
 
@@ -75,24 +58,37 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
 
     @Override
     public TaskResult<Map<String, TaskAttributeRO>> findByNames(Long taskId, boolean decrypt, String... names) {
-        Map<String, TaskAttribute> map = taskAttributeService.findByNames(taskId, decrypt, names);
-        Map<String, TaskAttributeRO> result = Maps.newHashMap();
-        for (Map.Entry<String, TaskAttribute> taskAttributeEntry : map.entrySet()) {
-            TaskAttributeRO taskAttributeRO = DataConverterUtils.convert(taskAttributeEntry.getValue(), TaskAttributeRO.class);
-            result.put(taskAttributeEntry.getKey(), taskAttributeRO);
+        Map<String, TaskAttributeRO> result;
+
+        List<TaskAttribute> attributes = taskAttributeService.listTaskAttributesByTaskIdAndInNames(taskId, names, decrypt);
+        if (CollectionUtils.isNotEmpty(attributes)) {
+            result = Maps.newHashMap();
+            for (TaskAttribute attribute : attributes) {
+                TaskAttributeRO taskAttributeRO = DataConverterUtils.convert(attribute, TaskAttributeRO.class);
+                result.put(attribute.getName(), taskAttributeRO);
+            }
+        } else {
+            result = Collections.emptyMap();
         }
+
         return TaskResult.wrapSuccessfulResult(result);
     }
 
     @Override
     public TaskResult<Long> insert(Long taskId, String name, String value) {
-        Long id = taskAttributeService.insert(taskId, name, value);
+        Long id = taskAttributeService.insert(taskId, name, value, false);
+        return TaskResult.wrapSuccessfulResult(id);
+    }
+
+    @Override
+    public TaskResult<Long> insert(Long taskId, String name, String value, boolean sensitive) {
+        Long id = taskAttributeService.insert(taskId, name, value, sensitive);
         return TaskResult.wrapSuccessfulResult(id);
     }
 
     @Override
     public TaskResult<Void> insertOrUpdateSelective(Long taskId, String name, String value) {
-        taskAttributeService.insertOrUpdateSelective(taskId, name, value);
+        taskAttributeService.insertOrUpdate(taskId, name, value);
         return TaskResult.wrapSuccessfulResult(null);
     }
 

@@ -17,41 +17,14 @@
 package com.treefinance.saas.taskcenter.biz.service;
 
 import com.treefinance.saas.taskcenter.dao.entity.TaskSupport;
-import com.treefinance.saas.taskcenter.dao.entity.TaskSupportCriteria;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskSupportMapper;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
  * @author Jerry
- * @since 10:56 02/05/2017
+ * @date 2018/11/21 01:07
  */
-@Service
-public class TaskSupportService {
+public interface TaskSupportService {
 
-    @Autowired
-    private TaskSupportMapper taskSupportMapper;
-
-
-    public List<TaskSupport> getSupportedList(String supportType, Integer id, String name) {
-        TaskSupportCriteria supportCriteria = new TaskSupportCriteria();
-        supportCriteria.setOrderByClause("Sort ASC");
-        TaskSupportCriteria.Criteria innerCriteria = supportCriteria.createCriteria();
-        innerCriteria.andEnableEqualTo(Boolean.TRUE).andCategoryEqualTo(supportType);
-        if (StringUtils.isBlank(name)) {
-            innerCriteria.andIsShowEqualTo(Boolean.TRUE);
-        }
-        if (id != null) {
-            innerCriteria.andIdEqualTo(id);
-        }
-        if (StringUtils.isNotBlank(name)) {
-            innerCriteria.andTypeEqualTo(name);
-        }
-
-        return taskSupportMapper.selectByExample(supportCriteria);
-    }
-
+    List<TaskSupport> getSupportedList(String supportType, Integer id, String name);
 }

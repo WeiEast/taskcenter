@@ -34,10 +34,10 @@ public class TaskActiveTimeoutThread implements Runnable {
     private Date startTime;
 
     public TaskActiveTimeoutThread(Long taskId, Date startTime) {
-        this.taskAliveService = (TaskAliveService) SpringUtils.getBean("taskAliveService");
-        this.taskService = (TaskService) SpringUtils.getBean("taskService");
-        this.diamondConfig = (DiamondConfig) SpringUtils.getBean("diamondConfig");
-        this.redisDao = (RedisDao) SpringUtils.getBean("redisDao");
+        this.taskAliveService = SpringUtils.getBean(TaskAliveService.class);
+        this.taskService = SpringUtils.getBean(TaskService.class);
+        this.diamondConfig = SpringUtils.getBean(DiamondConfig.class);
+        this.redisDao = SpringUtils.getBean(RedisDao.class);
         this.taskId = taskId;
         this.startTime = startTime;
     }

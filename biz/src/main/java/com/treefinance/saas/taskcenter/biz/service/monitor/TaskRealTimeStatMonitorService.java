@@ -6,9 +6,9 @@ import com.treefinance.saas.assistant.model.TaskRealTimeMonitorMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.common.util.DateUtils;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatLink;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.common.util.DateUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class TaskRealTimeStatMonitorService {
     private static List<String> logLinkList = ETaskStatLink.getStepCodeListBySource("task_log");
 
     public void handleTaskLog(Long taskId, String code, Date dataTime) {
-        logger.info("任务实时监控日志环节处理,taskId={},code={},dataTime={}", taskId, code, DateUtils.getDateStrByDate(dataTime));
+        logger.info("任务实时监控日志环节处理,taskId={},code={},dataTime={}", taskId, code, DateUtils.format(dataTime));
         if (!logLinkList.contains(code)) {
             return;
         }

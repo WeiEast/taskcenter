@@ -1,98 +1,43 @@
+/*
+ * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.dao.domain.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
-import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLogCriteria;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskCallbackLogMapper;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskCallbackLogUpdateMapper;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import java.util.List;
 
 /**
- * Created by haojiahong on 2017/8/17.
+ * @author Jerry
+ * @date 2018/11/21 17:37
  */
-@Service
-public class TaskCallbackLogService {
+public interface TaskCallbackLogService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TaskLogService.class);
-    @Autowired
-    protected TaskCallbackLogMapper taskCallbackLogMapper;
-    @Autowired
-    private TaskCallbackLogUpdateMapper taskCallbackLogUpdateMapper;
-    @Autowired
-    private UidService uidService;
+    List<TaskCallbackLog> listTaskCallbackLogsInTaskIds(@Nonnull List<Long> taskIds);
 
-    public void insert(AppCallbackConfigDTO config, Long taskId, Byte type, String params, String result,
-                       long consumeTime, int httpCode) {
-        TaskCallbackLog taskCallbackLog = new TaskCallbackLog();
-        taskCallbackLog.setId(uidService.getId());
-        taskCallbackLog.setTaskId(taskId);
-        if (config != null) {
-            taskCallbackLog.setConfigId(Long.valueOf(config.getId()));
-            taskCallbackLog.setUrl(config.getUrl());
-        } else {
-            taskCallbackLog.setConfigId(0L);
-        }
-        taskCallbackLog.setType(type);
-        if (StringUtils.isNotBlank(params)) {
-            taskCallbackLog.setRequestParam(params.length() > 1000 ? params.substring(0, 1000) : params);
-        } else {
-            taskCallbackLog.setRequestParam("");
-        }
-        if (StringUtils.isNotBlank(result)) {
-            taskCallbackLog.setResponseData(result.length() > 1000 ? result.substring(0, 1000) : result);
-            if (httpCode == 200) {
-                taskCallbackLog.setCallbackMsg("回调成功");
-            } else {
-                try {
-                    JSONObject jsonObject = JSON.parseObject(result);
-                    String errorMsg = jsonObject.getString("errorMsg");
-                    String errorCode = jsonObject.getString("code");
-                    taskCallbackLog.setCallbackCode(errorCode);
-                    if (StringUtils.isNotBlank(errorMsg)) {
-                        taskCallbackLog.setCallbackMsg(errorMsg);
-                    } else {
-                        taskCallbackLog.setCallbackMsg("回调错误信息为空");
-                    }
-                } catch (Exception e) {
-                    logger.error("记录回调错误信息:解析返回回调结果json有误,taskId={},回调返回结果result={}", taskId, result);
-                    taskCallbackLog.setCallbackMsg(result.length() > 1000 ? result.substring(0, 100) + "..." : result);
-                }
+    long countTaskCallbackLogsInTaskIds(@Nonnull List<Long> taskIds);
 
-            }
-        } else {
-            taskCallbackLog.setResponseData("");
-        }
-        taskCallbackLog.setHttpCode(httpCode);
-        taskCallbackLog.setConsumeTime((int) consumeTime);
+    List<TaskCallbackLog> listTaskCallbackLogsInTaskIdsWithRowBounds(@Nonnull List<Long> taskIds, int offset,
+        int limit);
 
-        taskCallbackLogUpdateMapper.insertOrUpdateSelective(taskCallbackLog);
-    }
+    List<TaskCallbackLog> queryTaskCallbackLogsByTaskIdAndInConfigIds(@Nonnull Long taskId, @Nullable List<Long> configIds);
 
-    /**
-     * 查询任务ID
-     *
-     * @param taskId
-     * @param configIds
-     * @return
-     */
-    public List<TaskCallbackLog> getTaskCallbackLogs(Long taskId, List<Long> configIds) {
-        TaskCallbackLogCriteria taskCallbackLogCriteria = new TaskCallbackLogCriteria();
-        TaskCallbackLogCriteria.Criteria criteria = taskCallbackLogCriteria.createCriteria();
-        if (CollectionUtils.isNotEmpty(configIds)) {
-            criteria.andConfigIdIn(configIds);
+    List<TaskCallbackLog> queryTaskCallbackLogs(@Nonnull TaskCallbackLogQuery query);
 
-        }
-        criteria.andTaskIdEqualTo(taskId);
-        return taskCallbackLogMapper.selectByExample(taskCallbackLogCriteria);
-    }
+    void insert(AppCallbackConfigDTO config, Long taskId, Byte type, String params, String result, long consumeTime, int httpCode);
 }

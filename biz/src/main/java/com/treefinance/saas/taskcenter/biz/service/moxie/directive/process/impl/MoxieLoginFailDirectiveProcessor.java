@@ -35,7 +35,7 @@ public class MoxieLoginFailDirectiveProcessor extends MoxieAbstractDirectiveProc
         map.put("moxieTaskId", moxieTaskId);
 
         // 1.记录登录日志
-        taskLogService.insert(taskDTO.getId(), ETaskStep.LOGIN_FAIL.getText(), new Date(), JsonUtils.toJsonString(map));
+        taskLogService.insertTaskLog(taskDTO.getId(), ETaskStep.LOGIN_FAIL.getText(), new Date(), JsonUtils.toJsonString(map));
 
 
     }

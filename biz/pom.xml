@@ -75,11 +75,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.treefinance.commonservice</groupId>
-            <artifactId>guid-service-facade</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.treefinance.basicservice.security</groupId>
             <artifactId>security-crypto-facade</artifactId>
         </dependency>
@@ -121,6 +116,23 @@
         <dependency>
             <groupId>com.dangdang</groupId>
             <artifactId>elastic-job-common-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
         </dependency>
     </dependencies>
 

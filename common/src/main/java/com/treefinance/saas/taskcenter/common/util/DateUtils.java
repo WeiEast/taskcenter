@@ -16,16 +16,20 @@
 
 package com.treefinance.saas.taskcenter.common.util;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import org.joda.time.LocalDateTime;
+import org.joda.time.format.DateTimeFormat;
+
 import java.util.Date;
 
 /**
- * Created by haojiahong on 2017/9/22.
+ * @author haojiahong
+ * @date 2017/9/22.
  */
-public class DateUtils {
+public final class DateUtils {
+
+    private static final String DEFAULT_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    private DateUtils() {}
 
     /**
      * 将时间字符串转换为Date
@@ -33,11 +37,10 @@ public class DateUtils {
      * @param dateStr
      * @return
      */
-    public static Date getDateByStr(String dateStr) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime localDateTime = LocalDateTime.parse(dateStr, dateTimeFormatter);
-        Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-        return date;
+    public static Date parse(String dateStr) {
+        LocalDateTime dateTime = DateTimeFormat.forPattern(DEFAULT_DATETIME_PATTERN).parseLocalDateTime(dateStr);
+
+        return dateTime.toDate();
     }
 
     /**
@@ -46,14 +49,22 @@ public class DateUtils {
      * @param date
      * @return
      */
-    public static String getDateStrByDate(Date date) {
-        Instant instant = date.toInstant();
-        ZoneId zone = ZoneId.systemDefault();
-        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, zone);
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return localDateTime.format(dateTimeFormatter);
+    public static String format(Date date) {
+        LocalDateTime dateTime = new LocalDateTime(date);
 
+        return dateTime.toString(DEFAULT_DATETIME_PATTERN);
     }
 
+    /**
+     * 获取当前时间的字符串(格式为yyyy-MM-dd HH:mm:ss)
+     *
+     * @return
+     */
+    public static String nowDateTimeStr() {
+        return LocalDateTime.now().toString(DEFAULT_DATETIME_PATTERN);
+    }
 
+    public static Date now() {
+        return new Date();
+    }
 }

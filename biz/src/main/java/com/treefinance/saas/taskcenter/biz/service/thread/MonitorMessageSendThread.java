@@ -31,11 +31,11 @@ public class MonitorMessageSendThread implements Runnable {
     private EmailMonitorService emailMonitorService;
 
     public MonitorMessageSendThread(Long taskId) {
-        this.taskService = (TaskService) SpringUtils.getBean("taskService");
-        this.monitorPluginService = (MonitorPluginService) SpringUtils.getBean("monitorPluginService");
-        this.operatorMonitorService = (OperatorMonitorService) SpringUtils.getBean("operatorMonitorService");
-        this.ecommerceMonitorService = (EcommerceMonitorService) SpringUtils.getBean("ecommerceMonitorService");
-        this.emailMonitorService = (EmailMonitorService) SpringUtils.getBean("emailMonitorService");
+        this.taskService = SpringUtils.getBean(TaskService.class);
+        this.monitorPluginService = SpringUtils.getBean(MonitorPluginService.class);
+        this.operatorMonitorService = SpringUtils.getBean(OperatorMonitorService.class);
+        this.ecommerceMonitorService = SpringUtils.getBean(EcommerceMonitorService.class);
+        this.emailMonitorService = SpringUtils.getBean(EmailMonitorService.class);
         this.taskId = taskId;
     }
 

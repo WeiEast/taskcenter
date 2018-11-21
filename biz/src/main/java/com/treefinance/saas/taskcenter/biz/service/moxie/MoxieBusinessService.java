@@ -6,7 +6,9 @@ import com.treefinance.saas.knife.result.SaasResult;
 import com.treefinance.saas.processor.thirdparty.facade.fund.FundService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.TaskService;
+import com.treefinance.saas.taskcenter.biz.service.impl.TaskAttributeServiceImpl;
+import com.treefinance.saas.taskcenter.biz.service.impl.TaskLogServiceImpl;
+import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
@@ -43,7 +45,7 @@ public class MoxieBusinessService {
     @Autowired
     private FundService fundService;
     @Autowired
-    private TaskService taskService;
+    private TaskServiceImpl taskService;
     @Autowired
     private FundMoxieFacade fundMoxieFacade;
 
@@ -72,7 +74,7 @@ public class MoxieBusinessService {
             return;
         }
         //1.记录采集失败日志
-        taskLogService.insert(taskId, ETaskStep.CRAWL_FAIL.getText(), new Date(), message);
+        taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_FAIL.getText(), new Date(), message);
         //2.发送任务失败指令
         MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
         directiveDTO.setDirective(EMoxieDirective.TASK_FAIL.getText());
@@ -186,23 +188,23 @@ public class MoxieBusinessService {
             SaasResult<String> result = fundMoxieFacade.queryFundsEx(moxieTaskId);
             moxieResult = result.getData();
             //记录抓取日志
-            taskLogService.insert(taskId, ETaskStep.CRAWL_SUCCESS.getText(), new Date(), null);
-            taskLogService.insert(taskId, ETaskStep.CRAWL_COMPLETE.getText(), new Date(), null);
+            taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_SUCCESS.getText(), new Date(), null);
+            taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_COMPLETE.getText(), new Date(), null);
             logger.info("handle moxie business moxieResult,taskId={},moxieTaskId={},result={}", taskId, moxieTaskId, moxieResult);
         } catch (Exception e) {
             logger.error("handle moxie business error:bill fail", e);
-            taskLogService.insert(taskId, ETaskStep.CRAWL_FAIL.getText(), new Date(), e.getMessage());
+            taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_FAIL.getText(), new Date(), e.getMessage());
             throw new Exception("获取公积金信息失败");
         }
         try {
             String processResult = fundService.fund(taskId, moxieResult);
             //记录数据保存日志
-            taskLogService.insert(taskId, ETaskStep.DATA_SAVE_SUCCESS.getText(), new Date(), null);
+            taskLogService.insertTaskLog(taskId, ETaskStep.DATA_SAVE_SUCCESS.getText(), new Date(), null);
             logger.info("handle moxie business processResult,taskId={},moxieTaskId={},result={}", taskId, moxieTaskId, processResult);
             return processResult;
         } catch (Exception e) {
             logger.error("handle moxie business error:process fail", e);
-            taskLogService.insert(taskId, ETaskStep.DATA_SAVE_FAIL.getText(), new Date(), e.getMessage());
+            taskLogService.insertTaskLog(taskId, ETaskStep.DATA_SAVE_FAIL.getText(), new Date(), e.getMessage());
             throw new Exception("洗数失败");
         }
     }

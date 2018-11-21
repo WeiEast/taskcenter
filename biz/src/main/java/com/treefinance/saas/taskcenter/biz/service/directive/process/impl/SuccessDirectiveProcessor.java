@@ -29,7 +29,7 @@ public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
         Long taskId = taskDTO.getId();
         String appId = taskDTO.getAppId();
         // 1.记录任务日志
-        taskLogService.insert(taskId, "爬数任务执行完成", new Date(), null);
+        taskLogService.insertTaskLog(taskId, "爬数任务执行完成", new Date(), null);
 
         // 2.获取商户密钥
         AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
@@ -43,7 +43,7 @@ public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
         if (result == 0) {
             //任务成功但是不需要回调(前端回调),仍需记录回调日志,获取dataUrl提供数据下载以及回调统计
             taskCallbackLogService.insert(null, taskId, (byte) 2, JSON.toJSONString(dataMap), null, 0, 0);
-            taskLogService.insert(taskId, "回调通知成功", new Date(), null);
+            taskLogService.insertTaskLog(taskId, "回调通知成功", new Date(), null);
 
             taskDTO.setStatus(ETaskStatus.SUCCESS.getStatus());
         } else if (result == 1) {
@@ -56,7 +56,7 @@ public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
             directiveDTO.setDirective(EDirective.CALLBACK_FAIL.getText());
         }
         // 6.更新任务状态
-        String stepCode = taskService.updateTaskStatusWithStep(taskId, taskDTO.getStatus());
+        String stepCode = taskService.updateStatusIfDone(taskId, taskDTO.getStatus());
         taskDTO.setStepCode(stepCode);
         // 7.发送监控消息
         monitorService.sendMonitorMessage(taskDTO.getId());

@@ -35,7 +35,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
         // 1.任务置为失败
         taskDTO.setStatus(ETaskStatus.FAIL.getStatus());
         // 2.更新任务状态
-        String errorCode = taskService.failTaskWithStep(taskDTO.getId());
+        String errorCode = taskService.updateStatusIfDone(taskDTO.getId(), ETaskStatus.FAIL.getStatus());
         taskDTO.setStepCode(errorCode);
         // 3.发送监控消息
         monitorService.sendMonitorMessage(taskDTO.getId());

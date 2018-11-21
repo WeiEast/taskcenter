@@ -32,7 +32,7 @@ public class CancelDirectiveProcessor extends AbstractDirectiveProcessor {
         TaskDTO taskDTO = directiveDTO.getTask();
         taskDTO.setStatus(ETaskStatus.CANCEL.getStatus());
         // 取消任务
-        taskService.cancelTaskWithStep(taskDTO.getId());
+        taskService.updateStatusIfDone(taskDTO.getId(), ETaskStatus.CANCEL.getStatus());
         Map<String, String> extMap = Maps.newHashMap();
         extMap.put("reason", "user");
         spiderTaskApi.cancel(taskDTO.getId(), extMap);

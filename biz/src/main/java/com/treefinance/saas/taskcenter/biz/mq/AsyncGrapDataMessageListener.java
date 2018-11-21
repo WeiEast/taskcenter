@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.biz.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
-import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.treefinance.saas.taskcenter.biz.service.impl.TaskLogServiceImpl;
 import com.treefinance.saas.taskcenter.common.enums.EDataType;
 import com.treefinance.saas.taskcenter.common.model.dto.AsycGrapDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class AsyncGrapDataMessageListener extends AbstractRocketMqMessageListene
     @Autowired
     protected GrapDataCallbackService grapDataCallbackService;
     @Autowired
-    private TaskLogService taskLogService;
+    private TaskLogServiceImpl taskLogService;
 
 
     @Override
@@ -38,7 +38,7 @@ public class AsyncGrapDataMessageListener extends AbstractRocketMqMessageListene
             logger.info("异步数据回调处理,接收到的消息数据有误,message={}", json);
             return;
         }
-        taskLogService.insert(taskId, dataType.getName() + "爬取完成", new Date(), "");
+        taskLogService.insertTaskLog(taskId, dataType.getName() + "爬取完成", new Date(), "");
         // 处理数据
         grapDataCallbackService.handleAyscData(asycGrapDTO);
     }

@@ -30,7 +30,6 @@ import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.common.util.HttpClientUtils;
 import com.treefinance.saas.taskcenter.common.util.RemoteDataDownloadUtils;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.toolkit.util.http.exception.HttpException;
 import org.apache.commons.collections.MapUtils;
@@ -176,7 +175,7 @@ public abstract class CallbackableDirectiveProcessor {
                 callbackSuccess = Boolean.FALSE;
                 String errorMsg = "回调通知失败：" + e.getMessage();
                 logger.error(errorMsg + "，config=" + JSON.toJSONString(config), e);
-                taskLogService.insert(taskId, "回调通知失败", new Date(), StringUtils.substring(errorMsg, 0, 1000));
+                taskLogService.insertTaskLog(taskId, "回调通知失败", new Date(), StringUtils.substring(errorMsg, 0, 1000));
             }
             callbackFlags.add(callbackSuccess);
 
@@ -187,7 +186,7 @@ public abstract class CallbackableDirectiveProcessor {
         }
         dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
         dataMap.put("taskErrorMsg", "");
-        taskLogService.insert(taskId, "回调通知成功", new Date(), null);
+        taskLogService.insertTaskLog(taskId, "回调通知成功", new Date(), null);
         return 1;
 
     }
@@ -265,7 +264,7 @@ public abstract class CallbackableDirectiveProcessor {
         } else if (ETaskStatus.FAIL.getStatus().equals(task.getStatus())) {
             dataMap.put("taskStatus", EGrapStatus.FAIL.getCode());
             // 任务失败消息
-            TaskLog log = taskLogService.queryLastestErrorLog(task.getId());
+            TaskLog log = taskLogService.queryLastErrorLog(task.getId());
             if (log != null) {
                 dataMap.put("taskErrorMsg", log.getMsg());
             } else {
@@ -324,9 +323,11 @@ public abstract class CallbackableDirectiveProcessor {
             String groupCodeAttribute = ETaskAttribute.OPERATOR_GROUP_CODE.getAttribute();
             String groupNameAttribute = ETaskAttribute.OPERATOR_GROUP_NAME.getAttribute();
 
-            Map<String, TaskAttribute> attributeMap = taskAttributeService.findByNames(taskId, false, groupCodeAttribute, groupNameAttribute);
-            dataMap.put(groupCodeAttribute, attributeMap.get(groupCodeAttribute) == null ? "" : attributeMap.get(groupCodeAttribute).getValue());
-            dataMap.put(groupNameAttribute, attributeMap.get(groupNameAttribute) == null ? "" : attributeMap.get(groupNameAttribute).getValue());
+            Map<String, String> attributeMap = taskAttributeService.getAttributeMapByTaskIdAndInNames(taskId, new String[]{groupCodeAttribute, groupNameAttribute}, false);
+
+            dataMap.put(groupCodeAttribute, StringUtils.defaultString(attributeMap.get(groupCodeAttribute)));
+
+            dataMap.put(groupNameAttribute, StringUtils.defaultString(attributeMap.get(groupNameAttribute)));
         }
     }
 

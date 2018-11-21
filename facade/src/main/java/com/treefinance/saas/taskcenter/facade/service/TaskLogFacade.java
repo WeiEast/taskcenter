@@ -20,7 +20,10 @@ public interface TaskLogFacade {
      */
     TaskResult<List<TaskLogRO>> queryTaskLogById(TaskLogRequest taskLogRequest);
 
+    @Deprecated
     TaskResult<TaskLogRO> queryLastestErrorLog(Long taskId);
+
+    TaskResult<TaskLogRO> queryLastErrorLog(Long taskId);
 
     TaskResult<Long> insert(Long taskId, String msg, Date processTime, String errorMsg);
 

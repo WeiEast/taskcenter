@@ -21,10 +21,6 @@ public class SpringUtils implements ApplicationContextAware {
         SpringUtils.applicationContext = applicationContext;
     }
 
-    public static ApplicationContext getApplicationContext() {
-        return applicationContext;
-    }
-
     /**
      * 根据Bean名称获取实例
      *
@@ -34,5 +30,9 @@ public class SpringUtils implements ApplicationContextAware {
      */
     public static Object getBean(String name) throws BeansException {
         return applicationContext.getBean(name);
+    }
+
+    public static <T> T getBean(Class<T> clazz) throws BeansException {
+        return applicationContext.getBean(clazz);
     }
 }

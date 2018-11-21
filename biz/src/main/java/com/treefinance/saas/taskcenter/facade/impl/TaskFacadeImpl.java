@@ -1,16 +1,14 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.exception.BusinessCheckFailException;
+import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.dao.domain.TaskCompositeQuery;
+import com.treefinance.saas.taskcenter.dao.domain.TaskDO;
+import com.treefinance.saas.taskcenter.dao.domain.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
-import com.treefinance.saas.taskcenter.dao.entity.TaskCriteria;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskAndTaskAttributeMapper;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskAndAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskCreateRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
@@ -29,9 +27,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -43,85 +41,72 @@ public class TaskFacadeImpl implements TaskFacade {
     private static final Logger logger = LoggerFactory.getLogger(TaskFacade.class);
 
     @Autowired
-    private TaskMapper taskMapper;
-    @Autowired
-    private TaskAndTaskAttributeMapper taskAndTaskAttributeMapper;
-    @Autowired
     private TaskService taskService;
 
 
     @Override
-    public TaskResult<List<TaskRO>> queryTask(TaskRequest taskRequest) {
+    public TaskResult<List<TaskRO>> queryTask(TaskRequest request) {
+        logger.info("条件查询任务传入的参数为{}", request.toString());
+        TaskQuery query = new TaskQuery();
+        query.setId(request.getId());
 
-        logger.info("条件查询任务传入的参数为{}", taskRequest.toString());
-        TaskCriteria criteria = new TaskCriteria();
+        List<String> appIds = request.getAppIdList();
+        if (CollectionUtils.isEmpty(appIds) && request.getAppId() != null) {
+            appIds = Collections.singletonList(request.getAppId());
+        }
+        query.setAppIds(appIds);
 
-        if (StringUtils.isNotEmpty(taskRequest.getOrderByClause())) {
-            criteria.setOrderByClause(taskRequest.getOrderByClause());
+        List<Byte> bizTypes = request.getBizTypeList();
+        if (CollectionUtils.isEmpty(bizTypes) && request.getBizType() != null) {
+            bizTypes = Collections.singletonList(request.getBizType());
+        }
+        query.setBizTypes(bizTypes);
 
-        }
-        TaskCriteria.Criteria innerCriteria = criteria.createCriteria();
+        query.setWebsite(request.getWebSite());
+        query.setUniqueId(request.getUniqueId());
+        query.setAccountNo(request.getAccountNo());
+        query.setStepCode(request.getStepCode());
+        query.setStatus(request.getStatus());
 
-        if (taskRequest.getId() != null) {
-            innerCriteria.andIdEqualTo(taskRequest.getId());
-        }
-        if (taskRequest.getBizType() != null) {
-            innerCriteria.andBizTypeEqualTo(taskRequest.getBizType());
-        }
-        if (taskRequest.getBizTypeList() != null) {
-            innerCriteria.andBizTypeIn(taskRequest.getBizTypeList());
-        }
-        if (taskRequest.getSaasEnv() != null) {
-            innerCriteria.andSaasEnvEqualTo(taskRequest.getSaasEnv());
-        }
-        if (taskRequest.getStatus() != null) {
-            innerCriteria.andStatusEqualTo(taskRequest.getStatus());
-        }
-        if (taskRequest.getCreateTimeStart() != null) {
-            innerCriteria.andCreateTimeGreaterThanOrEqualTo(taskRequest.getCreateTimeStart());
-            innerCriteria.andCreateTimeLessThanOrEqualTo(taskRequest.getCreateTimeEnd());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getAccountNo())) {
-            innerCriteria.andAccountNoEqualTo(taskRequest.getAccountNo());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getAppId())) {
-            innerCriteria.andAppIdEqualTo(taskRequest.getAppId());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getStepCode())) {
-            innerCriteria.andStepCodeEqualTo(taskRequest.getStepCode());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getWebSite())) {
-            innerCriteria.andWebSiteEqualTo(taskRequest.getWebSite());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getUniqueId())) {
-            innerCriteria.andUniqueIdEqualTo(taskRequest.getUniqueId());
+        Date startDate = request.getCreateTimeStart();
+        Date endDate = null;
+        if (startDate != null) {
+            endDate = request.getCreateTimeEnd();
         }
 
+        query.setStartDate(startDate);
+        query.setEndDate(endDate);
 
-        List<Task> taskList = taskMapper.selectByExample(criteria);
+        query.setSaasEnv(request.getSaasEnv());
+        query.setOrder(request.getOrderByClause());
+
+        List<Task> taskList = taskService.queryTasks(query);
+
         if (CollectionUtils.isEmpty(taskList)) {
-
             return TaskResult.wrapErrorResult("失败", "找不到相关数据");
         }
+
         List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
 
         return TaskResult.wrapSuccessfulResult(taskROList);
-
-
     }
 
     @Override
-    public TaskResult<Long> createTask(TaskCreateRequest taskCreateRequest) {
-        if (taskCreateRequest == null) {
+    public TaskResult<Long> createTask(TaskCreateRequest request) {
+        if (request == null) {
             throw new BusinessCheckFailException("-1", "请求参数不能为空");
         }
-        if (StringUtils.isBlank(taskCreateRequest.getAppId())) {
+        if (StringUtils.isBlank(request.getAppId())) {
             throw new BusinessCheckFailException("-1", "appId不能为空");
         }
-        if (taskCreateRequest.getBizType() == null) {
+        if (request.getBizType() == null) {
             throw new BusinessCheckFailException("-1", "业务类型不能为空");
         }
-        Long taskId = taskService.createTask(taskCreateRequest);
+
+        TaskDO taskDO = DataConverterUtils.convert(request, TaskDO.class);
+
+        Long taskId = taskService.createTask(taskDO, request.getSource(), request.getExtra());
+
         return TaskResult.wrapSuccessfulResult(taskId);
     }
 
@@ -132,27 +117,15 @@ public class TaskFacadeImpl implements TaskFacade {
     }
 
     @Override
-    public TaskResult<Integer> updateUnfinishedTask(TaskUpdateRequest taskRequest) {
-        Task task = DataConverterUtils.convert(taskRequest, Task.class);
+    public TaskResult<Integer> updateUnfinishedTask(TaskUpdateRequest request) {
+        Task task = DataConverterUtils.convert(request, Task.class);
         int id = taskService.updateUnfinishedTask(task);
         return TaskResult.wrapSuccessfulResult(id);
     }
 
     @Override
-    public TaskResult<String> failTaskWithStep(Long taskId) {
-        String result = taskService.failTaskWithStep(taskId);
-        return TaskResult.wrapSuccessfulResult(result);
-    }
-
-    @Override
-    public TaskResult<String> cancelTaskWithStep(Long taskId) {
-        String result = taskService.cancelTaskWithStep(taskId);
-        return TaskResult.wrapSuccessfulResult(result);
-    }
-
-    @Override
     public TaskResult<String> updateTaskStatusWithStep(Long taskId, Byte status) {
-        String result = taskService.updateTaskStatusWithStep(taskId, status);
+        String result = taskService.updateStatusIfDone(taskId, status);
         return TaskResult.wrapSuccessfulResult(result);
     }
 
@@ -166,14 +139,9 @@ public class TaskFacadeImpl implements TaskFacade {
     }
 
     @Override
-    public TaskResult<TaskRO> getTaskByPrimaryKey(TaskRequest taskRequest) {
-        if (taskRequest.getId() == null) {
-            logger.error("传入的id为空");
-        }
-
-        Task task = taskMapper.selectByPrimaryKey(taskRequest.getId());
+    public TaskResult<TaskRO> getTaskByPrimaryKey(TaskRequest request) {
+        Task task = taskService.getTaskById(Objects.requireNonNull(request.getId()));
         if (Objects.isNull(task)) {
-
             return TaskResult.wrapErrorResult("失败", "找不到相关数据");
         }
         TaskRO taskRO = new TaskRO();
@@ -182,125 +150,93 @@ public class TaskFacadeImpl implements TaskFacade {
     }
 
     @Override
-    public TaskPagingResult<TaskRO> queryTaskWithPagination(TaskRequest taskRequest) {
-        logger.info("分页条件查询任务传入的参数为{}", taskRequest.toString());
+    public TaskPagingResult<TaskRO> queryTaskWithPagination(TaskRequest request) {
+        logger.info("分页条件查询任务传入的参数为{}", request.toString());
 
-        TaskCriteria criteria = new TaskCriteria();
+        TaskQuery query = new TaskQuery();
+        query.setId(request.getId());
 
-        if (StringUtils.isNotEmpty(taskRequest.getOrderByClause())) {
-            criteria.setOrderByClause(taskRequest.getOrderByClause());
+        List<String> appIds = request.getAppIdList();
+        if (CollectionUtils.isEmpty(appIds) && request.getAppId() != null) {
+            appIds = Collections.singletonList(request.getAppId());
+        }
+        query.setAppIds(appIds);
 
+        List<Byte> bizTypes = request.getBizTypeList();
+        if (CollectionUtils.isEmpty(bizTypes) && request.getBizType() != null) {
+            bizTypes = Collections.singletonList(request.getBizType());
         }
+        query.setBizTypes(bizTypes);
 
-        criteria.setLimit(taskRequest.getPageSize());
-        criteria.setOffset(taskRequest.getOffset());
-        TaskCriteria.Criteria innerCriteria = criteria.createCriteria();
+        query.setWebsite(request.getWebSite());
+        query.setUniqueId(request.getUniqueId());
+        query.setAccountNo(request.getAccountNo());
+        query.setStepCode(request.getStepCode());
+        query.setStatus(request.getStatus());
 
-        if (taskRequest.getId() != null) {
-            innerCriteria.andIdEqualTo(taskRequest.getId());
+        Date startDate = request.getCreateTimeStart();
+        Date endDate = null;
+        if (startDate != null) {
+            endDate = request.getCreateTimeEnd();
         }
-        if (taskRequest.getBizType() != null) {
-            innerCriteria.andBizTypeEqualTo(taskRequest.getBizType());
-        }
-        if (taskRequest.getBizTypeList() != null) {
-            innerCriteria.andBizTypeIn(taskRequest.getBizTypeList());
-        }
-        if (taskRequest.getSaasEnv() != null) {
-            innerCriteria.andSaasEnvEqualTo(taskRequest.getSaasEnv());
-        }
-        if (taskRequest.getStatus() != null) {
-            innerCriteria.andStatusEqualTo(taskRequest.getStatus());
-        }
-        if (taskRequest.getCreateTimeStart() != null) {
-            innerCriteria.andCreateTimeGreaterThanOrEqualTo(taskRequest.getCreateTimeStart());
-            innerCriteria.andCreateTimeLessThanOrEqualTo(taskRequest.getCreateTimeEnd());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getAccountNo())) {
-            innerCriteria.andAccountNoEqualTo(taskRequest.getAccountNo());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getAppId())) {
-            innerCriteria.andAppIdEqualTo(taskRequest.getAppId());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getStepCode())) {
-            innerCriteria.andStepCodeEqualTo(taskRequest.getStepCode());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getWebSite())) {
-            innerCriteria.andWebSiteEqualTo(taskRequest.getWebSite());
-        }
-        if (StringUtils.isNotEmpty(taskRequest.getUniqueId())) {
-            innerCriteria.andUniqueIdEqualTo(taskRequest.getUniqueId());
-        }
+        query.setStartDate(startDate);
+        query.setEndDate(endDate);
 
-        int count = (int) taskMapper.countByExample(criteria);
+        query.setSaasEnv(request.getSaasEnv());
+        query.setOrder(request.getOrderByClause());
+        query.setOffset(request.getOffset());
+        query.setLimit(request.getPageSize());
 
-        List<Task> taskList = taskMapper.selectPaginationByExample(criteria);
+        List<Task> taskList = taskService.queryTasks(query);
+
         if (CollectionUtils.isEmpty(taskList)) {
-
             return TaskPagingResult.wrapErrorResult("失败", "找不到相关数据");
         }
+
+        int count = (int)taskService.countTasks(query);
+
         List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
 
         return TaskPagingResult.wrapSuccessfulResult(taskROList, count);
-
     }
 
     @Override
     public TaskPagingResult<TaskRO> queryTaskListPage(TaskRequest request) {
-        TaskCriteria taskCriteria = new TaskCriteria();
-        taskCriteria.setOffset(request.getOffset());
-        taskCriteria.setLimit(request.getPageSize());
-        taskCriteria.setOrderByClause("lastUpdateTime desc");
+        TaskQuery query = new TaskQuery();
+        query.setId(request.getId());
+        query.setAppIds(request.getAppIdList());
+        query.setBizTypes(Collections.singletonList(request.getBizType()));
+        query.setUniqueId(request.getUniqueId());
+        query.setAccountNo(request.getAccountNo());
+        query.setStartDate(request.getStartDate());
+        query.setEndDate(DateUtils.addSeconds(request.getEndDate(), 24 * 60 * 60 - 1));
+        query.setOrder("lastUpdateTime desc");
+        query.setOffset(request.getOffset());
+        query.setLimit(request.getPageSize());
 
-        TaskCriteria.Criteria criteria = taskCriteria.createCriteria();
-        if (request.getId() != null) {
-            criteria.andIdEqualTo(request.getId());
-        }
-        if (StringUtils.isNotBlank(request.getUniqueId())) {
-            criteria.andUniqueIdEqualTo(request.getUniqueId());
-        }
-        if (StringUtils.isNotBlank(request.getAccountNo())) {
-            criteria.andAccountNoEqualTo(request.getAccountNo());
-        }
-        if (!CollectionUtils.isEmpty(request.getAppIdList())) {
-            criteria.andAppIdIn(request.getAppIdList());
-        }
-
-        criteria.andCreateTimeGreaterThanOrEqualTo(request.getStartDate());
-        // +23:59:59
-        criteria.andCreateTimeLessThanOrEqualTo(DateUtils.addSeconds(request.getEndDate(), 24 * 60 * 60 - 1));
-        criteria.andBizTypeEqualTo(request.getBizType());
-        Long count = taskMapper.countByExample(taskCriteria);
+        long count = taskService.countTasks(query);
         if (count <= 0) {
             return TaskPagingResult.wrapSuccessfulResult(null, 0);
         }
-        List<Task> taskList = taskMapper.selectPaginationByExample(taskCriteria);
+
+        List<Task> taskList = taskService.queryTasks(query);
 
         List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
 
-        return TaskPagingResult.wrapSuccessfulResult(taskROList, count.intValue());
+        return TaskPagingResult.wrapSuccessfulResult(taskROList, (int)count);
     }
 
 
     @Override
     public TaskResult<List<TaskRO>> queryTaskList(TaskRequest request) {
-        TaskCriteria taskCriteria = new TaskCriteria();
-        TaskCriteria.Criteria innerTaskCriteria = taskCriteria.createCriteria();
-        if (request.getBizType() != null) {
-            innerTaskCriteria.andBizTypeEqualTo(request.getBizType());
-        }
-        if (StringUtils.isNotBlank(request.getUniqueId())) {
-            innerTaskCriteria.andUniqueIdEqualTo(request.getUniqueId());
-        }
-        if (StringUtils.isNotBlank(request.getAccountNo())) {
-            innerTaskCriteria.andAccountNoEqualTo(request.getAccountNo());
-        }
-        if (request.getId() != null) {
-            innerTaskCriteria.andIdEqualTo(request.getId());
-        }
-        if (!CollectionUtils.isEmpty(request.getAppIdList())) {
-            innerTaskCriteria.andAppIdIn(request.getAppIdList());
-        }
-        List<Task> taskList = taskMapper.selectByExample(taskCriteria);
+        TaskQuery query = new TaskQuery();
+        query.setId(request.getId());
+        query.setAppIds(request.getAppIdList());
+        query.setBizTypes(Collections.singletonList(request.getBizType()));
+        query.setUniqueId(request.getUniqueId());
+        query.setAccountNo(request.getAccountNo());
+
+        List<Task> taskList = taskService.queryTasks(query);
 
         List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
 
@@ -310,74 +246,45 @@ public class TaskFacadeImpl implements TaskFacade {
 
     @Override
     public TaskPagingResult<TaskAndAttributeRO> queryTaskAndTaskAttribute(TaskAndAttributeRequest request) {
-        Map<String, Object> map = Maps.newHashMap();
+        TaskCompositeQuery query = new TaskCompositeQuery();
+        query.setAppId(request.getAppId());
 
-        map.put("appId", request.getAppId());
-        if (request.getSaasEnv() != 0) {
-            map.put("saasEnv", request.getSaasEnv());
+        List<Byte> bizTypes = request.getBizTypeList();
+        if (CollectionUtils.isEmpty(bizTypes) && request.getBizType() != null) {
+            bizTypes = Collections.singletonList(request.getBizType());
         }
-        map.put("name", request.getName());
-//        if (request.getStatType() == 2) {
-//            //失败的任务
-//            map.put("status", 3);
-//        } else if (request.getStatType() == 3) {
-//            //取消的任务
-//            map.put("status", 1);
-//        } else if (request.getStatType() == 1) {
-//            //成功的任务
-//            map.put("status", 2);
-//        } else {
-//            throw new IllegalArgumentException("statType参数有误");
-//        }
-        map.put("status", request.getStatus());
+        query.setBizTypes(bizTypes);
 
-        if (request.getBizType() == null) {
-            map.put("bizTypeList", request.getBizTypeList());
-        } else {
-            map.put("bizType", request.getBizType());
+        String webSite = request.getWebSite();
+        query.setWebsite(webSite);
+
+        if (request.getSaasEnv() != null && request.getSaasEnv() != 0) {
+            query.setSaasEnv(request.getSaasEnv());
         }
+        query.setStatus(request.getStatus());
+        query.setStartDate(request.getStartTime());
+        query.setEndDate(request.getEndTime());
 
-//        if (request.getBizType() == 0) {
-//            MerchantResult<List<AppBizTypeResult>> merchantResult = appBizTypeFacade.queryAllAppBizType(new BaseRequest());
-//            List<AppBizType> list = DataConverterUtils.convert(merchantResult.getData(), AppBizType.class);
-//            List<Byte> bizTypeList = list.stream().map(AppBizType::getBizType).collect(Collectors.toList());
-//            map.put("bizTypeList", bizTypeList);
-//        } else {
-//            map.put("bizType", request.getBizType());
-//        }
-
-
-        if (StringUtils.isNotBlank(request.getWebSite())) {
-            map.put("webSite", request.getWebSite());
-            map.put("value", request.getValue());
+        query.setName(request.getName());
+        String value = null;
+        if (StringUtils.isNotBlank(webSite)) {
+            value = request.getValue();
         }
+        query.setValue(value);
 
-//        if (request.getStartTime() != null && request.getEndTime() != null) {
-//            map.put("startTime", request.getStartTime());
-//            map.put("endTime", request.getEndTime());
-//        } else if (request.getDate() != null) {
-//            map.put("startTime", DateUtils.getTodayBeginDate(request.getDate()));
-//            map.put("endTime", DateUtils.getTomorrowBeginDate(request.getDate()));
-//        }
+        query.setOrder("createTime desc");
+        query.setOffset(request.getStart());
+        query.setLimit(request.getLimit());
 
-        map.put("startTime", request.getStartTime());
-        map.put("endTime", request.getEndTime());
-
-
-        map.put("start", request.getStart());
-        map.put("limit", request.getLimit());
-        map.put("orderStr", "createTime desc");
-
-        Long total = taskAndTaskAttributeMapper.countByExample(map);
+        long total = taskService.countCompositeTasks(query);
         if (total <= 0) {
             return TaskPagingResult.wrapSuccessfulResult(null, 0);
         }
-        List<TaskAndTaskAttribute> list = taskAndTaskAttributeMapper.getByExample(map);
+        List<TaskAndTaskAttribute> list = taskService.queryCompositeTasks(query);
 
         List<TaskAndAttributeRO> taskList = DataConverterUtils.convert(list, TaskAndAttributeRO.class);
 
-        return TaskPagingResult.wrapSuccessfulResult(taskList, total.intValue());
-
+        return TaskPagingResult.wrapSuccessfulResult(taskList, (int)total);
     }
 
     @Override
@@ -388,12 +295,7 @@ public class TaskFacadeImpl implements TaskFacade {
 
     @Override
     public TaskResult<List<TaskRO>> selectRecentRunningTaskList(Byte saasEnv, Date startTime, Date endTime) {
-        TaskCriteria criteria = new TaskCriteria();
-        criteria.createCriteria().andStatusEqualTo(ETaskStatus.RUNNING.getStatus())
-                .andSaasEnvEqualTo(saasEnv)
-                .andCreateTimeGreaterThanOrEqualTo(endTime)
-                .andCreateTimeLessThan(startTime);
-        List<Task> taskList = taskMapper.selectByExample(criteria);
+        List<Task> taskList = taskService.listRunningTasksByEnvAndCreateTimeBetween(saasEnv, endTime, startTime);
         if (CollectionUtils.isEmpty(taskList)) {
             return TaskResult.wrapSuccessfulResult(Lists.newArrayList());
         }

@@ -5,13 +5,13 @@ import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.biz.service.TaskTimeService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.biz.util.RedisKeyUtils;
 import com.treefinance.saas.taskcenter.biz.util.SpringUtils;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
+import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -34,13 +34,13 @@ public class TaskCrawlerTimeoutThread implements Runnable {
     private Long taskId;
     private List<TaskTimeoutHandler> taskTimeoutHandlers;
     private TaskTimeService taskTimeService;
-    private TaskMapper taskMapper;
+    private TaskRepository taskRepository;
     private RedisDao redisDao;
 
     public TaskCrawlerTimeoutThread(Long taskId, List<TaskTimeoutHandler> taskTimeoutHandlers) {
-        this.taskTimeService = (TaskTimeService) SpringUtils.getBean("taskTimeService");
-        this.taskMapper = (TaskMapper) SpringUtils.getBean("taskMapper");
-        this.redisDao = (RedisDao) SpringUtils.getBean("redisDao");
+        this.taskTimeService = SpringUtils.getBean(TaskTimeService.class);
+        this.taskRepository = SpringUtils.getBean(TaskRepository.class);
+        this.redisDao = SpringUtils.getBean(RedisDao.class);
         this.taskId = taskId;
         this.taskTimeoutHandlers = taskTimeoutHandlers;
     }
@@ -54,7 +54,7 @@ public class TaskCrawlerTimeoutThread implements Runnable {
             if (MapUtils.isEmpty(lockMap)) {
                 return;
             }
-            Task task = taskMapper.selectByPrimaryKey(taskId);
+            Task task = taskRepository.getTaskById(taskId);
             //如果任务已结束,则不处理.
             if (!ETaskStatus.RUNNING.getStatus().equals(task.getStatus())) {
                 return;

@@ -1,11 +1,9 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
-import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirectiveCriteria;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskNextDirectiveMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskNextDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskNextDirectiveRO;
@@ -25,17 +23,12 @@ public class TaskNextDirectiveFacadeImpl implements TaskNextDirectiveFacade {
 
 
     @Autowired
-    TaskNextDirectiveMapper taskNextDirectiveMapper;
-    @Autowired
     private TaskNextDirectiveService taskNextDirectiveService;
 
 
     @Override
     public TaskResult<List<TaskNextDirectiveRO>> queryTaskNextDirectiveByTaskId(TaskNextDirectiveRequest request) {
-        TaskNextDirectiveCriteria taskNextDirectiveCriteria = new TaskNextDirectiveCriteria();
-        taskNextDirectiveCriteria.createCriteria().andTaskIdEqualTo(request.getTaskId());
-        taskNextDirectiveCriteria.setOrderByClause("createTime desc, Id desc");
-        List<TaskNextDirective> list = taskNextDirectiveMapper.selectByExample(taskNextDirectiveCriteria);
+        List<TaskNextDirective> list = taskNextDirectiveService.listDirectivesDescWithCreateTimeByTaskId(request.getTaskId());
 
         List<TaskNextDirectiveRO> taskNextDirectiveROList = DataConverterUtils.convert(list, TaskNextDirectiveRO.class);
 
@@ -51,7 +44,7 @@ public class TaskNextDirectiveFacadeImpl implements TaskNextDirectiveFacade {
 
     @Override
     public TaskResult<TaskNextDirectiveRO> queryRecentDirective(Long taskId) {
-        TaskNextDirective taskNextDirective = taskNextDirectiveService.queryRecentDirective(taskId);
+        TaskNextDirective taskNextDirective = taskNextDirectiveService.getLastDirectiveByTaskId(taskId);
         TaskNextDirectiveRO taskNextDirectiveRO = DataConverterUtils.convert(taskNextDirective, TaskNextDirectiveRO.class);
         return TaskResult.wrapSuccessfulResult(taskNextDirectiveRO);
     }

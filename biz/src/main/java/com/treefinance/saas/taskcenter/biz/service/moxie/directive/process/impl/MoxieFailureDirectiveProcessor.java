@@ -32,7 +32,7 @@ public class MoxieFailureDirectiveProcessor extends MoxieAbstractDirectiveProces
         taskDTO.setStatus(ETaskStatus.FAIL.getStatus());
 
         // 更新任务状态,记录失败任务日志
-        String stepCode = taskService.failTaskWithStep(taskDTO.getId());
+        String stepCode = taskService.updateStatusIfDone(taskDTO.getId(), ETaskStatus.FAIL.getStatus());
         taskDTO.setStepCode(stepCode);
 
         //发送监控消息
