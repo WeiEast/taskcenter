@@ -2,12 +2,12 @@ package com.treefinance.saas.taskcenter.biz.service.thread;
 
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.Constants;
-import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
-import com.treefinance.saas.taskcenter.biz.config.DiamondConfig;
+import com.treefinance.saas.taskcenter.context.cache.RedisDao;
+import com.treefinance.saas.taskcenter.context.config.DiamondConfig;
 import com.treefinance.saas.taskcenter.biz.service.TaskAliveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.biz.util.RedisKeyUtils;
-import com.treefinance.saas.taskcenter.biz.util.SpringUtils;
+import com.treefinance.saas.taskcenter.context.RedisKeyUtils;
+import com.treefinance.saas.taskcenter.context.SpringUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

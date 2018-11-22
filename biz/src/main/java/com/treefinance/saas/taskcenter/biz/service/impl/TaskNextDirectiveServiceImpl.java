@@ -18,7 +18,7 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
+import com.treefinance.saas.taskcenter.context.cache.RedisDao;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.common.util.JsonUtils;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.cache.redis;
+package com.treefinance.saas.taskcenter.context.cache;
 
 import com.treefinance.saas.taskcenter.common.model.Constants;
 import org.apache.commons.collections.MapUtils;

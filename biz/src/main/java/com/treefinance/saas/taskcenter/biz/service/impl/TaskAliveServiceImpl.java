@@ -17,7 +17,7 @@
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
+import com.treefinance.saas.taskcenter.context.cache.RedisDao;
 import com.treefinance.saas.taskcenter.biz.service.TaskAliveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
