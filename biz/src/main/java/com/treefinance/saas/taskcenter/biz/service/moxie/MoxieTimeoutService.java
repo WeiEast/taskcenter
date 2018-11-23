@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
+import com.treefinance.saas.taskcenter.common.util.SystemUtils;
 import com.treefinance.saas.taskcenter.context.cache.RedisDao;
 import com.treefinance.saas.taskcenter.biz.service.AppBizTypeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
@@ -21,9 +22,9 @@ import com.treefinance.saas.taskcenter.common.util.JsonUtils;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +75,7 @@ public class MoxieTimeoutService {
      * @param taskId
      */
     public void logLoginTime(Long taskId) {
-        String now = com.treefinance.saas.taskcenter.common.util.DateUtils.nowDateTimeStr();
+        String now = SystemUtils.nowDateTimeStr();
         taskAttributeService.insertOrUpdate(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), now);
 
         String key = LOGIN_TIME_PREFIX + taskId;
@@ -85,7 +86,7 @@ public class MoxieTimeoutService {
         taskAttributeService.insertOrUpdate(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), date);
 
         String key = LOGIN_TIME_PREFIX + taskId;
-        redisDao.setEx(key, com.treefinance.saas.taskcenter.common.util.DateUtils.format(date), 10, TimeUnit.MINUTES);
+        redisDao.setEx(key, DateUtils.format(date), 10, TimeUnit.MINUTES);
     }
 
     /**
@@ -98,7 +99,7 @@ public class MoxieTimeoutService {
         String key = LOGIN_TIME_PREFIX + taskId;
         String value = redisDao.get(key);
         if (StringUtils.isNotBlank(value)) {
-            return com.treefinance.saas.taskcenter.common.util.DateUtils.parse(value);
+            return DateUtils.parse(value);
         } else {
             TaskAttribute taskAttribute = taskAttributeService.findByName(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), false);
             if (taskAttribute == null) {
@@ -106,7 +107,7 @@ public class MoxieTimeoutService {
                 return null;
             }
             value = taskAttribute.getValue();
-            Date date = com.treefinance.saas.taskcenter.common.util.DateUtils.parse(value);
+            Date date = DateUtils.parse(value);
             // 重新set redis
             this.logLoginTime(taskId, date);
             return date;
@@ -145,7 +146,7 @@ public class MoxieTimeoutService {
         Integer timeout = bizType.getTimeout();
         // 任务超时: 当前时间-登录时间>超时时间
         Date currentTime = new Date();
-        Date timeoutDate = DateUtils.addSeconds(loginTime, timeout);
+        Date timeoutDate = DateUtils.plusSeconds(loginTime, timeout);
         logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, CommonUtils.date2Str(loginTime), CommonUtils.date2Str(currentTime), timeout);
         if (timeoutDate.before(currentTime)) {
             // 增加日志：任务超时

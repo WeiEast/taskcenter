@@ -17,7 +17,6 @@
 package com.treefinance.saas.taskcenter.common.util;
 
 import org.joda.time.LocalDateTime;
-import org.joda.time.format.DateTimeFormat;
 
 import java.util.Date;
 
@@ -25,45 +24,26 @@ import java.util.Date;
  * @author haojiahong
  * @date 2017/9/22.
  */
-public final class DateUtils {
+public final class SystemUtils {
 
     private static final String DEFAULT_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    private DateUtils() {}
-
-    /**
-     * 将时间字符串转换为Date
-     *
-     * @param dateStr
-     * @return
-     */
-    public static Date parse(String dateStr) {
-        LocalDateTime dateTime = DateTimeFormat.forPattern(DEFAULT_DATETIME_PATTERN).parseLocalDateTime(dateStr);
-
-        return dateTime.toDate();
-    }
-
-    /**
-     * 时间转字符串(格式为yyyy-MM-dd HH:mm:ss)
-     *
-     * @param date
-     * @return
-     */
-    public static String format(Date date) {
-        LocalDateTime dateTime = new LocalDateTime(date);
-
-        return dateTime.toString(DEFAULT_DATETIME_PATTERN);
-    }
+    private SystemUtils() {}
 
     /**
      * 获取当前时间的字符串(格式为yyyy-MM-dd HH:mm:ss)
      *
-     * @return
+     * @return the string of now time that formatted with the default {@link #DEFAULT_DATETIME_PATTERN}
      */
     public static String nowDateTimeStr() {
         return LocalDateTime.now().toString(DEFAULT_DATETIME_PATTERN);
     }
 
+    /**
+     * 获取当前时间的字符串
+     *
+     * @return the now time
+     */
     public static Date now() {
         return new Date();
     }
