@@ -9,10 +9,10 @@ import com.treefinance.saas.assistant.plugin.TaskEmailMonitorPlugin;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
 import com.treefinance.saas.taskcenter.common.enums.EProcessStep;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import org.apache.commons.collections.CollectionUtils;
@@ -65,9 +65,8 @@ public class EmailMonitorService {
         List<TaskStep> taskSteps = Lists.newArrayList();
         Map<Integer, TaskStep> taskStepMap = Maps.newHashMap();
 
-        List<TaskLog> taskLogs = taskLogService.queryTaskLog(taskId, ETaskStep.TASK_CREATE.getText(),
-                ETaskStep.LOGIN_SUCCESS.getText(), ETaskStep.LOGIN_FAIL.getText(), ETaskStep.CRAWL_SUCCESS.getText(),
-                ETaskStep.DATA_SAVE_SUCCESS.getText(), ETaskStep.CALLBACK_SUCCESS.getText());
+        List<TaskLog> taskLogs = taskLogService.queryTaskLogsByTaskIdAndInSteps(taskId, ETaskStep.TASK_CREATE, ETaskStep.LOGIN_SUCCESS, ETaskStep.LOGIN_FAIL,
+            ETaskStep.CRAWL_SUCCESS, ETaskStep.DATA_SAVE_SUCCESS, ETaskStep.CALLBACK_SUCCESS);
         List<String> taskLogMsgs = taskLogs.stream().map(TaskLog::getMsg).collect(Collectors.toList());
         // 任务创建
         if (taskLogMsgs.contains(ETaskStep.TASK_CREATE.getText())) {

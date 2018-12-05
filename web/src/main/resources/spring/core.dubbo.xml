@@ -13,7 +13,7 @@
     <dubbo:protocol name="dubbo" port="20296"/>
 
     <dubbo:consumer check="false"/>
-    <dubbo:provider timeout="10000"/>
+    <dubbo:provider timeout="5000"/>
 
     <import resource="classpath*:spring/core.dubbo.consumer.*.xml"/>
     <!--提供者-->

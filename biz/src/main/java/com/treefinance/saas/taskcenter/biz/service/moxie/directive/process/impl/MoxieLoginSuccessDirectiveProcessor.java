@@ -19,7 +19,7 @@ public class MoxieLoginSuccessDirectiveProcessor extends MoxieAbstractDirectiveP
     protected void doProcess(EMoxieDirective directive, MoxieDirectiveDTO directiveDTO) {
         TaskDTO taskDTO = directiveDTO.getTask();
         // 1.记录登录日志
-        taskLogService.insert(taskDTO.getId(), ETaskStep.LOGIN_SUCCESS.getText(), new Date(), null);
+        taskLogService.insertTaskLog(taskDTO.getId(), ETaskStep.LOGIN_SUCCESS.getText(), new Date(), null);
 
     }
 }

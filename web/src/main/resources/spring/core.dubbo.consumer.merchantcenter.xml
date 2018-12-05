@@ -5,16 +5,16 @@
 
 
     <!--merchant-center服务-->
-    <dubbo:reference interface="com.treefinance.saas.merchant.center.facade.service.AppCallBackBizFacade"
+    <dubbo:reference interface="com.treefinance.saas.merchant.facade.service.AppCallBackBizFacade"
                      id="appCallBackBizFacade" version="1.0.0"/>
 
-    <dubbo:reference interface="com.treefinance.saas.merchant.center.facade.service.AppCallbackConfigFacade"
+    <dubbo:reference interface="com.treefinance.saas.merchant.facade.service.AppCallbackConfigFacade"
                      id="appCallbackConfigFacade" version="1.0.0"/>
 
     <dubbo:reference id="appLicenseFacade"
-                     interface="com.treefinance.saas.merchant.center.facade.service.AppLicenseFacade" version="1.0.0"/>
+                     interface="com.treefinance.saas.merchant.facade.service.AppLicenseFacade" version="1.0.0"/>
 
-    <dubbo:reference interface="com.treefinance.saas.merchant.center.facade.service.AppBizTypeFacade"
+    <dubbo:reference interface="com.treefinance.saas.merchant.facade.service.AppBizTypeFacade"
                      id="appBizTypeFacade" version="1.0.0"/>
 </beans>
 

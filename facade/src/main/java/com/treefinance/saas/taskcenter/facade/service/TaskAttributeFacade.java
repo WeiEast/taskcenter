@@ -24,6 +24,16 @@ public interface TaskAttributeFacade {
 
     TaskResult<Long> insert(Long taskId, String name, String value);
 
+    /**
+     * 保存属性
+     *
+     * @param taskId 任务ID
+     * @param name 属性名
+     * @param value 属性值
+     * @param sensitive 是否是敏感值
+     * @return primary key task_attribute
+     */
+    TaskResult<Long> insert(Long taskId, String name, String value, boolean sensitive);
 
     TaskResult<Void> insertOrUpdateSelective(Long taskId, String name, String value);
 

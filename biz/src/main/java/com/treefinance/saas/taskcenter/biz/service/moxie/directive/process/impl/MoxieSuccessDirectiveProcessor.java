@@ -53,7 +53,7 @@ public class MoxieSuccessDirectiveProcessor extends MoxieAbstractDirectiveProces
             directiveDTO.setDirective(EMoxieDirective.CALLBACK_FAIL.getText());
         }
         //更新任务状态,记录任务成功日志
-        String stepCode = taskService.updateTaskStatusWithStep(taskId, taskDTO.getStatus());
+        String stepCode = taskService.updateStatusIfDone(taskId, taskDTO.getStatus());
         taskDTO.setStepCode(stepCode);
 
         //发送监控消息

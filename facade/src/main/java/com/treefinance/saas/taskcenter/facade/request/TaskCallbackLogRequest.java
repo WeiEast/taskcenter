@@ -1,7 +1,5 @@
 package com.treefinance.saas.taskcenter.facade.request;
 
-import com.treefinance.saas.taskcenter.facade.result.common.BaseResult;
-
 import java.util.Date;
 import java.util.List;
 

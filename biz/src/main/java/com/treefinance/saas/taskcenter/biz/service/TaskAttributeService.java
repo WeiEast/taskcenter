@@ -1,123 +1,44 @@
-/**
- * Copyright © 2017 Treefinance All Rights Reserved
+/*
+ * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
+
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.google.common.collect.Maps;
-import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
-import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
-import com.treefinance.commonservice.uid.UidGenerator;
+import com.treefinance.saas.taskcenter.dao.domain.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeUpdateMapper;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
+import com.treefinance.toolkit.util.DateUtils;
 
-import javax.annotation.Resource;
-import java.util.Arrays;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by chenjh on 2017/7/5.
- * <p>
- * 任务拓展属性业务层
+ * @author Jerry
+ * @date 2018/11/20 20:54
  */
-@Service
-public class TaskAttributeService {
-    @Resource
-    private TaskAttributeMapper taskAttributeMapper;
-    @Autowired
-    private TaskAttributeUpdateMapper taskAttributeUpdateMapper;
-    @Autowired
-    private ISecurityCryptoService securityCryptoService;
-
-    /**
-     * 保存属性
-     *
-     * @param taskId
-     * @param name
-     * @param value
-     * @return
-     */
-    public Long insert(Long taskId, String name, String value) {
-        long id = UidGenerator.getId();
-        TaskAttribute target = new TaskAttribute();
-        target.setId(id);
-        target.setTaskId(taskId);
-        target.setName(name);
-        target.setValue(value);
-        taskAttributeMapper.insert(target);
-        return id;
-    }
-
-    /**
-     * 保存或更新属性
-     *
-     * @param taskId
-     * @param name
-     * @param value
-     */
-    public void insertOrUpdateSelective(Long taskId, String name, String value) {
-        long id = UidGenerator.getId();
-        TaskAttribute target = new TaskAttribute();
-        target.setId(id);
-        target.setTaskId(taskId);
-        target.setName(name);
-        target.setValue(value);
-        taskAttributeUpdateMapper.insertOrUpdateSelective(target);
-    }
+public interface TaskAttributeService {
 
     /**
      * 通过属性名查询属性值
      *
-     * @param taskId
-     * @param name    属性名
+     * @param taskId 任务ID
+     * @param name 属性名
      * @param decrypt 是否要解密，true:是，false:否
-     * @return
+     * @return {@link TaskAttribute}
      */
-    public TaskAttribute findByName(Long taskId, String name, boolean decrypt) {
-        TaskAttributeCriteria criteria = new TaskAttributeCriteria();
-        criteria.createCriteria().andTaskIdEqualTo(taskId).andNameEqualTo(name);
-        List<TaskAttribute> attributeList = taskAttributeMapper.selectByExample(criteria);
-        TaskAttribute taskAttribute = CollectionUtils.isEmpty(attributeList) ? null : attributeList.get(0);
-        if (taskAttribute == null) {
-            return null;
-        }
-        if (decrypt && StringUtils.isNotEmpty(taskAttribute.getValue())) {
-            taskAttribute.setValue(securityCryptoService.decrypt(taskAttribute.getValue(), EncryptionIntensityEnum.NORMAL));
-        }
-        return taskAttribute;
-    }
-
-    /**
-     * 批量通过属性名查询属性值
-     *
-     * @param taskId
-     * @param decrypt
-     * @param names
-     * @return
-     */
-    public Map<String, TaskAttribute> findByNames(Long taskId, boolean decrypt, String... names) {
-        List<String> namelist = Arrays.asList(names);
-        TaskAttributeCriteria criteria = new TaskAttributeCriteria();
-        criteria.createCriteria().andTaskIdEqualTo(taskId).andNameIn(namelist);
-        List<TaskAttribute> attributeList = taskAttributeMapper.selectByExample(criteria);
-
-        Map<String, TaskAttribute> attributeMap = Maps.newHashMap();
-        if (!CollectionUtils.isEmpty(attributeList)) {
-            for (TaskAttribute taskAttribute : attributeList) {
-                if (decrypt && StringUtils.isNotEmpty(taskAttribute.getValue())) {
-                    taskAttribute.setValue(securityCryptoService.decrypt(taskAttribute.getValue(), EncryptionIntensityEnum.NORMAL));
-                }
-                attributeMap.put(taskAttribute.getName(), taskAttribute);
-            }
-        }
-        return attributeMap;
-    }
+    TaskAttribute findByName(Long taskId, String name, boolean decrypt);
 
     /**
      * 通过属性名和属性值查询taskId
@@ -127,43 +48,66 @@ public class TaskAttributeService {
      * @param encrypt
      * @return
      */
-    public TaskAttribute findByNameAndValue(String name, String value, boolean encrypt) {
-        if (encrypt) {
-            value = securityCryptoService.encrypt(value, EncryptionIntensityEnum.NORMAL);
-        }
-        TaskAttributeCriteria criteria = new TaskAttributeCriteria();
-        criteria.createCriteria().andNameEqualTo(name).andValueEqualTo(value);
-        List<TaskAttribute> attributeList = taskAttributeMapper.selectByExample(criteria);
-        TaskAttribute taskAttribute = CollectionUtils.isEmpty(attributeList) ? null : attributeList.get(0);
-        if (taskAttribute == null) {
-            return null;
-        }
-        return taskAttribute;
+    TaskAttribute findByNameAndValue(String name, String value, boolean encrypt);
+
+    Map<String, String> getAttributeMapByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull String[] names, boolean decrypt);
+
+    List<TaskAttribute> listTaskAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull String[] names, boolean decrypt);
+
+    /**
+     * 保存属性
+     *
+     * @param taskId 任务ID
+     * @param name 属性名
+     * @param value 属性值
+     * @param encrypt 是否加密属性值
+     * @return primary key of {@link com.treefinance.saas.taskcenter.dao.entity.TaskAttribute}
+     */
+    Long insert(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt);
+
+    /**
+     * 保存或更新属性
+     *
+     * @param taskId 任务ID
+     * @param name 属性名
+     * @param value 属性值
+     * @param encrypt 是否加密属性值
+     */
+    void insertOrUpdate(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt);
+
+    /**
+     * 保存或更新属性,默认不加密属性值
+     *
+     * @param taskId 任务ID
+     * @param name 属性名
+     * @param value 属性值
+     * @see #insertOrUpdate(Long, String, String, boolean)
+     */
+    default void insertOrUpdate(@Nonnull Long taskId, @Nonnull String name, String value) {
+        this.insertOrUpdate(taskId, name, value, false);
+    }
+
+    default void insertOrUpdate(@Nonnull Long taskId, @Nonnull String name, Date date) {
+        this.insertOrUpdate(taskId, name, DateUtils.format(date));
     }
 
     /**
      * 根据taskId查询所有属性
      *
-     * @param taskId
-     * @return
+     * @param taskId 任务ID
+     * @return a list of task's attributes
      */
-    public List<TaskAttribute> findByTaskId(Long taskId) {
-        TaskAttributeCriteria criteria = new TaskAttributeCriteria();
-        criteria.createCriteria().andTaskIdEqualTo(taskId);
-        List<TaskAttribute> attributeList = taskAttributeMapper.selectByExample(criteria);
-        return attributeList;
-    }
+    List<TaskAttribute> findByTaskId(Long taskId);
 
     /**
      * 根据任务id和name删除属性
      *
-     * @param taskId
-     * @param name
+     * @param taskId 任务ID
+     * @param name 属性名
      */
-    public void deleteByTaskIdAndName(Long taskId, String name) {
-        TaskAttributeCriteria taskAttributeCriteria = new TaskAttributeCriteria();
-        taskAttributeCriteria.createCriteria().andTaskIdEqualTo(taskId)
-                .andNameEqualTo(name);
-        taskAttributeMapper.deleteByExample(taskAttributeCriteria);
-    }
+    void deleteByTaskIdAndName(Long taskId, String name);
+
+    List<TaskAttribute> listTaskAttributesByNameAndInTaskIds(@Nonnull String name, @Nonnull List<Long> taskIds);
+
+    List<TaskAttribute> queryTaskAttributes(@Nonnull TaskAttributeQuery query);
 }

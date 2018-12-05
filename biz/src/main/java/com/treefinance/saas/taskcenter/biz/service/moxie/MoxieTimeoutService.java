@@ -4,26 +4,27 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.biz.service.AppBizTypeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
-import com.treefinance.saas.taskcenter.biz.utils.CommonUtils;
-import com.treefinance.saas.taskcenter.biz.utils.GrapDateUtils;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.common.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.common.enums.moxie.EMoxieDirective;
 import com.treefinance.saas.taskcenter.common.model.dto.AppBizType;
 import com.treefinance.saas.taskcenter.common.model.moxie.MoxieDirectiveDTO;
-import com.treefinance.saas.taskcenter.common.utils.JsonUtils;
+import com.treefinance.saas.taskcenter.common.util.CommonUtils;
+import com.treefinance.saas.taskcenter.common.util.JsonUtils;
+import com.treefinance.saas.taskcenter.common.util.SystemUtils;
+import com.treefinance.saas.taskcenter.context.cache.RedisDao;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
+import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +46,8 @@ public class MoxieTimeoutService {
 
     private static String LOGIN_TIME_PREFIX = "saas-grap-server-moxie-login-time:";
 
-    private static int LOGIN_TIME_TIMEOUT = 90;//登录超时时间90s
-
     @Autowired
-    private TaskMapper taskMapper;
+    private TaskRepository taskRepository;
     @Autowired
     private AppBizTypeService appBizTypeService;
     @Autowired
@@ -63,33 +62,12 @@ public class MoxieTimeoutService {
     /**
      * 本地任务缓存
      */
-    private final LoadingCache<Long, Task> cache = CacheBuilder.newBuilder()
-            .expireAfterWrite(5, TimeUnit.MINUTES)
-            .maximumSize(20000)
-            .build(CacheLoader.from(taskid -> taskMapper.selectByPrimaryKey(taskid)));
-
-
-    /**
-     * 登录是否超时,即等待魔蝎登录状态接口回调是否超时
-     *
-     * @param taskId
-     * @return
-     */
-    public boolean isLoginTaskTimeout(Long taskId) {
-        Date date = this.getLoginTime(taskId);
-        if (date == null) {
-            logger.info("公积金登录超时,taskId={}未查询到登录时间,需检查魔蝎登录状态回调接口是否异常", taskId);
-            return true;
+    private final LoadingCache<Long, Task> cache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).maximumSize(20000).build(new CacheLoader<Long, Task>() {
+        @Override
+        public Task load(Long taskId) throws Exception {
+            return taskRepository.getTaskById(taskId);
         }
-        Date timeoutDate = DateUtils.addSeconds(date, LOGIN_TIME_TIMEOUT);
-        Date nowDate = GrapDateUtils.nowDateTime();
-        if (nowDate.after(timeoutDate)) {
-            logger.info("公积金登录超时,taskId={}登录时间超过{}s,登录时间为value={},需检查魔蝎登录状态回调接口是否异常",
-                    taskId, LOGIN_TIME_TIMEOUT, GrapDateUtils.getDateStrByDate(date));
-            return true;
-        }
-        return false;
-    }
+    });
 
     /**
      * 记录魔蝎任务创建时间,即开始登录时间.
@@ -97,17 +75,18 @@ public class MoxieTimeoutService {
      * @param taskId
      */
     public void logLoginTime(Long taskId) {
-        taskAttributeService.insertOrUpdateSelective(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), GrapDateUtils.nowDateTimeStr());
+        String now = SystemUtils.nowDateTimeStr();
+        taskAttributeService.insertOrUpdate(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), now);
 
         String key = LOGIN_TIME_PREFIX + taskId;
-        redisDao.setEx(key, GrapDateUtils.nowDateTimeStr(), 10, TimeUnit.MINUTES);
+        redisDao.setEx(key, now, 10, TimeUnit.MINUTES);
     }
 
     public void logLoginTime(Long taskId, Date date) {
-        taskAttributeService.insertOrUpdateSelective(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), GrapDateUtils.getDateStrByDate(date));
+        taskAttributeService.insertOrUpdate(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), date);
 
         String key = LOGIN_TIME_PREFIX + taskId;
-        redisDao.setEx(key, GrapDateUtils.getDateStrByDate(date), 10, TimeUnit.MINUTES);
+        redisDao.setEx(key, DateUtils.format(date), 10, TimeUnit.MINUTES);
     }
 
     /**
@@ -120,7 +99,7 @@ public class MoxieTimeoutService {
         String key = LOGIN_TIME_PREFIX + taskId;
         String value = redisDao.get(key);
         if (StringUtils.isNotBlank(value)) {
-            return GrapDateUtils.getDateByStr(value);
+            return DateUtils.parse(value);
         } else {
             TaskAttribute taskAttribute = taskAttributeService.findByName(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), false);
             if (taskAttribute == null) {
@@ -128,8 +107,8 @@ public class MoxieTimeoutService {
                 return null;
             }
             value = taskAttribute.getValue();
-            Date date = GrapDateUtils.getDateByStr(value);
-            //重新set redis
+            Date date = DateUtils.parse(value);
+            // 重新set redis
             this.logLoginTime(taskId, date);
             return date;
         }
@@ -144,34 +123,6 @@ public class MoxieTimeoutService {
         this.logLoginTime(taskId);
     }
 
-
-    public boolean isTaskTimeout(Long taskId) {
-        try {
-            Task task = cache.get(taskId);
-            AppBizType bizType = appBizTypeService.getAppBizType(task.getBizType());
-            if (bizType == null || bizType.getTimeout() == null) {
-                return false;
-            }
-            // 超时时间秒
-            int timeout = bizType.getTimeout();
-            Date loginTime = this.getLoginTime(taskId);
-            if (loginTime == null) {
-                return false;
-            }
-            // 未超时: 登录时间+超时时间 < 当前时间
-            Date timeoutDate = DateUtils.addSeconds(loginTime, timeout);
-            Date current = GrapDateUtils.nowDateTime();
-            logger.info("moxie isTaskTimeout: taskId={}，loginTime={},current={},timeout={}",
-                    taskId, GrapDateUtils.getDateStrByDate(loginTime), GrapDateUtils.getDateStrByDate(current), timeout);
-            if (timeoutDate.after(current)) {
-                return false;
-            }
-        } catch (ExecutionException e) {
-            logger.error("taskId={} is not exists...", taskId, e);
-        }
-        return true;
-    }
-
     public void handleTaskTimeout(Long taskId) {
         Task task = null;
         try {
@@ -183,9 +134,7 @@ public class MoxieTimeoutService {
         logger.info("handleTaskTimeout async : taskId={}, task={}", taskId, JsonUtils.toJsonString(task));
 
         Byte taskStatus = task.getStatus();
-        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus)
-                || ETaskStatus.SUCCESS.getStatus().equals(taskStatus)
-                || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
+        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus) || ETaskStatus.SUCCESS.getStatus().equals(taskStatus) || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
             logger.info("handleTaskTimeout error : the task is completed: {}", JsonUtils.toJsonString(task));
             return;
         }
@@ -197,15 +146,14 @@ public class MoxieTimeoutService {
         Integer timeout = bizType.getTimeout();
         // 任务超时: 当前时间-登录时间>超时时间
         Date currentTime = new Date();
-        Date timeoutDate = DateUtils.addSeconds(loginTime, timeout);
-        logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}",
-                taskId, CommonUtils.date2Str(loginTime), CommonUtils.date2Str(currentTime), timeout);
+        Date timeoutDate = DateUtils.plusSeconds(loginTime, timeout);
+        logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, CommonUtils.date2Str(loginTime), CommonUtils.date2Str(currentTime), timeout);
         if (timeoutDate.before(currentTime)) {
             // 增加日志：任务超时
-            String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss")
-                    + ") - 登录时间(" + DateFormatUtils.format(loginTime, "yyyy-MM-dd HH:mm:ss")
-                    + ")> 超时时间(" + timeout + "秒)";
-            taskLogService.logTimeoutTask(task.getId(), errorMessage);
+            String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss") + ") - 登录时间(" + DateFormatUtils.format(loginTime, "yyyy-MM-dd HH:mm:ss")
+                + ")> 超时时间(" + timeout + "秒)";
+
+            taskLogService.log(task.getId(), TaskStatusMsgEnum.TIMEOUT_MSG, errorMessage);
 
             // 超时处理：任务更新为失败
             MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
@@ -220,17 +168,17 @@ public class MoxieTimeoutService {
 
     @Transactional
     public void handleLoginTimeout(Long taskId, String moxieTaskId) {
-        //重置登录时间
+        // 重置登录时间
         this.resetLoginTaskTimeOut(taskId);
 
         // 登录失败(如用户名密码错误),需删除task_attribute中此taskId对应的moxieTaskId,重新登录时,可正常轮询/login/submit接口
-        taskAttributeService.insertOrUpdateSelective(taskId, ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), "");
+        taskAttributeService.insertOrUpdate(taskId, ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), "");
 
-        //记录登录超时日志
+        // 记录登录超时日志
         Map<String, Object> map = Maps.newHashMap();
         map.put("error", "登录超时");
         map.put("moxieTaskId", moxieTaskId);
-        taskLogService.insert(taskId, ETaskStep.LOGIN_FAIL.getText(), new Date(), JsonUtils.toJsonString(map));
+        taskLogService.insertTaskLog(taskId, ETaskStep.LOGIN_FAIL.getText(), new Date(), JsonUtils.toJsonString(map));
 
     }
 }

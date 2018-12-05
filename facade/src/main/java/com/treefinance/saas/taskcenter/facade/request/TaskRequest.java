@@ -40,6 +40,11 @@ public class TaskRequest extends PageRequest implements Serializable{
 
     private Byte saasEnv;
 
+    private List<String> appIdList;
+
+    private Date startDate;
+
+    private Date endDate;
     /**
      * 排序方式
      */
@@ -49,11 +54,19 @@ public class TaskRequest extends PageRequest implements Serializable{
 
     }
 
-    private List<String> appIdList;
-
-    private Date startDate;
-
-    private Date endDate;
+    public TaskRequest(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime, Byte saasEnv) {
+        this.id = id;
+        this.uniqueId = uniqueId;
+        this.appId = appId;
+        this.accountNo = accountNo;
+        this.webSite = webSite;
+        this.bizType = bizType;
+        this.status = status;
+        this.stepCode = stepCode;
+        this.createTime = createTime;
+        this.lastUpdateTime = lastUpdateTime;
+        this.saasEnv = saasEnv;
+    }
 
     public List<String> getAppIdList() {
         return appIdList;
@@ -85,20 +98,6 @@ public class TaskRequest extends PageRequest implements Serializable{
 
     public void setBizTypeList(List<Byte> bizTypeList) {
         this.bizTypeList = bizTypeList;
-    }
-
-    public TaskRequest(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime, Byte saasEnv) {
-        this.id = id;
-        this.uniqueId = uniqueId;
-        this.appId = appId;
-        this.accountNo = accountNo;
-        this.webSite = webSite;
-        this.bizType = bizType;
-        this.status = status;
-        this.stepCode = stepCode;
-        this.createTime = createTime;
-        this.lastUpdateTime = lastUpdateTime;
-        this.saasEnv = saasEnv;
     }
 
     public Long getId() {
@@ -194,7 +193,7 @@ public class TaskRequest extends PageRequest implements Serializable{
     }
 
     public void setOrderByClause(String orderByClause) {
-        orderByClause = orderByClause;
+        this.orderByClause = orderByClause;
     }
 
     public Date getCreateTimeStart() {

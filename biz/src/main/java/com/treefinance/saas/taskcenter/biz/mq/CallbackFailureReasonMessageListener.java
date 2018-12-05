@@ -2,18 +2,16 @@ package com.treefinance.saas.taskcenter.biz.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
-import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.assistant.model.TaskCallbackFailureReasonMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.biz.utils.DataConverterUtils;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.model.dto.CallbackFailureReasonDTO;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskCallbackLogUpdateMapper;
+import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -37,7 +35,7 @@ import java.util.Map;
 public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessageListener {
 
     @Autowired
-    private TaskCallbackLogUpdateMapper taskCallbackLogUpdateMapper;
+    private TaskCallbackLogRepository taskCallbackLogRepository;
     @Autowired
     private TaskService taskService;
     @Autowired
@@ -55,14 +53,13 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
         }
         CallbackFailureReasonDTO callbackFailureReasonDTO = JSON.parseObject(message, CallbackFailureReasonDTO.class);
         //更新回调日志表
-        TaskCallbackLog taskCallbackLog = new TaskCallbackLog();
-        taskCallbackLog.setId(UidGenerator.getId());
-        taskCallbackLog.setTaskId(callbackFailureReasonDTO.getTaskId());
-        taskCallbackLog.setConfigId(callbackFailureReasonDTO.getCallbackConfigId());
-        taskCallbackLog.setFailureReason(callbackFailureReasonDTO.getFailureReason());
-        taskCallbackLogUpdateMapper.insertOrUpdateSelective(taskCallbackLog);
+        Long taskId = callbackFailureReasonDTO.getTaskId();
+        Long callbackConfigId = callbackFailureReasonDTO.getCallbackConfigId();
+        Byte failureReason = callbackFailureReasonDTO.getFailureReason();
+        taskCallbackLogRepository.insertOrUpdateLog(taskId, callbackConfigId, failureReason);
+
         //发送监控消息
-        TaskDTO taskDTO = taskService.getById(callbackFailureReasonDTO.getTaskId());
+        TaskDTO taskDTO = taskService.getById(taskId);
         if (!EBizType.OPERATOR.getCode().equals(taskDTO.getBizType())) {
             logger.info("接收爬数发送的回调失败具体原因,任务类型非运营商,暂不处理.message={},task={}", message, JSON.toJSONString(taskDTO));
             return;
@@ -71,8 +68,8 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
                 = DataConverterUtils.convert(taskDTO, TaskCallbackFailureReasonMessage.class);
         taskCallbackFailureReasonMessage.setTaskId(taskDTO.getId());
         taskCallbackFailureReasonMessage.setDataTime(taskDTO.getCreateTime());
-        taskCallbackFailureReasonMessage.setFailureReason(callbackFailureReasonDTO.getFailureReason());
-        List<TaskAttribute> attributeList = taskAttributeService.findByTaskId(callbackFailureReasonDTO.getTaskId());
+        taskCallbackFailureReasonMessage.setFailureReason(failureReason);
+        List<TaskAttribute> attributeList = taskAttributeService.findByTaskId(taskId);
         Map<String, String> attributeMap = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(attributeList)) {
             attributeList.forEach(taskAttribute -> attributeMap.put(taskAttribute.getName(), taskAttribute.getValue()));

@@ -46,10 +46,6 @@ public interface TaskFacade {
 
     TaskResult<Integer> updateUnfinishedTask(TaskUpdateRequest taskRequest);
 
-    TaskResult<String> failTaskWithStep(Long taskId);
-
-    TaskResult<String> cancelTaskWithStep(Long taskId);
-
     TaskResult<String> updateTaskStatusWithStep(Long taskId, Byte status);
 
 

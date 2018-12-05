@@ -3,12 +3,12 @@ package com.treefinance.saas.taskcenter.biz.service.task.timeout;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
-import com.treefinance.saas.taskcenter.biz.utils.CommonUtils;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.EDataType;
 import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.common.model.dto.AsycGrapDTO;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.common.util.CommonUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -55,7 +55,7 @@ public class OperatorFlowTaskTimeoutHandler implements TaskTimeoutHandler {
 
         // 3.查询流量子任务是否已经回调通知过
         List<Long> configIds = callbackConfigs.stream().map(config -> config.getId().longValue()).collect(Collectors.toList());
-        List<TaskCallbackLog> taskCallbackLogs = taskCallbackLogService.getTaskCallbackLogs(taskId, configIds);
+        List<TaskCallbackLog> taskCallbackLogs = taskCallbackLogService.queryTaskCallbackLogsByTaskIdAndInConfigIds(taskId, configIds);
         if (CollectionUtils.isNotEmpty(taskCallbackLogs)) {
             logger.info("handle operator flow task timeout, has been callback already: taskId={},timeout={},loginTime={}", taskId,
                     timeout, DateFormatUtils.format(loginTime, "yyyyMMdd HH:mm:ss"));

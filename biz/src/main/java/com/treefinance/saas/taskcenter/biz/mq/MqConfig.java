@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @DResource
 public class MqConfig {
     private static final Logger logger = LoggerFactory.getLogger(MqConfig.class);
-    
+
     @DAttribute(key = "gateway.group.name")
     private String gatewayGroupName;
 
@@ -163,11 +163,11 @@ public class MqConfig {
         this.consumeTaskLogTag = consumeTaskLogTag;
     }
 
-		public String getGatewayGroupName() {
-			return gatewayGroupName;
-		}
+    public String getGatewayGroupName() {
+        return gatewayGroupName;
+    }
 
-		public void setGatewayGroupName(String gatewayGroupName) {
-			this.gatewayGroupName = gatewayGroupName;
-		}
+    public void setGatewayGroupName(String gatewayGroupName) {
+        this.gatewayGroupName = gatewayGroupName;
+    }
 }

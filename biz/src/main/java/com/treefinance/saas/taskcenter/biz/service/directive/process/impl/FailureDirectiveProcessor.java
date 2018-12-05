@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.biz.service.common.AsycExcutor;
+import com.treefinance.saas.taskcenter.biz.service.common.AsyncExecutor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
@@ -25,7 +25,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
     @Autowired
     protected MonitorService monitorService;
     @Autowired
-    private AsycExcutor asycExcutor;
+    private AsyncExecutor asyncExecutor;
 
     @Override
     protected void doProcess(EDirective directive, DirectiveDTO directiveDTO) {
@@ -35,7 +35,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
         // 1.任务置为失败
         taskDTO.setStatus(ETaskStatus.FAIL.getStatus());
         // 2.更新任务状态
-        String errorCode = taskService.failTaskWithStep(taskDTO.getId());
+        String errorCode = taskService.updateStatusIfDone(taskDTO.getId(), ETaskStatus.FAIL.getStatus());
         taskDTO.setStepCode(errorCode);
         // 3.发送监控消息
         monitorService.sendMonitorMessage(taskDTO.getId());
@@ -49,7 +49,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
 
         handleTaskFailMsg(directiveDTO, taskDTO);
         // 7.异步触发触发回调
-        asycExcutor.runAsyc(directiveDTO, _directiveDTO -> {
+        asyncExecutor.runAsync(directiveDTO, _directiveDTO -> {
             callback(dataMap, appLicense, _directiveDTO);
         });
     }

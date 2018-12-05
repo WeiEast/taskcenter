@@ -5,10 +5,11 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
-import com.treefinance.saas.taskcenter.biz.utils.CommonUtils;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
+import com.treefinance.saas.taskcenter.common.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.common.util.CommonUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ public class MainStreamTaskTimeoutHandler implements TaskTimeoutHandler {
         String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss")
                 + ") - 登录时间(" + DateFormatUtils.format(loginTime, "yyyy-MM-dd HH:mm:ss")
                 + ")> 超时时间(" + timeout + "秒)";
-        taskLogService.logTimeoutTask(task.getId(), errorMessage);
+        taskLogService.log(task.getId(), TaskStatusMsgEnum.TIMEOUT_MSG, errorMessage);
 
         // 通知爬数取消任务
         try {

@@ -2,7 +2,12 @@ package com.treefinance.saas.taskcenter.biz.service.moxie.directive.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
-import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.*;
+import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.MoxieBaseDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.MoxieCancelDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.MoxieFailureDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.MoxieLoginFailDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.MoxieLoginSuccessDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.MoxieSuccessDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.moxie.EMoxieDirective;
 import com.treefinance.saas.taskcenter.common.model.moxie.MoxieDirectiveDTO;
 import org.slf4j.Logger;

@@ -1,152 +1,87 @@
+/*
+ * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.commonservice.uid.UidGenerator;
-import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.common.utils.JsonUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
-import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirectiveCriteria;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskNextDirectiveMapper;
-import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
- * Created by luoyihua on 2017/4/26.
+ * @author Jerry
+ * @date 2018/11/21 17:50
  */
-@Service
-public class TaskNextDirectiveService {
-    private static final Logger logger = LoggerFactory.getLogger(TaskNextDirectiveService.class);
-
-    @Autowired
-    private TaskNextDirectiveMapper taskNextDirectiveMapper;
-    @Autowired
-    private RedisDao redisDao;
-
-    private final static int DAY_SECOND = 24 * 60 * 60;
-
-    public String generaRedisKey(Long taskId) {
-        return String.format("saas-gateway:nextDirective:%s", taskId);
-    }
-
-    /**
-     * 添加一条指令记录
-     *
-     * @param taskId
-     * @param directive
-     * @return
-     */
-    public Long insert(Long taskId, String directive, String remark) {
-        TaskNextDirective taskNextDirective = new TaskNextDirective();
-        long id = UidGenerator.getId();
-        taskNextDirective.setId(id);
-        taskNextDirective.setTaskId(taskId);
-        taskNextDirective.setDirective(directive);
-        taskNextDirective.setRemark(remark);
-        taskNextDirectiveMapper.insertSelective(taskNextDirective);
-        return id;
-    }
-
-    public Long insert(Long taskId, String directive) {
-        return this.insert(taskId, directive, null);
-    }
+public interface TaskNextDirectiveService {
 
     /**
      * 查询最近一条指令记录
      *
-     * @param taskId
-     * @return
+     * @param taskId 任务ID
+     * @return the latest {@link TaskNextDirective}
      */
-    public TaskNextDirective queryRecentDirective(Long taskId) {
-        TaskNextDirectiveCriteria criteria = new TaskNextDirectiveCriteria();
-        criteria.setOrderByClause("createTime desc,id desc");
-        TaskNextDirectiveCriteria.Criteria innerCriteria = criteria.createCriteria();
-        innerCriteria.andTaskIdEqualTo(taskId);
-        List<TaskNextDirective> taskNextDirectiveList = taskNextDirectiveMapper.selectByExample(criteria);
-        if (CollectionUtils.isNotEmpty(taskNextDirectiveList)) {
-            return taskNextDirectiveList.get(0);
-        }
-        return null;
-    }
+    TaskNextDirective getLastDirectiveByTaskId(@Nonnull Long taskId);
 
+    List<TaskNextDirective> listDirectivesDescWithCreateTimeByTaskId(@Nonnull Long taskId);
+
+    /**
+     * 添加一条指令记录
+     *
+     * @param taskId 任务ID
+     * @param directive 指令
+     * @param remark 备注信息
+     * @return the id of {@link TaskNextDirective}
+     */
+    Long insert(Long taskId, String directive, String remark);
+
+    /**
+     * 添加一条指令记录
+     *
+     * @param taskId 任务ID
+     * @param directive 指令
+     * @return the id of {@link TaskNextDirective}
+     * @see #insert(Long, String, String)
+     */
+    default Long insert(Long taskId, String directive) {
+        return this.insert(taskId, directive, null);
+    }
 
     /**
      * 记录并缓存指令
      *
-     * @param taskId
-     * @param directive
+     *
+     * @param taskId 任务ID
+     * @param directive 指令对象
      */
-    public void insertAndCacheNextDirective(Long taskId, DirectiveDTO directive) {
-
-        this.insert(taskId, directive.getDirective(), directive.getRemark());
-
-        String content = JsonUtils.toJsonString(directive, "task");
-        String key = generaRedisKey(taskId);
-        if (redisDao.setEx(key, content, DAY_SECOND, TimeUnit.SECONDS)) {
-            logger.info("指令已经放到redis缓存,有效期一天, key={}，content={}", key, content);
-        }
-    }
+    void insertAndCacheNextDirective(@Nonnull Long taskId, @Nonnull DirectiveDTO directive);
 
     /**
      * 获取指令
      *
-     * @param taskId
-     * @return
+     * @param taskId 任务ID
+     * @return 指令
      */
-    public String getNextDirective(Long taskId) {
-        String key = generaRedisKey(taskId);
-        String value = redisDao.get(key);
-        if (StringUtils.isNotBlank(value)) {
-            return value;
-        } else {
-            TaskNextDirective taskNextDirective = this.queryRecentDirective(taskId);
-            if (taskNextDirective == null) {
-                return null;
-            }
-            DirectiveDTO directiveDTO = new DirectiveDTO();
-            directiveDTO.setTaskId(taskNextDirective.getTaskId());
-            directiveDTO.setDirective(taskNextDirective.getDirective());
-            directiveDTO.setRemark(taskNextDirective.getRemark());
-            return JsonUtils.toJsonString(directiveDTO);
-        }
-    }
+    String getNextDirective(@Nonnull Long taskId);
 
     /**
-     * 删除指令
-     * 数据库中的指令是只插入的,所以这里的删除指插入waiting指令
+     * 删除指令。注意：数据库中的指令是只插入的,所以这里的删除指插入waiting指令
      *
-     * @param taskId
+     * @param taskId 任务ID
      */
-    public void deleteNextDirective(Long taskId) {
-        redisDao.deleteKey(generaRedisKey(taskId));
-        this.insert(taskId, "waiting", "请等待");
-    }
+    void deleteNextDirective(@Nonnull Long taskId);
 
-    public void deleteNextDirective(Long taskId, String directive) {
-        if (StringUtils.isNotEmpty(directive)) {
-            String value = this.getNextDirective(taskId);
-            if (StringUtils.isNotEmpty(value)) {
-                JSONObject jasonObject = JSONObject.fromObject(value);
-                String existDirective = jasonObject.get("directive").toString();
-                if (directive.equals(existDirective)) {
-                    this.deleteNextDirective(taskId);
-                    logger.info("taskId={},下一指令信息={}已删除", taskId, existDirective);
-                } else {
-                    logger.info("taskId={},需要删除的指令信息={}和缓存的指令信息={}不一致", taskId, directive, existDirective);
-                }
-            } else {
-                logger.info("taskId={},下一指令信息={}不存在", taskId, directive);
-            }
-        } else {
-            this.deleteNextDirective(taskId);
-            logger.info("taskId={},下一指令信息已删除", taskId);
-        }
-    }
+    void deleteNextDirective(@Nonnull Long taskId, @Nullable String directive);
 }

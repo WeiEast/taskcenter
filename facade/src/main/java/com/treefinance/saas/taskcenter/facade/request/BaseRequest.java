@@ -1,7 +1,8 @@
 package com.treefinance.saas.taskcenter.facade.request;
 
-import java.io.Serializable;
 import com.alibaba.fastjson.JSON;
+
+import java.io.Serializable;
 
 
 /**

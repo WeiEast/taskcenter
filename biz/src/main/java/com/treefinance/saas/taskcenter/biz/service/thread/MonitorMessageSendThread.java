@@ -6,10 +6,10 @@ import com.treefinance.saas.taskcenter.biz.service.monitor.EcommerceMonitorServi
 import com.treefinance.saas.taskcenter.biz.service.monitor.EmailMonitorService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorPluginService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.OperatorMonitorService;
-import com.treefinance.saas.taskcenter.biz.utils.SpringUtils;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.context.SpringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,11 +31,11 @@ public class MonitorMessageSendThread implements Runnable {
     private EmailMonitorService emailMonitorService;
 
     public MonitorMessageSendThread(Long taskId) {
-        this.taskService = (TaskService) SpringUtils.getBean("taskService");
-        this.monitorPluginService = (MonitorPluginService) SpringUtils.getBean("monitorPluginService");
-        this.operatorMonitorService = (OperatorMonitorService) SpringUtils.getBean("operatorMonitorService");
-        this.ecommerceMonitorService = (EcommerceMonitorService) SpringUtils.getBean("ecommerceMonitorService");
-        this.emailMonitorService = (EmailMonitorService) SpringUtils.getBean("emailMonitorService");
+        this.taskService = SpringUtils.getBean(TaskService.class);
+        this.monitorPluginService = SpringUtils.getBean(MonitorPluginService.class);
+        this.operatorMonitorService = SpringUtils.getBean(OperatorMonitorService.class);
+        this.ecommerceMonitorService = SpringUtils.getBean(EcommerceMonitorService.class);
+        this.emailMonitorService = SpringUtils.getBean(EmailMonitorService.class);
         this.taskId = taskId;
     }
 

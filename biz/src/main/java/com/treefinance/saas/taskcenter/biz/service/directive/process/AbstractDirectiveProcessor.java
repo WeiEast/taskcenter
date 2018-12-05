@@ -1,14 +1,14 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.biz.service.QRCodeAccountNoLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
+import com.treefinance.saas.taskcenter.biz.service.impl.QRCodeAccountNoLogServiceImpl;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.utils.JsonUtils;
+import com.treefinance.saas.taskcenter.common.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ public abstract class AbstractDirectiveProcessor extends CallbackableDirectivePr
     @Autowired
     protected TaskNextDirectiveService taskNextDirectiveService;
     @Autowired
-    private QRCodeAccountNoLogService qrCodeAccountNoLogService;
+    private QRCodeAccountNoLogServiceImpl qrCodeAccountNoLogService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)

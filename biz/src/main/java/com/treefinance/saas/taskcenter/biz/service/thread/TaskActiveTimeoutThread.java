@@ -2,12 +2,12 @@ package com.treefinance.saas.taskcenter.biz.service.thread;
 
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.Constants;
-import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
-import com.treefinance.saas.taskcenter.biz.config.DiamondConfig;
 import com.treefinance.saas.taskcenter.biz.service.TaskAliveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.biz.utils.RedisKeyUtils;
-import com.treefinance.saas.taskcenter.biz.utils.SpringUtils;
+import com.treefinance.saas.taskcenter.context.RedisKeyUtils;
+import com.treefinance.saas.taskcenter.context.SpringUtils;
+import com.treefinance.saas.taskcenter.context.cache.RedisDao;
+import com.treefinance.saas.taskcenter.context.config.DiamondConfig;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,10 +34,10 @@ public class TaskActiveTimeoutThread implements Runnable {
     private Date startTime;
 
     public TaskActiveTimeoutThread(Long taskId, Date startTime) {
-        this.taskAliveService = (TaskAliveService) SpringUtils.getBean("taskAliveService");
-        this.taskService = (TaskService) SpringUtils.getBean("taskService");
-        this.diamondConfig = (DiamondConfig) SpringUtils.getBean("diamondConfig");
-        this.redisDao = (RedisDao) SpringUtils.getBean("redisDao");
+        this.taskAliveService = SpringUtils.getBean(TaskAliveService.class);
+        this.taskService = SpringUtils.getBean(TaskService.class);
+        this.diamondConfig = SpringUtils.getBean(DiamondConfig.class);
+        this.redisDao = SpringUtils.getBean(RedisDao.class);
         this.taskId = taskId;
         this.startTime = startTime;
     }

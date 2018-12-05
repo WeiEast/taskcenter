@@ -1,7 +1,6 @@
 package com.treefinance.saas.taskcenter.facade.request;
 
 import com.treefinance.saas.knife.request.PageRequest;
-import com.treefinance.saas.taskcenter.facade.result.common.BaseResult;
 
 import java.io.Serializable;
 import java.util.Date;

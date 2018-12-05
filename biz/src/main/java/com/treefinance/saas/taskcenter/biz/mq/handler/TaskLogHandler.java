@@ -2,8 +2,8 @@ package com.treefinance.saas.taskcenter.biz.mq.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.mq.model.TaskLogMessage;
-import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.TaskService;
+import com.treefinance.saas.taskcenter.biz.service.impl.TaskLogServiceImpl;
+import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +19,9 @@ public class TaskLogHandler {
     private static final Logger logger = LoggerFactory.getLogger(TaskLogHandler.class);
 
     @Autowired
-    private TaskLogService taskLogService;
+    private TaskLogServiceImpl taskLogService;
     @Autowired
-    private TaskService taskService;
+    private TaskServiceImpl taskService;
 
     public void handle(String message) {
         TaskLogMessage taskLogMessage = JSON.parseObject(message, TaskLogMessage.class);
@@ -32,7 +32,7 @@ public class TaskLogHandler {
                 return;
             }
             Date processTime = new Date(taskLogMessage.getTimestamp());
-            taskLogService.insert(taskId, taskLogMessage.getMsg(), processTime, taskLogMessage.getErrorDetail());
+            taskLogService.insertTaskLog(taskId, taskLogMessage.getMsg(), processTime, taskLogMessage.getErrorDetail());
             logger.info("日志保存成功：message={}", taskLogMessage);
         }
     }
