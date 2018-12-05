@@ -6,8 +6,6 @@ import com.treefinance.saas.knife.result.SaasResult;
 import com.treefinance.saas.processor.thirdparty.facade.fund.FundService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.impl.TaskAttributeServiceImpl;
-import com.treefinance.saas.taskcenter.biz.service.impl.TaskLogServiceImpl;
 import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
