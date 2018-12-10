@@ -8,8 +8,8 @@ import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.MoxieLoginFailDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.MoxieLoginSuccessDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl.MoxieSuccessDirectiveProcessor;
-import com.treefinance.saas.taskcenter.common.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.common.model.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
+import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

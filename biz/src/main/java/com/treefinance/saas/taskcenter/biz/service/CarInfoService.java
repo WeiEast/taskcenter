@@ -16,7 +16,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.common.model.dto.CarInfoCollectTaskLogDTO;
+import com.treefinance.saas.taskcenter.dto.CarInfoCollectTaskLogDTO;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

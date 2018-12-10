@@ -5,7 +5,7 @@
 
     <import resource="task-center-diamond.xml"/>
     <import resource="task-center-dubbo-registry.xml"/>
-    <import resource="task-center-jedis.xml"/>
+    <import resource="classpath*:spring/task-center-jedis.xml"/>
     <import resource="classpath*:spring/task-center-datasource.xml"/>
 
 </beans>

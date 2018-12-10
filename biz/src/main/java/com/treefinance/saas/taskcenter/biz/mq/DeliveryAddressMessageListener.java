@@ -3,10 +3,11 @@ package com.treefinance.saas.taskcenter.biz.mq;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
-import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.treefinance.saas.taskcenter.biz.mq.model.DeliveryAddressMessage;
 import com.treefinance.saas.taskcenter.biz.service.DeliveryAddressService;
+import com.treefinance.saas.taskcenter.share.mq.BizMqMessageListener;
+import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,21 @@ import static com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyS
  * Created by luoyihua on 2017/4/26.
  */
 @Service
-public class DeliveryAddressMessageListener implements MessageListenerConcurrently {
+public class DeliveryAddressMessageListener implements BizMqMessageListener {
     private static final Logger logger = LoggerFactory.getLogger(DeliveryAddressMessageListener.class);
 
     @Autowired
     private DeliveryAddressService deliveryAddressService;
+
+    @Override
+    public ConsumeSetting getConsumeSetting() {
+        ConsumeSetting consumeSetting = new ConsumeSetting();
+        consumeSetting.setGroup("grap-data");
+        consumeSetting.setTopic("ecommerce_trade_address");
+        consumeSetting.setTags("ecommerce");
+
+        return consumeSetting;
+    }
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {

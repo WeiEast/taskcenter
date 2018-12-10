@@ -2,8 +2,8 @@ package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDirectiveProcessor;
-import com.treefinance.saas.taskcenter.common.enums.EDirective;
-import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.context.enums.EDirective;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import org.springframework.stereotype.Component;
 
 /**

@@ -3,7 +3,7 @@ package com.treefinance.saas.taskcenter.biz.service.monitor;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.assistant.model.TaskMonitorMessage;
 import com.treefinance.saas.assistant.plugin.TaskMonitorPlugin;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

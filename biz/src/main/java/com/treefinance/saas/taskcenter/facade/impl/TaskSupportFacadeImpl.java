@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Lists;
 import com.treefinance.saas.taskcenter.biz.service.TaskSupportService;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskSupport;
 import com.treefinance.saas.taskcenter.facade.result.TaskSupportRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
@@ -18,7 +18,7 @@ import java.util.List;
  * @date 2018/9/29
  */
 @Component("taskSupportFacade")
-public class TaskSupportFacadeImpl implements TaskSupportFacade {
+public class TaskSupportFacadeImpl extends AbstractFacade implements TaskSupportFacade {
 
     @Autowired
     private TaskSupportService taskSupportService;
@@ -29,7 +29,7 @@ public class TaskSupportFacadeImpl implements TaskSupportFacade {
         if (CollectionUtils.isEmpty(taskSupportList)) {
             return TaskResult.wrapSuccessfulResult(Lists.newArrayList());
         }
-        List<TaskSupportRO> taskSupportROList = DataConverterUtils.convert(taskSupportList, TaskSupportRO.class);
+        List<TaskSupportRO> taskSupportROList = convert(taskSupportList, TaskSupportRO.class);
         return TaskResult.wrapSuccessfulResult(taskSupportROList);
     }
 

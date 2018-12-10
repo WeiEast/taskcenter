@@ -17,7 +17,7 @@
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.google.gson.reflect.TypeToken;
-import com.treefinance.saas.taskcenter.biz.mq.MessageProducer;
+import com.treefinance.saas.taskcenter.share.mq.MessageProducer;
 import com.treefinance.saas.taskcenter.biz.mq.model.LoginMessage;
 import com.treefinance.saas.taskcenter.biz.service.AcquisitionService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;

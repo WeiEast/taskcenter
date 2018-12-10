@@ -13,7 +13,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dao.domain.TaskCompositeQuery;
 import com.treefinance.saas.taskcenter.dao.domain.TaskDO;
 import com.treefinance.saas.taskcenter.dao.domain.TaskQuery;

@@ -9,15 +9,13 @@ import com.treefinance.saas.assistant.plugin.TaskEmailMonitorPlugin;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.common.enums.EProcessStep;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.context.component.AbstractService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,9 +27,7 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2018/1/31.
  */
 @Service
-public class EmailMonitorService {
-
-    private static final Logger logger = LoggerFactory.getLogger(EmailMonitorService.class);
+public class EmailMonitorService extends AbstractService {
 
     @Autowired
     private TaskEmailMonitorPlugin taskEmailMonitorPlugin;
@@ -50,7 +46,7 @@ public class EmailMonitorService {
     public void sendMessage(TaskDTO taskDTO) {
         long start = System.currentTimeMillis();
         Long taskId = taskDTO.getId();
-        TaskEmailMonitorMessage message = DataConverterUtils.convert(taskDTO, TaskEmailMonitorMessage.class);
+        TaskEmailMonitorMessage message = convert(taskDTO, TaskEmailMonitorMessage.class);
         message.setSaasEnv(String.valueOf(taskDTO.getSaasEnv()));
         // 1.获取任务属性
         List<TaskAttribute> attributeList = taskAttributeService.findByTaskId(taskId);

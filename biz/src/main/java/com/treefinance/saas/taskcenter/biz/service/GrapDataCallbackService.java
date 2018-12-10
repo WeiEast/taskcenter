@@ -16,10 +16,10 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.common.enums.EDataType;
-import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.AsycGrapDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 
 import java.util.List;
 

@@ -7,11 +7,11 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>common</module>
         <module>dao</module>
         <module>biz</module>
         <module>facade</module>
         <module>web</module>
+        <module>share</module>
     </modules>
 
     <name>taskcenter</name>

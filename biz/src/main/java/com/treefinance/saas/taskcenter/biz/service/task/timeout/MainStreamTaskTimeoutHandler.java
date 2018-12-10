@@ -5,11 +5,11 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
-import com.treefinance.saas.taskcenter.common.enums.EDirective;
-import com.treefinance.saas.taskcenter.common.enums.TaskStatusMsgEnum;
-import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.CommonUtils;
+import com.treefinance.saas.taskcenter.context.enums.EDirective;
+import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class MainStreamTaskTimeoutHandler implements TaskTimeoutHandler {
         // 任务超时: 当前时间-登录时间>超时时间
         Date currentTime = new Date();
         logger.info("主流程数据：isTaskTimeout: taskid={}，loginTime={},current={},timeout={}",
-                taskId, CommonUtils.date2Str(loginTime), CommonUtils.date2Str(currentTime), timeout);
+                taskId, DateUtils.format(loginTime),DateUtils.format(currentTime), timeout);
 
         // 增加日志：任务超时
         String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss")

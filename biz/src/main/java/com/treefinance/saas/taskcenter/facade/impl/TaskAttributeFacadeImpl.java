@@ -1,7 +1,8 @@
 package com.treefinance.saas.taskcenter.facade.impl;
+
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.domain.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
@@ -19,11 +20,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author:guoguoyun
- * @date:Created in 2018/9/18上午11:02
+ * @author guoguoyun
+ * @date 2018/9/18上午11:02
  */
 @Component("taskAttributeFacade")
-public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
+public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttributeFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskAttributeFacade.class);
 
@@ -41,7 +42,7 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
 
         List<TaskAttribute> list = taskAttributeService.queryTaskAttributes(query);
 
-        List<TaskAttributeRO> attributeROList = DataConverterUtils.convert(list, TaskAttributeRO.class);
+        List<TaskAttributeRO> attributeROList = convert(list, TaskAttributeRO.class);
 
         return TaskResult.wrapSuccessfulResult(attributeROList);
     }
@@ -51,7 +52,7 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
     public TaskResult<List<TaskAttributeRO>> queryTaskAttributeByTaskId(TaskAttributeRequest request) {
         List<TaskAttribute> list = taskAttributeService.listTaskAttributesByNameAndInTaskIds(request.getName(), request.getTaskIds());
 
-        List<TaskAttributeRO> taskAttributeROS = DataConverterUtils.convert(list, TaskAttributeRO.class);
+        List<TaskAttributeRO> taskAttributeROS = convert(list, TaskAttributeRO.class);
 
         return TaskResult.wrapSuccessfulResult(taskAttributeROS);
     }
@@ -64,7 +65,7 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
         if (CollectionUtils.isNotEmpty(attributes)) {
             result = Maps.newHashMap();
             for (TaskAttribute attribute : attributes) {
-                TaskAttributeRO taskAttributeRO = DataConverterUtils.convert(attribute, TaskAttributeRO.class);
+                TaskAttributeRO taskAttributeRO = convert(attribute, TaskAttributeRO.class);
                 result.put(attribute.getName(), taskAttributeRO);
             }
         } else {
@@ -98,21 +99,21 @@ public class TaskAttributeFacadeImpl implements TaskAttributeFacade {
         if (taskAttribute == null) {
             return TaskResult.wrapSuccessfulResult(null);
         }
-        TaskAttributeRO attributeRO = DataConverterUtils.convert(taskAttribute, TaskAttributeRO.class);
+        TaskAttributeRO attributeRO = convert(taskAttribute, TaskAttributeRO.class);
         return TaskResult.wrapSuccessfulResult(attributeRO);
     }
 
     @Override
     public TaskResult<TaskAttributeRO> findByNameAndValue(String name, String value, boolean encrypt) {
         TaskAttribute taskAttribute = taskAttributeService.findByNameAndValue(name, value, encrypt);
-        TaskAttributeRO taskAttributeRO = DataConverterUtils.convert(taskAttribute, TaskAttributeRO.class);
+        TaskAttributeRO taskAttributeRO = convert(taskAttribute, TaskAttributeRO.class);
         return TaskResult.wrapSuccessfulResult(taskAttributeRO);
     }
 
     @Override
     public TaskResult<List<TaskAttributeRO>> findByTaskId(Long taskId) {
         List<TaskAttribute> taskAttributeList = taskAttributeService.findByTaskId(taskId);
-        List<TaskAttributeRO> taskAttributeROList = DataConverterUtils.convert(taskAttributeList, TaskAttributeRO.class);
+        List<TaskAttributeRO> taskAttributeROList = convert(taskAttributeList, TaskAttributeRO.class);
         return TaskResult.wrapSuccessfulResult(taskAttributeROList);
     }
 }

@@ -2,8 +2,8 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Lists;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.common.exception.BusinessCheckFailException;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.exception.BusinessCheckFailException;
+import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.domain.TaskCompositeQuery;
 import com.treefinance.saas.taskcenter.dao.domain.TaskDO;
 import com.treefinance.saas.taskcenter.dao.domain.TaskQuery;
@@ -21,8 +21,6 @@ import com.treefinance.saas.taskcenter.facade.service.TaskFacade;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,8 +35,7 @@ import java.util.Objects;
  * @date:Created in 2018/9/18上午10:24
  */
 @Component("taskFacade")
-public class TaskFacadeImpl implements TaskFacade {
-    private static final Logger logger = LoggerFactory.getLogger(TaskFacade.class);
+public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
 
     @Autowired
     private TaskService taskService;
@@ -86,7 +83,7 @@ public class TaskFacadeImpl implements TaskFacade {
             return TaskResult.wrapErrorResult("失败", "找不到相关数据");
         }
 
-        List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
+        List<TaskRO> taskROList = convert(taskList, TaskRO.class);
 
         return TaskResult.wrapSuccessfulResult(taskROList);
     }
@@ -103,7 +100,7 @@ public class TaskFacadeImpl implements TaskFacade {
             throw new BusinessCheckFailException("-1", "业务类型不能为空");
         }
 
-        TaskDO taskDO = DataConverterUtils.convert(request, TaskDO.class);
+        TaskDO taskDO = convert(request, TaskDO.class);
 
         Long taskId = taskService.createTask(taskDO, request.getSource(), request.getExtra());
 
@@ -118,7 +115,7 @@ public class TaskFacadeImpl implements TaskFacade {
 
     @Override
     public TaskResult<Integer> updateUnfinishedTask(TaskUpdateRequest request) {
-        Task task = DataConverterUtils.convert(request, Task.class);
+        Task task = convert(request, Task.class);
         int id = taskService.updateUnfinishedTask(task);
         return TaskResult.wrapSuccessfulResult(id);
     }
@@ -195,7 +192,7 @@ public class TaskFacadeImpl implements TaskFacade {
 
         int count = (int)taskService.countTasks(query);
 
-        List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
+        List<TaskRO> taskROList = convert(taskList, TaskRO.class);
 
         return TaskPagingResult.wrapSuccessfulResult(taskROList, count);
     }
@@ -221,7 +218,7 @@ public class TaskFacadeImpl implements TaskFacade {
 
         List<Task> taskList = taskService.queryTasks(query);
 
-        List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
+        List<TaskRO> taskROList = convert(taskList, TaskRO.class);
 
         return TaskPagingResult.wrapSuccessfulResult(taskROList, (int)count);
     }
@@ -238,7 +235,7 @@ public class TaskFacadeImpl implements TaskFacade {
 
         List<Task> taskList = taskService.queryTasks(query);
 
-        List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
+        List<TaskRO> taskROList = convert(taskList, TaskRO.class);
 
         return TaskResult.wrapSuccessfulResult(taskROList);
 
@@ -282,7 +279,7 @@ public class TaskFacadeImpl implements TaskFacade {
         }
         List<TaskAndTaskAttribute> list = taskService.queryCompositeTasks(query);
 
-        List<TaskAndAttributeRO> taskList = DataConverterUtils.convert(list, TaskAndAttributeRO.class);
+        List<TaskAndAttributeRO> taskList = convert(list, TaskAndAttributeRO.class);
 
         return TaskPagingResult.wrapSuccessfulResult(taskList, (int)total);
     }
@@ -299,7 +296,7 @@ public class TaskFacadeImpl implements TaskFacade {
         if (CollectionUtils.isEmpty(taskList)) {
             return TaskResult.wrapSuccessfulResult(Lists.newArrayList());
         }
-        List<TaskRO> taskROList = DataConverterUtils.convert(taskList, TaskRO.class);
+        List<TaskRO> taskROList = convert(taskList, TaskRO.class);
         return TaskResult.wrapSuccessfulResult(taskROList);
     }
 

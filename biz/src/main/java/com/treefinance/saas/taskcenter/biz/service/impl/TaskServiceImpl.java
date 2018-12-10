@@ -22,21 +22,21 @@ import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
-import com.treefinance.saas.taskcenter.common.enums.EDirective;
-import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.common.enums.TaskStatusMsgEnum;
-import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.CommonUtils;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.enums.EDirective;
+import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
+import com.treefinance.saas.taskcenter.context.component.AbstractService;
 import com.treefinance.saas.taskcenter.dao.domain.TaskCompositeQuery;
 import com.treefinance.saas.taskcenter.dao.domain.TaskDO;
 import com.treefinance.saas.taskcenter.dao.domain.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.util.SystemUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
  * @date 2018/9/21
  */
 @Service
-public class TaskServiceImpl implements TaskService {
+public class TaskServiceImpl extends AbstractService implements TaskService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Byte[] DONE_STATUSES = {ETaskStatus.CANCEL.getStatus(), ETaskStatus.SUCCESS.getStatus(), ETaskStatus.FAIL.getStatus()};
@@ -140,7 +140,7 @@ public class TaskServiceImpl implements TaskService {
         String idCardAttribute = ETaskAttribute.ID_CARD.getAttribute();
         String mobile = map.get(mobileAttribute) == null ? "" : String.valueOf(map.get(mobileAttribute));
         if (StringUtils.isNotBlank(mobile)) {
-            boolean b = CommonUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
+            boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
             if (!b) {
                 throw new ValidationException(String.format("the mobile number is illegal! mobile=%s", mobile));
             }
@@ -163,7 +163,7 @@ public class TaskServiceImpl implements TaskService {
         if (task == null) {
             return null;
         }
-        return DataConverterUtils.convert(task, TaskDTO.class);
+        return convert(task, TaskDTO.class);
     }
 
 

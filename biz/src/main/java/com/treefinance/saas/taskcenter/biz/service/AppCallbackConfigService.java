@@ -16,8 +16,8 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.common.enums.EDataType;
-import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 
 import java.util.List;
 

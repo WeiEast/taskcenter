@@ -3,10 +3,12 @@ package com.treefinance.saas.taskcenter.biz.mq;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
-import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
-import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.context.config.MqConfig;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.share.mq.BizMqMessageListener;
+import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +22,23 @@ import static com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyS
  * Created by luoyihua on 2017/4/26.
  */
 @Service
-public class DirectiveMessageListener implements MessageListenerConcurrently {
+public class DirectiveMessageListener implements BizMqMessageListener {
     private static final Logger logger = LoggerFactory.getLogger(DirectiveMessageListener.class);
 
     @Autowired
+    private MqConfig mqConfig;
+    @Autowired
     private DirectiveService directiveService;
+
+    @Override
+    public ConsumeSetting getConsumeSetting() {
+        ConsumeSetting consumeSetting = new ConsumeSetting();
+        consumeSetting.setGroup(mqConfig.getDirectiveGroupName());
+        consumeSetting.setTopic(mqConfig.getConsumeDirectiveTopic());
+        consumeSetting.setTags(mqConfig.getConsumeDirectiveTag());
+
+        return consumeSetting;
+    }
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {

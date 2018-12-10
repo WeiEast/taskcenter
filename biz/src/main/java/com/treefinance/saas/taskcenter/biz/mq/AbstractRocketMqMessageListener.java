@@ -2,8 +2,9 @@ package com.treefinance.saas.taskcenter.biz.mq;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
-import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import com.treefinance.saas.taskcenter.context.component.AbstractService;
+import com.treefinance.saas.taskcenter.share.mq.BizMqMessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +16,7 @@ import static com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyS
  * 抽象消息监听
  * Created by yh-treefinance on 2017/12/19.
  */
-public abstract class AbstractRocketMqMessageListener implements MessageListenerConcurrently {
+public abstract class AbstractRocketMqMessageListener extends AbstractService implements BizMqMessageListener {
     /**
      * logger
      */

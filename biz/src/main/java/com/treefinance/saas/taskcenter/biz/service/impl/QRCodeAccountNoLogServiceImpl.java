@@ -19,7 +19,7 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 import com.datatrees.spider.share.api.SpiderTaskApi;
 import com.treefinance.saas.taskcenter.biz.service.QRCodeAccountNoLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

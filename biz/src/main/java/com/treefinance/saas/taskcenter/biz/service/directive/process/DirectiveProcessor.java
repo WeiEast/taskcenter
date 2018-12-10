@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 
-import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 
 /**
  * 指令消息处理器

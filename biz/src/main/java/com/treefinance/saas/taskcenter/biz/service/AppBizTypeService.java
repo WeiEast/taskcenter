@@ -13,7 +13,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.common.model.dto.AppBizType;
+import com.treefinance.saas.taskcenter.dto.AppBizType;
 
 import javax.annotation.Nonnull;
 

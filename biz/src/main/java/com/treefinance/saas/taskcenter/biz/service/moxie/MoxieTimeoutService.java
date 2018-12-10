@@ -1,5 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.moxie;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -8,20 +9,18 @@ import com.treefinance.saas.taskcenter.biz.service.AppBizTypeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
-import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.common.enums.TaskStatusMsgEnum;
-import com.treefinance.saas.taskcenter.common.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.common.model.dto.AppBizType;
-import com.treefinance.saas.taskcenter.common.model.moxie.MoxieDirectiveDTO;
-import com.treefinance.saas.taskcenter.common.util.CommonUtils;
-import com.treefinance.saas.taskcenter.common.util.JsonUtils;
-import com.treefinance.saas.taskcenter.common.util.SystemUtils;
-import com.treefinance.saas.taskcenter.context.cache.RedisDao;
+import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
+import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
+import com.treefinance.saas.taskcenter.dto.AppBizType;
+import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
+import com.treefinance.saas.taskcenter.util.SystemUtils;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -131,11 +130,11 @@ public class MoxieTimeoutService {
             logger.error("taskId={} is not exists...", taskId, e);
             return;
         }
-        logger.info("handleTaskTimeout async : taskId={}, task={}", taskId, JsonUtils.toJsonString(task));
+        logger.info("handleTaskTimeout async : taskId={}, task={}", taskId, JSON.toJSONString(task));
 
         Byte taskStatus = task.getStatus();
         if (ETaskStatus.CANCEL.getStatus().equals(taskStatus) || ETaskStatus.SUCCESS.getStatus().equals(taskStatus) || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
-            logger.info("handleTaskTimeout error : the task is completed: {}", JsonUtils.toJsonString(task));
+            logger.info("handleTaskTimeout error : the task is completed: {}", JSON.toJSONString(task));
             return;
         }
         Date loginTime = getLoginTime(taskId);
@@ -147,7 +146,8 @@ public class MoxieTimeoutService {
         // 任务超时: 当前时间-登录时间>超时时间
         Date currentTime = new Date();
         Date timeoutDate = DateUtils.plusSeconds(loginTime, timeout);
-        logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, CommonUtils.date2Str(loginTime), CommonUtils.date2Str(currentTime), timeout);
+        logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId,
+            DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
         if (timeoutDate.before(currentTime)) {
             // 增加日志：任务超时
             String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss") + ") - 登录时间(" + DateFormatUtils.format(loginTime, "yyyy-MM-dd HH:mm:ss")
@@ -161,7 +161,7 @@ public class MoxieTimeoutService {
             directiveDTO.setDirective(EMoxieDirective.TASK_FAIL.getText());
             Map<String, Object> map = Maps.newHashMap();
             map.put("taskErrorMsg", errorMessage);
-            directiveDTO.setRemark(JsonUtils.toJsonString(map));
+            directiveDTO.setRemark(JSON.toJSONString(map));
             moxieDirectiveService.process(directiveDTO);
         }
     }
@@ -178,7 +178,7 @@ public class MoxieTimeoutService {
         Map<String, Object> map = Maps.newHashMap();
         map.put("error", "登录超时");
         map.put("moxieTaskId", moxieTaskId);
-        taskLogService.insertTaskLog(taskId, ETaskStep.LOGIN_FAIL.getText(), new Date(), JsonUtils.toJsonString(map));
+        taskLogService.insertTaskLog(taskId, ETaskStep.LOGIN_FAIL.getText(), new Date(), JSON.toJSONString(map));
 
     }
 }

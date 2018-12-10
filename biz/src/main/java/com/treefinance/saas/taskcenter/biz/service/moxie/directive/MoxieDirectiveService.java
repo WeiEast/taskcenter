@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.service.moxie.directive;
 
 
-import com.treefinance.saas.taskcenter.common.model.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 
 /**
  * 魔蝎指令处理Service

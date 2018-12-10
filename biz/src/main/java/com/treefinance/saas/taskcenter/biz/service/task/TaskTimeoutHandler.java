@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.service.task;
 
 
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 
 import java.util.Date;
 

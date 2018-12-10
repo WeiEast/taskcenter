@@ -1,5 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.moxie;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.grapserver.facade.service.FundMoxieFacade;
 import com.treefinance.saas.knife.result.SaasResult;
@@ -8,14 +9,13 @@ import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
-import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.common.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.model.moxie.MoxieDirectiveDTO;
-import com.treefinance.saas.taskcenter.common.model.moxie.MoxieTaskEventNoticeDTO;
-import com.treefinance.saas.taskcenter.common.util.JsonUtils;
+import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.dto.moxie.MoxieTaskEventNoticeDTO;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -78,7 +78,7 @@ public class MoxieBusinessService {
         directiveDTO.setDirective(EMoxieDirective.TASK_FAIL.getText());
         Map<String, Object> map = Maps.newHashMap();
         map.put("taskErrorMsg", "爬数失败");
-        directiveDTO.setRemark(JsonUtils.toJsonString(map));
+        directiveDTO.setRemark(JSON.toJSONString(map));
         directiveDTO.setTaskId(taskId);
         directiveDTO.setMoxieTaskId(moxieTaskId);
         moxieDirectiveService.process(directiveDTO);
@@ -175,7 +175,7 @@ public class MoxieBusinessService {
             directiveDTO.setDirective(EMoxieDirective.TASK_FAIL.getText());
             Map<String, Object> map = Maps.newHashMap();
             map.put("taskErrorMsg", message);
-            directiveDTO.setRemark(JsonUtils.toJsonString(map));
+            directiveDTO.setRemark(JSON.toJSONString(map));
             moxieDirectiveService.process(directiveDTO);
         }
     }

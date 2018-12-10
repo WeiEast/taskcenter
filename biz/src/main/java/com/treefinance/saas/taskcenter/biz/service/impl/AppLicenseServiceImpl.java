@@ -24,11 +24,10 @@ import com.treefinance.saas.merchant.facade.result.grapsever.AppLicenseResult;
 import com.treefinance.saas.merchant.facade.result.grapsever.CallbackLicenseResult;
 import com.treefinance.saas.merchant.facade.service.AppLicenseFacade;
 import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
-import com.treefinance.saas.taskcenter.common.exception.UncheckedServiceException;
-import com.treefinance.saas.taskcenter.common.model.dto.AppLicenseDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.CallBackLicenseDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.treefinance.saas.taskcenter.context.component.AbstractService;
+import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
+import com.treefinance.saas.taskcenter.dto.CallBackLicenseDTO;
+import com.treefinance.saas.taskcenter.exception.RpcServiceException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -40,9 +39,8 @@ import javax.annotation.Resource;
  * @since 19:14 25/04/2017
  */
 @Component
-public class AppLicenseServiceImpl implements AppLicenseService {
+public class AppLicenseServiceImpl extends AbstractService implements AppLicenseService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppLicenseServiceImpl.class);
     @Resource
     private AppLicenseFacade appLicenseFacade;
 
@@ -53,7 +51,7 @@ public class AppLicenseServiceImpl implements AppLicenseService {
         request.setAppId(appId);
         MerchantResult<AppLicenseResult> result = appLicenseFacade.getAppLicense(request);
         if (!result.isSuccess()) {
-            throw new UncheckedServiceException("获取app的license失败！错误：" + result.getRetMsg());
+            throw new RpcServiceException("获取app的license失败！错误：" + result.getRetMsg());
         }
 
         AppLicenseResult appLicenseResult = result.getData();
@@ -72,7 +70,7 @@ public class AppLicenseServiceImpl implements AppLicenseService {
 
         MerchantResult<CallbackLicenseResult> result = appLicenseFacade.getCallbackLicense(request);
         if (!result.isSuccess()) {
-            throw new UncheckedServiceException("获取callback的license失败！错误：" + result.getRetMsg());
+            throw new RpcServiceException("获取callback的license失败！错误：" + result.getRetMsg());
         }
 
         CallbackLicenseResult appLicenseResult = result.getData();

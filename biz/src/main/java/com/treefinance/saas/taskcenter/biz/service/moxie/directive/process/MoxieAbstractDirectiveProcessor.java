@@ -6,12 +6,11 @@ import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackableDirectiveProcessor;
-import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.common.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.model.moxie.MoxieDirectiveDTO;
-import com.treefinance.saas.taskcenter.common.util.JsonUtils;
+import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -48,7 +47,7 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
         String directiveName = directiveDTO.getDirective();
         EMoxieDirective directive = EMoxieDirective.directiveOf(directiveName);
         if (directive == null) {
-            logger.error("handle moxie directive error : no support the directive of {}, directive={}", directiveName, JsonUtils.toJsonString(directiveDTO));
+            logger.error("handle moxie directive error : no support the directive of {}, directive={}", directiveName, JSON.toJSONString(directiveDTO));
             return;
         }
         // 2.初始化任务详细
@@ -66,7 +65,7 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
         if (taskDTO == null) {
             taskDTO = taskService.getById(taskId);
             if (taskDTO == null) {
-                logger.error("handle moxie directive error : taskId={} is not exists, directive={}", taskId, JsonUtils.toJsonString(directiveDTO));
+                logger.error("handle moxie directive error : taskId={} is not exists, directive={}", taskId, JSON.toJSONString(directiveDTO));
                 return;
             }
             directiveDTO.setTask(taskDTO);
@@ -76,7 +75,7 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
         if (ETaskStatus.CANCEL.getStatus().equals(taskStatus)
                 || ETaskStatus.SUCCESS.getStatus().equals(taskStatus)
                 || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
-            logger.info("handle moxie directive error : the task id={} is completed: directive={}", taskId, JsonUtils.toJsonString(directiveDTO));
+            logger.info("handle moxie directive error : the task id={} is completed: directive={}", taskId, JSON.toJSONString(directiveDTO));
             return;
         }
         // 4.处理指令

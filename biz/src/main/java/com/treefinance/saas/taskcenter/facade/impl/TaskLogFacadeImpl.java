@@ -2,15 +2,13 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Lists;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.facade.request.TaskLogRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskLogRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskLogFacade;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,13 +17,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @author:guoguoyun
- * @date:Created in 2018/9/18上午10:26
+ * @author guoguoyun
+ * @date 2018/9/18上午10:26
  */
 @Component("taskLogFacade")
-public class TaskLogFacadeImpl implements TaskLogFacade {
-
-    private static final Logger logger = LoggerFactory.getLogger(TaskLogFacade.class);
+public class TaskLogFacadeImpl extends AbstractFacade implements TaskLogFacade {
 
     @Autowired
     private TaskLogService taskLogService;
@@ -48,7 +44,7 @@ public class TaskLogFacadeImpl implements TaskLogFacade {
 
         List<TaskLog> list = taskLogService.queryTaskLogs(id, taskIds, msg, stepCode, errorMsg, occurTime, order);
 
-        List<TaskLogRO> attributeROList = DataConverterUtils.convert(list, TaskLogRO.class);
+        List<TaskLogRO> attributeROList = convert(list, TaskLogRO.class);
 
         return TaskResult.wrapSuccessfulResult(attributeROList);
 
@@ -60,21 +56,16 @@ public class TaskLogFacadeImpl implements TaskLogFacade {
         List<Long> taskIds = taskLogRequest.getTaskIdList();
         List<TaskLog> list = taskLogService.listTaskLogsDescWithOccurTimeInTaskIds(taskIds);
 
-        List<TaskLogRO> taskLogROs = DataConverterUtils.convert(list, TaskLogRO.class);
+        List<TaskLogRO> taskLogROs = convert(list, TaskLogRO.class);
 
         return TaskResult.wrapSuccessfulResult(taskLogROs);
-    }
-
-    @Override
-    public TaskResult<TaskLogRO> queryLastestErrorLog(Long taskId) {
-        return queryLastErrorLog(taskId);
     }
 
     @Override
     public TaskResult<TaskLogRO> queryLastErrorLog(Long taskId) {
         TaskLog taskLog = taskLogService.queryLastErrorLog(taskId);
         if (taskLog != null) {
-            TaskLogRO taskLogRO = DataConverterUtils.convert(taskLog, TaskLogRO.class);
+            TaskLogRO taskLogRO = convert(taskLog, TaskLogRO.class);
             return TaskResult.wrapSuccessfulResult(taskLogRO);
         }
         return TaskResult.wrapSuccessfulResult(null);
@@ -92,7 +83,7 @@ public class TaskLogFacadeImpl implements TaskLogFacade {
         if (CollectionUtils.isEmpty(taskLogList)) {
             return TaskResult.wrapSuccessfulResult(Lists.newArrayList());
         }
-        List<TaskLogRO> taskLogROList = DataConverterUtils.convert(taskLogList, TaskLogRO.class);
+        List<TaskLogRO> taskLogROList = convert(taskLogList, TaskLogRO.class);
         return TaskResult.wrapSuccessfulResult(taskLogROList);
     }
 

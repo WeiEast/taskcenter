@@ -26,9 +26,9 @@ import com.treefinance.saas.merchant.facade.result.console.AppBizTypeResult;
 import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
 import com.treefinance.saas.merchant.facade.service.AppBizTypeFacade;
 import com.treefinance.saas.taskcenter.biz.service.AppBizTypeService;
-import com.treefinance.saas.taskcenter.common.exception.ServiceException;
-import com.treefinance.saas.taskcenter.common.model.dto.AppBizType;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.dto.AppBizType;
+import com.treefinance.saas.taskcenter.context.component.AbstractService;
+import com.treefinance.saas.taskcenter.exception.RpcServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2017/8/2.
  */
 @Service
-public class AppBizTypeServiceImpl implements AppBizTypeService, InitializingBean {
+public class AppBizTypeServiceImpl extends AbstractService implements AppBizTypeService, InitializingBean {
     /**
      * logger
      */
@@ -65,11 +65,12 @@ public class AppBizTypeServiceImpl implements AppBizTypeService, InitializingBea
                 getAppBizTypeRequest.setBizType(bizType);
                 MerchantResult<List<AppBizTypeResult>> merchantResult = appBizTypeFacade.queryAppBizTypeByBizType(getAppBizTypeRequest);
                 if (merchantResult.isSuccess()) {
-                    List<AppBizType> list = DataConverterUtils.convert(merchantResult.getData(), AppBizType.class);
+                    List<AppBizType> list = convert(merchantResult.getData(), AppBizType.class);
                     logger.info("load biz-type list into local cache from remote service. bizType={},data={}", bizType, JSON.toJSONString(list));
                     return list.get(0);
                 } else {
-                    throw new ServiceException("Failed querying biz-type list! bizType: " + bizType + ", errorMsg: " + merchantResult.getRetMsg());
+                    throw new RpcServiceException("Failed querying biz-type list! bizType: " + bizType + ", errorMsg:"
+                        + " " + merchantResult.getRetMsg());
                 }
             }
         });
@@ -87,7 +88,7 @@ public class AppBizTypeServiceImpl implements AppBizTypeService, InitializingBea
         if (merchantResult.isSuccess()) {
             List<AppBizTypeResult> results = merchantResult.getData();
 
-            List<AppBizType> list = DataConverterUtils.convert(results, AppBizType.class);
+            List<AppBizType> list = convert(results, AppBizType.class);
 
             this.cache.putAll(list.stream().collect(Collectors.toMap(AppBizType::getBizType, appBizType -> appBizType)));
 

@@ -9,13 +9,13 @@ import com.treefinance.saas.assistant.plugin.TaskOperatorMonitorPlugin;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.common.enums.EProcessStep;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.context.component.AbstractService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * @date 2018/4/2
  */
 @Service
-public class OperatorMonitorService {
+public class OperatorMonitorService extends AbstractService {
     private static final Logger logger = LoggerFactory.getLogger(OperatorMonitorService.class);
 
     @Autowired
@@ -53,7 +53,7 @@ public class OperatorMonitorService {
     public void sendMessage(TaskDTO taskDTO) {
         long start = System.currentTimeMillis();
         Long taskId = taskDTO.getId();
-        TaskOperatorMonitorMessage message = DataConverterUtils.convert(taskDTO, TaskOperatorMonitorMessage.class);
+        TaskOperatorMonitorMessage message = convert(taskDTO, TaskOperatorMonitorMessage.class);
         message.setTaskId(taskDTO.getId());
         message.setSaasEnv(String.valueOf(taskDTO.getSaasEnv()));
         // 1.获取任务属性

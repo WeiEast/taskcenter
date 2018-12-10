@@ -4,14 +4,14 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.taskcenter.biz.service.TaskTimeService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
 import com.treefinance.saas.taskcenter.context.RedisKeyUtils;
 import com.treefinance.saas.taskcenter.context.SpringUtils;
-import com.treefinance.saas.taskcenter.context.cache.RedisDao;
+import com.treefinance.saas.taskcenter.context.component.AbstractService;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ import java.util.Map;
  * @author haojiahong
  * @date 2018/5/30
  */
-public class TaskCrawlerTimeoutThread implements Runnable {
+public class TaskCrawlerTimeoutThread extends AbstractService implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskCrawlerTimeoutThread.class);
 
@@ -59,7 +59,7 @@ public class TaskCrawlerTimeoutThread implements Runnable {
             if (!ETaskStatus.RUNNING.getStatus().equals(task.getStatus())) {
                 return;
             }
-            TaskDTO taskDTO = DataConverterUtils.convert(task, TaskDTO.class);
+            TaskDTO taskDTO = convert(task, TaskDTO.class);
             Date loginTime = taskTimeService.getLoginTime(taskDTO.getId());
             if (loginTime == null) {
                 return;

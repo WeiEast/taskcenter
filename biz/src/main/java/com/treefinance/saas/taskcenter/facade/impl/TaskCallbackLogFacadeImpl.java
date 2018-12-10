@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Lists;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.domain.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.facade.request.TaskCallbackLogPageRequest;
@@ -22,11 +22,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author:guoguoyun
- * @date:Created in 2018/9/18上午10:28
+ * @author guoguoyun
+ * @date 2018/9/18上午10:28
  */
 @Component("taskCallbackLogFacade")
-public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
+public class TaskCallbackLogFacadeImpl extends AbstractFacade implements TaskCallbackLogFacade {
     private static final Logger logger = LoggerFactory.getLogger(TaskBuryPointLogFacade.class);
 
 
@@ -58,7 +58,7 @@ public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
         query.setFailureReason(request.getFailureReason());
 
         List<TaskCallbackLog> list = taskCallbackLogService.queryTaskCallbackLogs(query);
-        List<TaskCallbackLogRO> attributeROList = DataConverterUtils.convert(list, TaskCallbackLogRO.class);
+        List<TaskCallbackLogRO> attributeROList = convert(list, TaskCallbackLogRO.class);
 
         return TaskResult.wrapSuccessfulResult(attributeROList);
     }
@@ -68,7 +68,7 @@ public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
     public TaskResult<List<TaskCallbackLogRO>> queryTaskCallbackLog(List<Long> taskIdList) {
         List<TaskCallbackLog> list = taskCallbackLogService.listTaskCallbackLogsInTaskIds(taskIdList);
 
-        List<TaskCallbackLogRO> taskCallbackLogROES = DataConverterUtils.convert(list, TaskCallbackLogRO.class);
+        List<TaskCallbackLogRO> taskCallbackLogROES = convert(list, TaskCallbackLogRO.class);
 
         return TaskResult.wrapSuccessfulResult(taskCallbackLogROES);
     }
@@ -84,7 +84,7 @@ public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
 
         List<TaskCallbackLog> taskCallbackLogList = taskCallbackLogService.listTaskCallbackLogsInTaskIdsWithRowBounds(taskIds, request.getOffset(), request.getPageSize());
 
-        List<TaskCallbackLogRO> taskCallbackLogROES = DataConverterUtils.convert(taskCallbackLogList, TaskCallbackLogRO.class);
+        List<TaskCallbackLogRO> taskCallbackLogROES = convert(taskCallbackLogList, TaskCallbackLogRO.class);
 
         return TaskPagingResult.wrapSuccessfulResult(taskCallbackLogROES, (int)count);
     }
@@ -95,7 +95,7 @@ public class TaskCallbackLogFacadeImpl implements TaskCallbackLogFacade {
         if (CollectionUtils.isEmpty(taskCallbackLogList)) {
             return TaskResult.wrapSuccessfulResult(Lists.newArrayList());
         }
-        List<TaskCallbackLogRO> taskCallbackLogROList = DataConverterUtils.convert(taskCallbackLogList, TaskCallbackLogRO.class);
+        List<TaskCallbackLogRO> taskCallbackLogROList = convert(taskCallbackLogList, TaskCallbackLogRO.class);
         return TaskResult.wrapSuccessfulResult(taskCallbackLogROList);
     }
 

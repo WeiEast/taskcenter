@@ -16,8 +16,8 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.common.model.dto.AppLicenseDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.CallBackLicenseDTO;
+import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
+import com.treefinance.saas.taskcenter.dto.CallBackLicenseDTO;
 
 import javax.annotation.Nonnull;
 

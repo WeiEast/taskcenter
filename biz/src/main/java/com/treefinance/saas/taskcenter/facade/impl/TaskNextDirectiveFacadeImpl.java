@@ -1,8 +1,8 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
-import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
 import com.treefinance.saas.taskcenter.facade.request.TaskDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskNextDirectiveRequest;
@@ -19,7 +19,7 @@ import java.util.List;
  * @date 18/9/19 18:03
  */
 @Component("taskNextDirectiveFacade")
-public class TaskNextDirectiveFacadeImpl implements TaskNextDirectiveFacade {
+public class TaskNextDirectiveFacadeImpl extends AbstractFacade implements TaskNextDirectiveFacade {
 
 
     @Autowired
@@ -30,7 +30,7 @@ public class TaskNextDirectiveFacadeImpl implements TaskNextDirectiveFacade {
     public TaskResult<List<TaskNextDirectiveRO>> queryTaskNextDirectiveByTaskId(TaskNextDirectiveRequest request) {
         List<TaskNextDirective> list = taskNextDirectiveService.listDirectivesDescWithCreateTimeByTaskId(request.getTaskId());
 
-        List<TaskNextDirectiveRO> taskNextDirectiveROList = DataConverterUtils.convert(list, TaskNextDirectiveRO.class);
+        List<TaskNextDirectiveRO> taskNextDirectiveROList = convert(list, TaskNextDirectiveRO.class);
 
         return TaskResult.wrapSuccessfulResult(taskNextDirectiveROList);
     }
@@ -45,13 +45,13 @@ public class TaskNextDirectiveFacadeImpl implements TaskNextDirectiveFacade {
     @Override
     public TaskResult<TaskNextDirectiveRO> queryRecentDirective(Long taskId) {
         TaskNextDirective taskNextDirective = taskNextDirectiveService.getLastDirectiveByTaskId(taskId);
-        TaskNextDirectiveRO taskNextDirectiveRO = DataConverterUtils.convert(taskNextDirective, TaskNextDirectiveRO.class);
+        TaskNextDirectiveRO taskNextDirectiveRO = convert(taskNextDirective, TaskNextDirectiveRO.class);
         return TaskResult.wrapSuccessfulResult(taskNextDirectiveRO);
     }
 
     @Override
     public TaskResult<Void> insertAndCacheNextDirective(Long taskId, TaskDirectiveRequest directive) {
-        DirectiveDTO directiveDTO = DataConverterUtils.convert(directive, DirectiveDTO.class);
+        DirectiveDTO directiveDTO = convertStrict(directive, DirectiveDTO.class);
         taskNextDirectiveService.insertAndCacheNextDirective(taskId, directiveDTO);
         return TaskResult.wrapSuccessfulResult(null);
     }

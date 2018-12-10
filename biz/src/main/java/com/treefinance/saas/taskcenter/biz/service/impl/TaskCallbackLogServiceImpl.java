@@ -19,7 +19,7 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
-import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dao.domain.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;

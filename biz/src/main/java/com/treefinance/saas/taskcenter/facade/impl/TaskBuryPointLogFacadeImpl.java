@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.facade.request.TaskBuryPointLogRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskBuryPointLogRO;
@@ -19,7 +19,7 @@ import java.util.List;
  * @date:Created in 2018/9/18上午10:27
  */
 @Component("taskBuryPointLogFacade")
-public class TaskBuryPointLogFacadeImpl implements TaskBuryPointLogFacade {
+public class TaskBuryPointLogFacadeImpl extends AbstractFacade implements TaskBuryPointLogFacade {
     private static final Logger logger = LoggerFactory.getLogger(TaskBuryPointLogFacade.class);
 
 
@@ -39,7 +39,7 @@ public class TaskBuryPointLogFacadeImpl implements TaskBuryPointLogFacade {
 
         List<TaskBuryPointLog> list = taskBuryPointLogService.queryTaskBuryPointLogs(id, appId, taskId, code, order);
 
-        List<TaskBuryPointLogRO> attributeROList = DataConverterUtils.convert(list, TaskBuryPointLogRO.class);
+        List<TaskBuryPointLogRO> attributeROList = convert(list, TaskBuryPointLogRO.class);
 
         return TaskResult.wrapSuccessfulResult(attributeROList);
 
@@ -50,7 +50,7 @@ public class TaskBuryPointLogFacadeImpl implements TaskBuryPointLogFacade {
         Long taskId = taskBuryPointLogRequest.getTaskId();
         List<TaskBuryPointLog> list = taskBuryPointLogService.listTaskBuryPointLogsDescWithCreateTimeByTaskId(taskId);
 
-        List<TaskBuryPointLogRO> attributeROList = DataConverterUtils.convert(list, TaskBuryPointLogRO.class);
+        List<TaskBuryPointLogRO> attributeROList = convert(list, TaskBuryPointLogRO.class);
 
         return TaskResult.wrapSuccessfulResult(attributeROList);
     }

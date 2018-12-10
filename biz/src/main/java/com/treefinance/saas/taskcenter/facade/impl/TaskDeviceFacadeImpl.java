@@ -1,6 +1,6 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskDevice;
 import com.treefinance.saas.taskcenter.dao.repository.TaskDeviceRepository;
 import com.treefinance.saas.taskcenter.facade.request.TaskDeviceRequest;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @date 2018/9/29
  */
 @Component("taskDeviceFacade")
-public class TaskDeviceFacadeImpl implements TaskDeviceFacade {
+public class TaskDeviceFacadeImpl extends AbstractFacade implements TaskDeviceFacade {
 
     @Autowired
     private TaskDeviceRepository taskDeviceRepository;
@@ -22,7 +22,7 @@ public class TaskDeviceFacadeImpl implements TaskDeviceFacade {
 
     @Override
     public TaskResult<Void> insertSelective(TaskDeviceRequest request) {
-        TaskDevice taskDevice = DataConverterUtils.convert(request, TaskDevice.class);
+        TaskDevice taskDevice = convert(request, TaskDevice.class);
         taskDeviceRepository.insert(taskDevice);
         return TaskResult.wrapSuccessfulResult(null);
     }

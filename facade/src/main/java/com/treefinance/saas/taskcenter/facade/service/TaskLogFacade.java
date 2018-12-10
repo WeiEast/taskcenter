@@ -21,7 +21,9 @@ public interface TaskLogFacade {
     TaskResult<List<TaskLogRO>> queryTaskLogById(TaskLogRequest taskLogRequest);
 
     @Deprecated
-    TaskResult<TaskLogRO> queryLastestErrorLog(Long taskId);
+    default TaskResult<TaskLogRO> queryLastestErrorLog(Long taskId){
+        return queryLastErrorLog(taskId);
+    }
 
     TaskResult<TaskLogRO> queryLastErrorLog(Long taskId);
 

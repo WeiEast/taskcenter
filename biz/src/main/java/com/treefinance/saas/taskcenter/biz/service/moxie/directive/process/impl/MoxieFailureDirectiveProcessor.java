@@ -1,13 +1,13 @@
 package com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.common.AsyncExecutor;
+import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.MoxieAbstractDirectiveProcessor;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.common.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.common.model.dto.AppLicenseDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.model.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
+import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

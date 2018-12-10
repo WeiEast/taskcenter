@@ -6,16 +6,14 @@ import com.treefinance.saas.assistant.model.TaskCallbackFailureReasonMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.common.enums.EBizType;
-import com.treefinance.saas.taskcenter.common.model.dto.CallbackFailureReasonDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.enums.EBizType;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
+import com.treefinance.saas.taskcenter.dto.CallbackFailureReasonDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +41,15 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
     @Autowired
     private MonitorMessageProducer monitorMessageProducer;
 
-    private static final Logger logger = LoggerFactory.getLogger(CallbackFailureReasonMessageListener.class);
+    @Override
+    public ConsumeSetting getConsumeSetting() {
+        ConsumeSetting consumeSetting = new ConsumeSetting();
+        consumeSetting.setGroup("callback_failure_reason");
+        consumeSetting.setTopic("task-callback");
+        consumeSetting.setTags("callback");
+
+        return consumeSetting;
+    }
 
     @Override
     protected void handleMessage(String message) {
@@ -64,8 +70,7 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
             logger.info("接收爬数发送的回调失败具体原因,任务类型非运营商,暂不处理.message={},task={}", message, JSON.toJSONString(taskDTO));
             return;
         }
-        TaskCallbackFailureReasonMessage taskCallbackFailureReasonMessage
-                = DataConverterUtils.convert(taskDTO, TaskCallbackFailureReasonMessage.class);
+        TaskCallbackFailureReasonMessage taskCallbackFailureReasonMessage = convertStrict(taskDTO, TaskCallbackFailureReasonMessage.class);
         taskCallbackFailureReasonMessage.setTaskId(taskDTO.getId());
         taskCallbackFailureReasonMessage.setDataTime(taskDTO.getCreateTime());
         taskCallbackFailureReasonMessage.setFailureReason(failureReason);

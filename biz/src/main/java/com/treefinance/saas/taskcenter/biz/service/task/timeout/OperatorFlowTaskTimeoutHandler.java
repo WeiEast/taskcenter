@@ -3,13 +3,13 @@ package com.treefinance.saas.taskcenter.biz.service.task.timeout;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
-import com.treefinance.saas.taskcenter.common.enums.EBizType;
-import com.treefinance.saas.taskcenter.common.enums.EDataType;
-import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.AsycGrapDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.CommonUtils;
+import com.treefinance.saas.taskcenter.context.enums.EBizType;
+import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
+import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class OperatorFlowTaskTimeoutHandler implements TaskTimeoutHandler {
         // 任务超时: 当前时间-登录时间>超时时间
         Date currentTime = new Date();
         logger.info("运营商流量：isTaskTimeout: taskid={}，loginTime={},current={},timeout={}",
-                taskId, CommonUtils.date2Str(loginTime), CommonUtils.date2Str(currentTime), timeout);
+                taskId, DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
         // 2.判断此商户是否配置了运营商流量数据的回调
         List<AppCallbackConfigDTO> callbackConfigs = grapDataCallbackService.getCallbackConfigs(task, EDataType.OPERATOR_FLOW);
         if (CollectionUtils.isEmpty(callbackConfigs)) {

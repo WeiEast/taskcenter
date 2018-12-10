@@ -33,10 +33,10 @@ import com.treefinance.saas.merchant.facade.result.grapsever.AppCallbackResult;
 import com.treefinance.saas.merchant.facade.service.AppCallBackBizFacade;
 import com.treefinance.saas.merchant.facade.service.AppCallbackConfigFacade;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.common.enums.EDataType;
-import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackBizDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.common.util.DataConverterUtils;
+import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.context.component.AbstractService;
+import com.treefinance.saas.taskcenter.dto.AppCallbackBizDTO;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +56,8 @@ import java.util.stream.Collectors;
  * Created by luoyihua on 2017/5/11.
  */
 @Service
-public class AppCallbackConfigServiceImpl implements AppCallbackConfigService, InitializingBean, VariableMessageHandler {
-    /**
-     * logger
-     */
-    private static final Logger logger = LoggerFactory.getLogger(AppCallbackConfigServiceImpl.class);
+public class AppCallbackConfigServiceImpl extends AbstractService implements AppCallbackConfigService,
+    InitializingBean, VariableMessageHandler {
 
     @Autowired
     private AppCallbackConfigFacade appCallbackConfigFacade;
@@ -78,7 +75,7 @@ public class AppCallbackConfigServiceImpl implements AppCallbackConfigService, I
                 GetAppCallBackConfigByIdRequest getAppCallBackConfigByIdRequest = new GetAppCallBackConfigByIdRequest();
                 getAppCallBackConfigByIdRequest.setAppId(appid);
                 MerchantResult<List<AppCallbackResult>> listMerchantResult = appCallbackConfigFacade.queryAppCallBackConfigByAppId(getAppCallBackConfigByIdRequest);
-                List<AppCallbackConfigDTO> list = DataConverterUtils.convert(listMerchantResult.getData(), AppCallbackConfigDTO.class);
+                List<AppCallbackConfigDTO> list = convert(listMerchantResult.getData(), AppCallbackConfigDTO.class);
 
                 if (!listMerchantResult.isSuccess()) {
                     logger.info("load local cache of callback-configs  false: error message={}", listMerchantResult.getRetMsg());
@@ -101,7 +98,7 @@ public class AppCallbackConfigServiceImpl implements AppCallbackConfigService, I
                 GetAppCallBackBizByCallbackIdRequest getAppCallBackBizByCallbackIdRequest = new GetAppCallBackBizByCallbackIdRequest();
                 getAppCallBackBizByCallbackIdRequest.setCallbackId(callbackId);
                 MerchantResult<List<AppCallbackBizResult>> listMerchantResult = appCallBackBizFacade.queryAppCallBackByCallbackId(getAppCallBackBizByCallbackIdRequest);
-                List<AppCallbackBizDTO> list = DataConverterUtils.convert(listMerchantResult.getData(), AppCallbackBizDTO.class);
+                List<AppCallbackBizDTO> list = convert(listMerchantResult.getData(), AppCallbackBizDTO.class);
                 if (!listMerchantResult.isSuccess()) {
                     logger.info("load local cache of callback-types  false: error message={}", listMerchantResult.getRetMsg());
                     list = Lists.newArrayList();
@@ -116,7 +113,7 @@ public class AppCallbackConfigServiceImpl implements AppCallbackConfigService, I
         // 1. 初始化appCallback
         BaseRequest request = new BaseRequest();
         MerchantResult<List<AppCallbackResult>> listMerchantResult = appCallbackConfigFacade.queryAllAppCallBackConfig(request);
-        List<AppCallbackConfigDTO> list = DataConverterUtils.convert(listMerchantResult.getData(), AppCallbackConfigDTO.class);
+        List<AppCallbackConfigDTO> list = convert(listMerchantResult.getData(), AppCallbackConfigDTO.class);
 
         logger.info("加载callback信息: callback={}", JSON.toJSONString(list));
         if (CollectionUtils.isEmpty(list)) {
@@ -128,7 +125,7 @@ public class AppCallbackConfigServiceImpl implements AppCallbackConfigService, I
         // 2. 初始化callBackType
         BaseRequest baseRequest = new BaseRequest();
         MerchantResult<List<AppCallbackBizResult>> listMerchantResult1 = appCallBackBizFacade.queryAllAppCallBack(baseRequest);
-        List<AppCallbackBizDTO> appCallbackBizList = DataConverterUtils.convert(listMerchantResult1.getData(), AppCallbackBizDTO.class);
+        List<AppCallbackBizDTO> appCallbackBizList = convert(listMerchantResult1.getData(), AppCallbackBizDTO.class);
 
         logger.info("加载callbackType信息: callbackType={}", JSON.toJSONString(appCallbackBizList));
         if (CollectionUtils.isEmpty(appCallbackBizList)) {

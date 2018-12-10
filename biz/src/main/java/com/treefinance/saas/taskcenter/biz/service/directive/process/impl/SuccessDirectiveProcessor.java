@@ -3,11 +3,11 @@ package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
-import com.treefinance.saas.taskcenter.common.enums.EDirective;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.common.model.dto.AppLicenseDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.context.enums.EDirective;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

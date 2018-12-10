@@ -12,24 +12,24 @@ import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.common.CallbackSecureHandler;
+import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
-import com.treefinance.saas.taskcenter.common.enums.EBizType;
-import com.treefinance.saas.taskcenter.common.enums.EDataType;
-import com.treefinance.saas.taskcenter.common.enums.EDirective;
-import com.treefinance.saas.taskcenter.common.enums.EGrapStatus;
-import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.common.exception.CallbackEncryptException;
-import com.treefinance.saas.taskcenter.common.exception.RequestFailedException;
-import com.treefinance.saas.taskcenter.common.model.Constants;
-import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.AppLicenseDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.CallBackLicenseDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.HttpClientUtils;
-import com.treefinance.saas.taskcenter.common.util.RemoteDataDownloadUtils;
+import com.treefinance.saas.taskcenter.context.enums.EBizType;
+import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.context.enums.EDirective;
+import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
+import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
+import com.treefinance.saas.taskcenter.exception.RequestFailedException;
+import com.treefinance.saas.taskcenter.context.Constants;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
+import com.treefinance.saas.taskcenter.dto.CallBackLicenseDTO;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.util.HttpClientUtils;
+import com.treefinance.saas.taskcenter.util.RemoteDataUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.toolkit.util.http.exception.HttpException;
 import org.apache.commons.collections.MapUtils;
@@ -56,8 +56,6 @@ public abstract class CallbackableDirectiveProcessor {
 
     @Autowired
     protected AppCallbackConfigService appCallbackConfigService;
-    @Autowired
-    protected CallbackSecureHandler callbackSecureHandler;
     @Autowired
     protected AppLicenseService appLicenseService;
     @Autowired
@@ -298,10 +296,9 @@ public abstract class CallbackableDirectiveProcessor {
                 try {
                     String appDataKey = appLicense.getDataSecretKey();
                     // oss 下载数据
-                    byte[] result = RemoteDataDownloadUtils.download(dataUrl, byte[].class);
+                    byte[] result = RemoteDataUtils.download(dataUrl, byte[].class);
                     // 数据体默认使用商户密钥加密
-                    String data = callbackSecureHandler.decryptByAES(result, appDataKey);
-                    Map<String, Object> downloadDataMap = JSON.parseObject(data);
+                    Map<String, Object> downloadDataMap = CallbackDataUtils.decryptAsMapByAES(result, appDataKey);
                     dataMap.put("data", downloadDataMap);
                     if (MapUtils.isEmpty(downloadDataMap)) {
                         dataMap.put("taskErrorMsg", EGrapStatus.RESULT_EMPTY.getName());
@@ -379,7 +376,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @throws CallbackEncryptException
      */
     private String encryptByAES(Map<String, Object> dataMap, String aesDataKey) throws CallbackEncryptException {
-        return callbackSecureHandler.encryptByAES(dataMap, aesDataKey);
+        return CallbackDataUtils.encryptByAES(dataMap, aesDataKey);
     }
 
     /**
@@ -392,10 +389,9 @@ public abstract class CallbackableDirectiveProcessor {
      * @throws UnsupportedEncodingException
      */
     private String encryptByRSA(Map<String, Object> dataMap, AppLicenseDTO appLicense) throws CallbackEncryptException, UnsupportedEncodingException {
-        String params;
         String rsaPublicKey = appLicense.getServerPublicKey();
         // 兼容老版本，使用RSA
-        params = callbackSecureHandler.encrypt(dataMap, rsaPublicKey);
+        String params = CallbackDataUtils.encryptByRSA(dataMap, rsaPublicKey);
         params = URLEncoder.encode(params, "utf-8");
         return params;
     }
@@ -430,9 +426,9 @@ public abstract class CallbackableDirectiveProcessor {
         Long startTime = System.currentTimeMillis();
         try {
             if (Byte.valueOf("0").equals(config.getNotifyModel())) {
-                result = HttpClientUtils.doGetWithTimoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
+                result = HttpClientUtils.doGetWithTimeoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
             } else {
-                result = HttpClientUtils.doPostWithTimoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
+                result = HttpClientUtils.doPostWithTimeoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
             }
         } catch (RequestFailedException e) {
             logger.error("doCallBack exception: callbackUrl={},dataMap={}", callbackUrl, JSON.toJSONString(dataMap), e);

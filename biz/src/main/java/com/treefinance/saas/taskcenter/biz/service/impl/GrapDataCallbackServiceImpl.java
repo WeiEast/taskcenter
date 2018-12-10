@@ -19,21 +19,21 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.treefinance.b2b.saas.util.DataUtils;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
 import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.common.enums.EDataType;
-import com.treefinance.saas.taskcenter.common.enums.EGrapStatus;
-import com.treefinance.saas.taskcenter.common.exception.RequestFailedException;
-import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.AppLicenseDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.AsycGrapDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.HttpClientUtils;
-import com.treefinance.saas.taskcenter.common.util.RSAUtils;
+import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
+import com.treefinance.saas.taskcenter.exception.RequestFailedException;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
+import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -145,14 +146,14 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
             String callbackUrl = configDTO.getUrl();
             Long startTime = System.currentTimeMillis();
             try {
-                String dataJson = JSON.toJSONString(dataMap);
-                String params = RSAUtils.encryptData(dataJson, key);
+                String params = DataUtils.encryptBeanAsBase64StringByRsa(dataMap, key);
+                params = URLEncoder.encode(params, "utf-8");
                 paramMap.put("params", params);
                 // 超时时间（秒）
                 Byte timeOut = configDTO.getTimeOut();
                 // 重试次数，3次
                 Byte retryTimes = configDTO.getRetryTimes();
-                result = HttpClientUtils.doPostWithTimoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
+                result = HttpClientUtils.doPostWithTimeoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
                 taskLogService.insertTaskLog(taskId, dataType.getName() + "回调通知成功", new Date(), "");
                 logger.info("{} callback : callback success : taskId={},callbackUrl={}, params={}", dataType.name(), taskId, callbackUrl, params);
             } catch (RequestFailedException e) {

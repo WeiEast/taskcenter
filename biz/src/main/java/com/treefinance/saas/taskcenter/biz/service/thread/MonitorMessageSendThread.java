@@ -6,9 +6,9 @@ import com.treefinance.saas.taskcenter.biz.service.monitor.EcommerceMonitorServi
 import com.treefinance.saas.taskcenter.biz.service.monitor.EmailMonitorService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorPluginService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.OperatorMonitorService;
-import com.treefinance.saas.taskcenter.common.enums.EBizType;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.context.enums.EBizType;
+import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.context.SpringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

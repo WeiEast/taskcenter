@@ -26,15 +26,15 @@ import com.treefinance.saas.taskcenter.biz.service.DeliveryAddressService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.biz.service.common.CallbackSecureHandler;
-import com.treefinance.saas.taskcenter.common.enums.EDataType;
-import com.treefinance.saas.taskcenter.common.exception.CallbackEncryptException;
-import com.treefinance.saas.taskcenter.common.exception.RequestFailedException;
-import com.treefinance.saas.taskcenter.common.model.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.AppLicenseDTO;
-import com.treefinance.saas.taskcenter.common.model.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.common.util.HttpClientUtils;
-import com.treefinance.saas.taskcenter.common.util.RemoteDataDownloadUtils;
+import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
+import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
+import com.treefinance.saas.taskcenter.exception.RequestFailedException;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.util.HttpClientUtils;
+import com.treefinance.saas.taskcenter.util.RemoteDataUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +62,6 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     private TaskLogService taskLogService;
     @Autowired
     private AppCallbackConfigService appCallbackConfigService;
-    @Autowired
-    private CallbackSecureHandler callbackSecureHandler;
     @Autowired
     private AppLicenseService appLicenseService;
     @Autowired
@@ -114,18 +112,16 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
                 try {
                     String appDataKey = appLicense.getDataSecretKey();
                     // oss 下载数据
-                    byte[] result = RemoteDataDownloadUtils.download(dataUrl, byte[].class);
+                    byte[] result = RemoteDataUtils.download(dataUrl, byte[].class);
                     // 数据体默认使用商户密钥加密
-                    String data = callbackSecureHandler.decryptByAES(result, appDataKey);
-                    Map<String, Object> downloadDataMap = JSON.parseObject(data);
+                    Map<String, Object> downloadDataMap = CallbackDataUtils.decryptAsMapByAES(result, appDataKey);
                     dataMap.put("data", downloadDataMap);
                     if (MapUtils.isEmpty(downloadDataMap)) {
                         dataMap.put("taskErrorMsg", "抓取结果为空");
                         dataMap.put("taskStatus", "003");
                     }
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("delivery address callback : download data success : {} ", data);
-                    }
+
+                    logger.debug("delivery address callback : download data success : {} ", downloadDataMap);
                 } catch (Exception e) {
                     logger.error("delivery address callback :  download data failed : data={}", JSON.toJSONString(dataMap));
                     dataMap.put("taskErrorMsg", "下载数据失败");
@@ -159,7 +155,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
             String callbackUrl = configDTO.getUrl();
             Long startTime = System.currentTimeMillis();
             try {
-                String params = callbackSecureHandler.encryptByAES(dataMap, aesKey);
+                String params = CallbackDataUtils.encryptByAES(dataMap, aesKey);
                 params = URLEncoder.encode(params, "utf-8");
                 logger.info("delivery address callback : encrypt data : taskId={}, params={}", taskId, params);
                 paramMap.put("params", params);
@@ -167,7 +163,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
                 Byte timeOut = configDTO.getTimeOut();
                 // 重试次数，3次
                 Byte retryTimes = configDTO.getRetryTimes();
-                result = HttpClientUtils.doPostWithTimoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
+                result = HttpClientUtils.doPostWithTimeoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
                 taskLogService.insertTaskLog(taskId, "收货地址回调通知成功", new Date(), result);
                 logger.info("delivery address callback : callback success : taskId={},callbackUrl={}, params={}", taskId, callbackUrl, params);
             } catch (CallbackEncryptException | UnsupportedEncodingException e) {
