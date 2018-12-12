@@ -16,12 +16,11 @@
 
 package com.treefinance.saas.taskcenter.util;
 
+import com.treefinance.toolkit.util.RegExp;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDateTime;
 
 import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author haojiahong
@@ -62,8 +61,7 @@ public final class SystemUtils {
         if (StringUtils.isEmpty(dest) || StringUtils.isEmpty(regex)) {
             return false;
         }
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(dest);
-        return matcher.matches();
+
+        return RegExp.matches(dest, regex);
     }
 }
