@@ -18,7 +18,7 @@ public enum EDirective {
     private Byte code;
     private String text;
 
-    private EDirective(String text, Byte code) {
+    EDirective(String text, Byte code) {
         this.code = code;
         this.text = text;
     }

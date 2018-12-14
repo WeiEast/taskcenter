@@ -11,36 +11,63 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.dao.domain;
+package com.treefinance.saas.taskcenter.facade.request;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 /**
  * @author Jerry
- * @date 2018/11/21 19:42
+ * @date 2018/12/16 22:50
  */
 @Getter
 @Setter
-public class TaskQuery implements Serializable {
+@ToString
+public class CompositeTaskAttrPagingQueryRequest extends BasePagingQueryRequest {
 
-    private Long id;
-    private List<String> appIds;
+    /**
+     * 商户ID
+     */
+    private String appId;
+    /**
+     * 业务类型
+     */
     private List<Byte> bizTypes;
+    /**
+     * 网站标识
+     */
     private String website;
-    private String uniqueId;
-    private String accountNo;
-    private String stepCode;
-    private Byte status;
-    private Date startDate;
-    private Date endDate;
+    /**
+     * 环境标识
+     */
     private Byte saasEnv;
-
+    /**
+     * 状态
+     */
+    private Byte status;
+    /**
+     * 起始时间
+     */
+    private Date startDate;
+    /**
+     * 结束时间
+     */
+    private Date endDate;
+    /**
+     * 属性名
+     */
+    private String attrName;
+    /**
+     * 属性值
+     */
+    private String attrValue;
+    /**
+     * 排序方式
+     */
     private String order;
-    private int offset = -1;
-    private int limit = -1;
+
 }

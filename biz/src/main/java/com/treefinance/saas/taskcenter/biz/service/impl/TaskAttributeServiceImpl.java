@@ -16,7 +16,7 @@
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.dao.domain.TaskAttributeQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskAttributeRepository;
 import org.springframework.beans.factory.annotation.Autowired;

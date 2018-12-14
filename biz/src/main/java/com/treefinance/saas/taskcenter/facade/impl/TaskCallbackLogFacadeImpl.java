@@ -3,7 +3,7 @@ package com.treefinance.saas.taskcenter.facade.impl;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
-import com.treefinance.saas.taskcenter.dao.domain.TaskCallbackLogQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.facade.request.TaskCallbackLogPageRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskCallbackLogRequest;
@@ -35,7 +35,7 @@ public class TaskCallbackLogFacadeImpl extends AbstractFacade implements TaskCal
 
     @Override
     public TaskResult<List<TaskCallbackLogRO>> queryTaskCallbackLog(TaskCallbackLogRequest request) {
-        logger.info("查询任务回调日志信息，传入的请求参数为{}", request.toString());
+        logger.info("查询任务回调日志信息，传入的请求参数为{}", request);
 
         TaskCallbackLogQuery query = new TaskCallbackLogQuery();
         query.setId(request.getId());

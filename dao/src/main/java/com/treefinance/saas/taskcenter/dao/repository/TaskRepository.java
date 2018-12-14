@@ -13,11 +13,12 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.saas.taskcenter.dao.domain.TaskCompositeQuery;
-import com.treefinance.saas.taskcenter.dao.domain.TaskDO;
-import com.treefinance.saas.taskcenter.dao.domain.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskParams;
+import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
 
 import javax.annotation.Nonnull;
 
@@ -32,24 +33,30 @@ public interface TaskRepository {
 
     Task getTaskById(@Nonnull Long id);
 
-    List<Task> listTasksByAppIdAndBizTypeAndUniqueId(@Nonnull String appId, @Nonnull Byte bizType, @Nonnull String uniqueId);
+    List<Long> listTaskIdsByAppIdAndBizTypeAndUniqueId(@Nonnull String appId, @Nonnull Byte bizType, @Nonnull String uniqueId);
 
-    List<Task> listTasksByStatusAndEnvAndCreateTimeBetween(@Nonnull Byte status, @Nonnull Byte saasEnv,
-        @Nonnull Date startDate, @Nonnull Date endDate);
+    List<Task> listTasksByStatusAndEnvAndCreateTimeBetween(@Nonnull Byte status, @Nonnull Byte saasEnv, @Nonnull Date startDate, @Nonnull Date endDate);
+
+    @Deprecated
+    List<Task> queryPagingTasks(@Nonnull TaskPagingQuery query);
+
+    @Deprecated
+    long countPagingTasks(@Nonnull TaskPagingQuery query);
 
     List<Task> queryTasks(@Nonnull TaskQuery query);
 
     long countTasks(@Nonnull TaskQuery query);
 
-    Task insertTask(@Nonnull TaskDO taskDO);
+    List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskAttrCompositeQuery query);
+
+    long countCompositeTasks(@Nonnull TaskAttrCompositeQuery query);
+
+    Task insertTask(@Nonnull TaskParams taskParams);
 
     int updateTaskByIdAndStatusNotIn(@Nonnull Task task, @Nonnull Byte... statuses);
 
-    int updateTaskByIdAndStatusNotIn(@Nonnull TaskDO taskDO, @Nonnull Byte... statuses);
+    int updateTaskByIdAndStatusNotIn(@Nonnull TaskParams taskParams, @Nonnull Long id, @Nonnull Byte... statuses);
 
     void updateAccountNoById(@Nonnull Long taskId, @Nonnull String accountNo);
 
-    List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskCompositeQuery query);
-
-    long countCompositeTasks(@Nonnull TaskCompositeQuery query);
 }

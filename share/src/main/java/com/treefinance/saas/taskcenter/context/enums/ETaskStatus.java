@@ -1,11 +1,27 @@
 package com.treefinance.saas.taskcenter.context.enums;
 
 /**
- * Created by yh-treefinance on 2017/6/19.
+ * @author yh-treefinance
+ * @date 2017/6/19.
  */
 public enum ETaskStatus {
 
-    RUNNING((byte) 0, "进行中"), CANCEL((byte) 1, "取消"), SUCCESS((byte) 2, "成功"), FAIL((byte) 3, "失败");
+    /**
+     * 运行中
+     */
+    RUNNING((byte)0, "进行中"),
+    /**
+     * 已取消
+     */
+    CANCEL((byte)1, "取消"),
+    /**
+     * 成功
+     */
+    SUCCESS((byte)2, "成功"),
+    /**
+     * 失败
+     */
+    FAIL((byte)3, "失败");
 
     private Byte status;
     private String name;
@@ -13,6 +29,10 @@ public enum ETaskStatus {
     ETaskStatus(Byte status, String name) {
         this.status = status;
         this.name = name;
+    }
+
+    public static boolean isRunning(Byte status) {
+        return RUNNING.getStatus().equals(status);
     }
 
     public Byte getStatus() {

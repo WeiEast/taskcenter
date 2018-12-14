@@ -16,15 +16,17 @@ package com.treefinance.saas.taskcenter.dao.repository;
 import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
 import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
 import com.treefinance.commonservice.uid.UidService;
-import com.treefinance.saas.taskcenter.dao.domain.TaskCompositeQuery;
-import com.treefinance.saas.taskcenter.dao.domain.TaskDO;
-import com.treefinance.saas.taskcenter.dao.domain.TaskQuery;
+import com.treefinance.saas.taskcenter.context.BizObjectValidator;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAndTaskAttributeMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
-import org.apache.commons.collections.CollectionUtils;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskParams;
+import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -32,10 +34,12 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nonnull;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Jerry
@@ -55,14 +59,31 @@ public class TaskRepositoryImpl implements TaskRepository {
 
     @Override
     public Task getTaskById(@Nonnull Long id) {
-        return taskMapper.selectByPrimaryKey(id);
+        Task task = taskMapper.selectByPrimaryKey(id);
+
+        BizObjectValidator.notNull(task, "任务不存在！- taskId: " + id);
+
+        decryptFields(task);
+
+        return task;
+    }
+
+    private void decryptFields(Task task) {
+        String actualAccount = securityCryptoService.decrypt(task.getAccountNo(), EncryptionIntensityEnum.NORMAL);
+        task.setAccountNo(actualAccount);
     }
 
     @Override
-    public List<Task> listTasksByAppIdAndBizTypeAndUniqueId(@Nonnull String appId, @Nonnull Byte bizType, @Nonnull String uniqueId) {
+    public List<Long> listTaskIdsByAppIdAndBizTypeAndUniqueId(@Nonnull String appId, @Nonnull Byte bizType, @Nonnull String uniqueId) {
         TaskCriteria taskCriteria = new TaskCriteria();
         taskCriteria.createCriteria().andAppIdEqualTo(appId).andBizTypeEqualTo(bizType).andUniqueIdEqualTo(uniqueId);
-        return taskMapper.selectByExample(taskCriteria);
+        List<Task> tasks = taskMapper.selectByExample(taskCriteria);
+
+        if (CollectionUtils.isNotEmpty(tasks)) {
+            return tasks.stream().map(Task::getId).collect(Collectors.toList());
+        }
+
+        return Collections.emptyList();
     }
 
     @Override
@@ -70,20 +91,130 @@ public class TaskRepositoryImpl implements TaskRepository {
         TaskCriteria criteria = new TaskCriteria();
         criteria.createCriteria().andStatusEqualTo(status).andSaasEnvEqualTo(saasEnv).andCreateTimeGreaterThanOrEqualTo(startDate).andCreateTimeLessThan(endDate);
 
-        return taskMapper.selectByExample(criteria);
+        List<Task> tasks = taskMapper.selectByExample(criteria);
+
+        return postHandle(tasks);
+    }
+
+    private List<Task> postHandle(List<Task> tasks) {
+        if (CollectionUtils.isNotEmpty(tasks)) {
+            tasks.forEach(this::decryptFields);
+        }
+
+        return tasks;
     }
 
     @Override
-    public List<Task> queryTasks(@Nonnull TaskQuery query) {
-        TaskCriteria taskCriteria = createQueryCriteria(query);
+    public Task insertTask(@Nonnull TaskParams taskParams) {
+        Task task = new Task();
+        task.setId(uidService.getId());
+        task.setUniqueId(taskParams.getUniqueId());
+        task.setAppId(taskParams.getAppId());
+        task.setBizType(taskParams.getBizType());
+        task.setWebSite(StringUtils.trimToNull(taskParams.getWebsite()));
+        task.setSaasEnv(taskParams.getSaasEnv());
+        task.setStatus((byte)0);
+        taskMapper.insertSelective(task);
+        return task;
+    }
+
+    @Override
+    public int updateTaskByIdAndStatusNotIn(@Nonnull Task task, @Nonnull Byte... statuses) {
+        TaskCriteria taskCriteria = new TaskCriteria();
+        taskCriteria.createCriteria().andIdEqualTo(task.getId()).andStatusNotIn(Arrays.asList(statuses));
+
+        return taskMapper.updateByExampleSelective(task, taskCriteria);
+    }
+
+    @Override
+    public int updateTaskByIdAndStatusNotIn(@Nonnull TaskParams taskParams, @Nonnull Long id, @Nonnull Byte... statuses) {
+        TaskCriteria taskCriteria = new TaskCriteria();
+        taskCriteria.createCriteria().andIdEqualTo(id).andStatusNotIn(Arrays.asList(statuses));
+
+        Task task = new Task();
+
+        String appId = taskParams.getAppId();
+        if (StringUtils.isNotEmpty(appId)) {
+            task.setAppId(appId);
+        }
+
+        String uniqueId = taskParams.getUniqueId();
+        if (StringUtils.isNotEmpty(uniqueId)) {
+            task.setUniqueId(uniqueId);
+        }
+
+        String accountNo = taskParams.getAccountNo();
+        if (StringUtils.isNotEmpty(accountNo)) {
+            addWithEncryption(task, accountNo);
+        }
+
+        String website = taskParams.getWebsite();
+        if (StringUtils.isNotEmpty(website)) {
+            task.setWebSite(website);
+        }
+
+        String stepCode = taskParams.getStepCode();
+        if (StringUtils.isNotEmpty(stepCode)) {
+            task.setStepCode(stepCode);
+        }
+
+        Byte bizType = taskParams.getBizType();
+        if (bizType != null) {
+            task.setBizType(bizType);
+        }
+
+        Byte status = taskParams.getStatus();
+        if (status != null) {
+            task.setStatus(status);
+        }
+
+        Byte saasEnv = taskParams.getSaasEnv();
+        if (saasEnv != null) {
+            task.setSaasEnv(saasEnv);
+        }
+
+        return taskMapper.updateByExampleSelective(task, taskCriteria);
+    }
+
+    private void addWithEncryption(Task task, String accountNo) {
+        String account = securityCryptoService.encrypt(accountNo, EncryptionIntensityEnum.NORMAL);
+        task.setAccountNo(account);
+    }
+
+    @Override
+    public void updateAccountNoById(@Nonnull Long taskId, @Nonnull String accountNo) {
+        Task task = new Task();
+        task.setId(taskId);
+        addWithEncryption(task, accountNo);
+        taskMapper.updateByPrimaryKeySelective(task);
+    }
+
+    @Override
+    public List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskAttrCompositeQuery query) {
+        Map<String, Object> map = createCompositeQueryMap(query);
+
+        map.put("orderStr", query.getOrder());
+        map.put("start", query.getOffset());
+        map.put("limit", query.getLimit());
+
+        return taskAndTaskAttributeMapper.getByExample(map);
+    }
+
+    @Override
+    public long countCompositeTasks(@Nonnull TaskAttrCompositeQuery query) {
+        Map<String, Object> map = createCompositeQueryMap(query);
+
+        return taskAndTaskAttributeMapper.countByExample(map);
+    }
+
+    @Override
+    public List<Task> queryPagingTasks(@Nonnull TaskPagingQuery query) {
+        TaskCriteria taskCriteria = createPagingQueryCriteria(query);
 
         int limit = query.getLimit();
         if (limit > 0) {
             taskCriteria.setLimit(limit);
-            int offset = query.getOffset();
-            if (offset < 0) {
-                offset = 0;
-            }
+            int offset = Math.max(query.getOffset(), 0);
             taskCriteria.setOffset(offset);
 
             return taskMapper.selectPaginationByExample(taskCriteria);
@@ -93,13 +224,13 @@ public class TaskRepositoryImpl implements TaskRepository {
     }
 
     @Override
-    public long countTasks(@Nonnull TaskQuery query) {
-        TaskCriteria taskCriteria = createQueryCriteria(query);
+    public long countPagingTasks(@Nonnull TaskPagingQuery query) {
+        TaskCriteria taskCriteria = createPagingQueryCriteria(query);
 
         return taskMapper.countByExample(taskCriteria);
     }
 
-    private TaskCriteria createQueryCriteria(TaskQuery query) {
+    private TaskCriteria createPagingQueryCriteria(@Nonnull TaskQuery query) {
         TaskCriteria taskCriteria = new TaskCriteria();
         TaskCriteria.Criteria criteria = taskCriteria.createCriteria();
 
@@ -174,109 +305,108 @@ public class TaskRepositoryImpl implements TaskRepository {
     }
 
     @Override
-    public Task insertTask(@Nonnull TaskDO taskDO) {
-        Task task = new Task();
-        task.setId(uidService.getId());
-        task.setUniqueId(taskDO.getUniqueId());
-        task.setAppId(taskDO.getAppId());
-        task.setBizType(taskDO.getBizType());
-        if (StringUtils.isNotBlank(taskDO.getWebsite())) {
-            task.setWebSite(taskDO.getWebsite());
+    public List<Task> queryTasks(@Nonnull TaskQuery query) {
+        TaskCriteria taskCriteria = createQueryCriteria(query);
+
+        if (query instanceof TaskPagingQuery) {
+            int limit = ((TaskPagingQuery)query).getLimit();
+            if (limit > 0) {
+                taskCriteria.setLimit(limit);
+
+                int offset = Math.max(((TaskPagingQuery)query).getOffset(), 0);
+                taskCriteria.setOffset(offset);
+
+                return postHandle(taskMapper.selectPaginationByExample(taskCriteria));
+            }
         }
-        task.setSaasEnv(taskDO.getSaasEnv());
-        task.setStatus((byte)0);
-        taskMapper.insertSelective(task);
-        return task;
+
+        return postHandle(taskMapper.selectByExample(taskCriteria));
     }
 
     @Override
-    public int updateTaskByIdAndStatusNotIn(@Nonnull Task task, @Nonnull Byte... statuses) {
-        TaskCriteria taskCriteria = new TaskCriteria();
-        taskCriteria.createCriteria().andIdEqualTo(task.getId()).andStatusNotIn(Arrays.asList(statuses));
+    public long countTasks(@Nonnull TaskQuery query) {
+        TaskCriteria taskCriteria = createQueryCriteria(query);
 
-        return taskMapper.updateByExampleSelective(task, taskCriteria);
+        return taskMapper.countByExample(taskCriteria);
     }
 
-    @Override
-    public int updateTaskByIdAndStatusNotIn(@Nonnull TaskDO taskDO, @Nonnull Byte... statuses) {
+    private TaskCriteria createQueryCriteria(@Nonnull TaskQuery query) {
         TaskCriteria taskCriteria = new TaskCriteria();
-        taskCriteria.createCriteria().andIdEqualTo(taskDO.getId()).andStatusNotIn(Arrays.asList(statuses));
+        TaskCriteria.Criteria criteria = taskCriteria.createCriteria();
 
-        Task task = new Task();
-
-        String appId = taskDO.getAppId();
-        if (StringUtils.isNotEmpty(appId)) {
-            task.setAppId(appId);
+        Long id = query.getId();
+        if (id != null) {
+            criteria.andIdEqualTo(id);
         }
 
-        String uniqueId = taskDO.getUniqueId();
-        if (StringUtils.isNotEmpty(uniqueId)) {
-            task.setUniqueId(uniqueId);
+        List<String> appIds = query.getAppIds();
+        if (CollectionUtils.isNotEmpty(appIds)) {
+            if (appIds.size() == 1) {
+                criteria.andAppIdEqualTo(appIds.get(0));
+            } else {
+                criteria.andAppIdIn(appIds);
+            }
         }
 
-        String accountNo = taskDO.getAccountNo();
-        if (StringUtils.isNotEmpty(accountNo)) {
-            accountNo = securityCryptoService.encrypt(accountNo, EncryptionIntensityEnum.NORMAL);
-            task.setAccountNo(accountNo);
+        List<Byte> bizTypes = query.getBizTypes();
+        if (CollectionUtils.isNotEmpty(bizTypes)) {
+            if (bizTypes.size() == 1) {
+                criteria.andBizTypeEqualTo(bizTypes.get(0));
+            } else {
+                criteria.andBizTypeIn(bizTypes);
+            }
         }
 
-        String website = taskDO.getWebsite();
+        String website = query.getWebsite();
         if (StringUtils.isNotEmpty(website)) {
-            task.setWebSite(website);
+            criteria.andWebSiteEqualTo(website);
         }
 
-        String stepCode = taskDO.getStepCode();
+        String stepCode = query.getStepCode();
         if (StringUtils.isNotEmpty(stepCode)) {
-            task.setStepCode(stepCode);
+            criteria.andStepCodeEqualTo(stepCode);
         }
 
-        Byte bizType = taskDO.getBizType();
-        if (bizType != null) {
-            task.setBizType(bizType);
+        String uniqueId = query.getUniqueId();
+        if (StringUtils.isNotEmpty(uniqueId)) {
+            criteria.andUniqueIdEqualTo(uniqueId);
         }
 
-        Byte status = taskDO.getStatus();
-        if (status != null) {
-            task.setStatus(status);
+        String accountNo = query.getAccountNo();
+        if (StringUtils.isNotEmpty(accountNo)) {
+            String account = securityCryptoService.encrypt(accountNo, EncryptionIntensityEnum.NORMAL);
+            criteria.andAccountNoEqualTo(account);
         }
 
-        Byte saasEnv = taskDO.getSaasEnv();
+        Byte saasEnv = query.getSaasEnv();
         if (saasEnv != null) {
-            task.setSaasEnv(saasEnv);
+            criteria.andSaasEnvEqualTo(saasEnv);
         }
 
-        return taskMapper.updateByExampleSelective(task, taskCriteria);
+        Byte status = query.getStatus();
+        if (status != null) {
+            criteria.andStatusEqualTo(status);
+        }
+
+        Date startDate = query.getStartDate();
+        if (startDate != null) {
+            criteria.andCreateTimeGreaterThanOrEqualTo(startDate);
+        }
+
+        Date endDate = query.getEndDate();
+        if (endDate != null) {
+            criteria.andCreateTimeLessThanOrEqualTo(endDate);
+        }
+
+        String order = query.getOrder();
+        if (StringUtils.isNotEmpty(order)) {
+            taskCriteria.setOrderByClause(order);
+        }
+        return taskCriteria;
     }
 
-    @Override
-    public void updateAccountNoById(@Nonnull Long taskId, @Nonnull String accountNo) {
-        Task task = new Task();
-        task.setId(taskId);
-        String account = securityCryptoService.encrypt(accountNo, EncryptionIntensityEnum.NORMAL);
-        task.setAccountNo(account);
-        taskMapper.updateByPrimaryKeySelective(task);
-    }
-
-    @Override
-    public List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskCompositeQuery query) {
-        Map<String, Object> map = createCompositeQueryMap(query);
-
-        map.put("orderStr", query.getOrder());
-        map.put("start", query.getOffset());
-        map.put("limit", query.getLimit());
-
-        return taskAndTaskAttributeMapper.getByExample(map);
-    }
-
-    @Override
-    public long countCompositeTasks(@Nonnull TaskCompositeQuery query) {
-        Map<String, Object> map = createCompositeQueryMap(query);
-
-        return taskAndTaskAttributeMapper.countByExample(map);
-    }
-
-    private Map<String, Object> createCompositeQueryMap(TaskCompositeQuery query) {
-        Map<String, Object> map = new HashMap<>();
+    private Map<String, Object> createCompositeQueryMap(TaskAttrCompositeQuery query) {
+        Map<String, Object> map = new HashMap<>(12);
 
         map.put("appId", query.getAppId());
 
@@ -291,10 +421,11 @@ public class TaskRepositoryImpl implements TaskRepository {
         map.put("webSite", query.getWebsite());
         map.put("saasEnv", query.getSaasEnv());
         map.put("status", query.getStatus());
-        map.put("name", query.getName());
-        map.put("value", query.getValue());
         map.put("startTime", query.getStartDate());
         map.put("endTime", query.getEndDate());
+        map.put("name", query.getAttrName());
+        map.put("value", query.getAttrValue());
+
         return map;
     }
 }

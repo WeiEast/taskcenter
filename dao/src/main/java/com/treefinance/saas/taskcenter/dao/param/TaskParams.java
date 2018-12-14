@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.dao.domain;
+package com.treefinance.saas.taskcenter.dao.param;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,9 +24,8 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-public class TaskDO implements Serializable {
+public class TaskParams implements Serializable {
 
-    private Long id;
     private String appId;
     private String uniqueId;
     private String accountNo;

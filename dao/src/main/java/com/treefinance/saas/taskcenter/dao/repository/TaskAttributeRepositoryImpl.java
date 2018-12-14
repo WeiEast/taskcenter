@@ -16,7 +16,7 @@ package com.treefinance.saas.taskcenter.dao.repository;
 import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
 import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
 import com.treefinance.commonservice.uid.UidService;
-import com.treefinance.saas.taskcenter.dao.domain.TaskAttributeQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;

@@ -11,33 +11,49 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.dao.domain;
+package com.treefinance.saas.taskcenter.facade.result;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * @author Jerry
- * @date 2018/11/22 00:08
+ * @date 2018/12/16 23:06
  */
 @Getter
 @Setter
-public class TaskCallbackLogQuery implements Serializable {
+@ToString
+public class CompositeTaskAttrDTO implements Serializable {
 
     private Long id;
-    private List<Long> taskIds;
-    private List<Long> configIds;
-    private Byte type;
-    private String url;
-    private String requestParam;
-    private String responseData;
-    private Integer httpCode;
-    private Integer consumeTime;
-    private String callbackCode;
-    private String callbackMsg;
-    private Byte failureReason;
 
+    private String uniqueId;
+
+    private String appId;
+
+    private String accountNo;
+
+    private String webSite;
+
+    private Byte bizType;
+
+    private Byte status;
+
+    private String stepCode;
+
+    private Date createTime;
+
+    private Date lastUpdateTime;
+    /**
+     * attribute_name
+     */
+    private String attrName;
+    /**
+     * attribute_value
+     */
+    private String attrValue;
 }

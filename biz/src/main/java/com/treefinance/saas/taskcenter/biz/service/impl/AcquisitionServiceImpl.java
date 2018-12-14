@@ -68,7 +68,7 @@ public class AcquisitionServiceImpl implements AcquisitionService {
             logger.error(e.getMessage(), e);
         }
 
-        taskService.updateAccountNoAndWebsiteIfNeed(taskid, accountNo, website);
+        taskService.updateAccountNoAndWebsiteIfNeedWhenProcessing(taskid, accountNo, website);
 
         taskTimeService.updateLoginTime(taskid, new Date());
     }
