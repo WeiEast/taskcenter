@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.treefinance.saas</groupId>
     <artifactId>taskcenter</artifactId>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHPT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -51,9 +51,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <properties>
-        <task-center.version>2.0.1-SNAPSHOT</task-center.version>
-    </properties>
-
 </project>
