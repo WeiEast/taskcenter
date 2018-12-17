@@ -23,5 +23,5 @@ package com.treefinance.saas.taskcenter.biz.service;
 public interface AcquisitionService {
 
     void acquisition(Long taskid, String header, String cookie, String url, String website, String accountNo,
-        String topic);
+            String topic, String extra);
 }

@@ -17,6 +17,7 @@ public class AcquisitionRequest implements Serializable {
     private String website;
     private String accountNo;
     private String topic;
+    private String extra;
 
     public String getTopic() {
         return topic;
@@ -72,5 +73,13 @@ public class AcquisitionRequest implements Serializable {
 
     public void setAccountNo(String accountNo) {
         this.accountNo = accountNo;
+    }
+
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
     }
 }
