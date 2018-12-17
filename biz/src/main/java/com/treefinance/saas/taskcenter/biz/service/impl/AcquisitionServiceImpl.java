@@ -56,14 +56,14 @@ public class AcquisitionServiceImpl implements AcquisitionService {
         loginMessage.setWebsiteName(website);
         loginMessage.setAccountNo(accountNo);
         if (StringUtils.isNotEmpty(header)) {
-            Map map = GsonUtils.fromJson(header, new TypeToken<Map>() {}.getType());
+            Map<String, Object> map = GsonUtils.fromJson(header, new TypeToken<Map<String, Object>>() {}.getType());
             Object setCookieObj = map.get("Set-Cookie");
             if (setCookieObj != null) {
                 loginMessage.setSetCookie((String)setCookieObj);
             }
         }
         if (StringUtils.isNotBlank(extra)) {
-            Map map = GsonUtils.fromJson(extra, new TypeToken<Map>() {}.getType());
+            Map<String, Object> map = GsonUtils.fromJson(extra, new TypeToken<Map<String, Object>>() {}.getType());
             loginMessage.setExtra(map);
         }
         try {

@@ -1,7 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.mq.model;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -50,7 +49,7 @@ public class LoginMessage implements Serializable {
      */
     private String groupName;
 
-    private Map<String, Object> extra = new HashMap<String, Object>();
+    private Map<String, Object> extra;
 
     public String getWebsiteName() {
         return websiteName;
