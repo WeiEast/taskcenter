@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class CompositeTaskAttrPagingQueryRequest extends BasePagingQueryRequest 
      */
     private String appId;
     /**
-     * 业务类型
+     * 业务类型 注意：hessian反序列化过程，Byte,Short类型利用序列化整型处理。
      */
     private List<Byte> bizTypes;
     /**
@@ -70,4 +71,10 @@ public class CompositeTaskAttrPagingQueryRequest extends BasePagingQueryRequest 
      */
     private String order;
 
+    public void addBizType(Byte bizType) {
+        if (bizTypes == null) {
+            bizTypes = new ArrayList<>();
+        }
+        bizTypes.add(bizType);
+    }
 }

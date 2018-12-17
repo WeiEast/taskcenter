@@ -36,7 +36,7 @@ public class TaskQueryRequest implements Serializable {
      */
     private List<String> appIds;
     /**
-     * 业务类型
+     * 业务类型。注意hessian反序列化过程，Byte,Short类型利用序列化整型处理
      */
     private List<Byte> bizTypes;
     /**
