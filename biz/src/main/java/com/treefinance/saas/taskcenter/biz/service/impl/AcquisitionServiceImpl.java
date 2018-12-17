@@ -47,7 +47,7 @@ public class AcquisitionServiceImpl implements AcquisitionService {
     private TaskTimeService taskTimeService;
 
     @Override
-    public void acquisition(Long taskid, String header, String cookie, String url, String website, String accountNo, String topic) {
+    public void acquisition(Long taskid, String header, String cookie, String url, String website, String accountNo, String topic, String extra) {
         logger.info("acquisition : taskid={},header={},cookie={},url={},website={},accountNo={}", taskid, header, cookie, url, website, accountNo);
         LoginMessage loginMessage = new LoginMessage();
         loginMessage.setCookie(cookie);
@@ -61,6 +61,10 @@ public class AcquisitionServiceImpl implements AcquisitionService {
             if (setCookieObj != null) {
                 loginMessage.setSetCookie((String)setCookieObj);
             }
+        }
+        if (StringUtils.isNotBlank(extra)) {
+            Map map = GsonUtils.fromJson(extra, new TypeToken<Map>() {}.getType());
+            loginMessage.setExtra(map);
         }
         try {
             messageProducer.send(GsonUtils.toJson(loginMessage), topic, "login_info", taskid.toString());
