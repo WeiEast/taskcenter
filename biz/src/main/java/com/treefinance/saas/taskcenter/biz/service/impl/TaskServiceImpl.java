@@ -18,27 +18,30 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
+import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
+import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
+import com.treefinance.saas.taskcenter.context.component.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
-import com.treefinance.saas.taskcenter.context.component.AbstractService;
-import com.treefinance.saas.taskcenter.dao.domain.TaskCompositeQuery;
-import com.treefinance.saas.taskcenter.dao.domain.TaskDO;
-import com.treefinance.saas.taskcenter.dao.domain.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskParams;
+import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,12 +53,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.ValidationException;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author haojiahong
@@ -77,20 +77,107 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     private TaskRepository taskRepository;
 
     @Override
+    public List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskAttrCompositeQuery query) {
+        return taskRepository.queryCompositeTasks(query);
+    }
+
+    @Override
+    public long countCompositeTasks(@Nonnull TaskAttrCompositeQuery query) {
+        return taskRepository.countCompositeTasks(query);
+    }
+
+    @Override
+    public TaskDTO getById(Long taskId) {
+        Task task = getTaskById(taskId);
+
+        return convert(task, TaskDTO.class);
+    }
+
+    @Override
+    public int updateUnfinishedTask(Task task) {
+        return taskRepository.updateTaskByIdAndStatusNotIn(task, DONE_STATUSES);
+    }
+
+    @Override
+    public void updateTask(Long taskId, String accountNo, String website) {
+        if (taskId == null) {
+            return;
+        }
+
+        String account = StringUtils.trim(accountNo);
+        String site = StringUtils.trim(website);
+        if (StringUtils.isEmpty(account) && StringUtils.isEmpty(site)) {
+            return;
+        }
+
+        TaskParams task = new TaskParams();
+        task.setAccountNo(account);
+        task.setWebsite(site);
+        updateProcessingTaskById(task, taskId);
+    }
+
+    @Override
     public Task getTaskById(@Nonnull Long taskId) {
         return taskRepository.getTaskById(taskId);
     }
 
     @Override
     public Byte getTaskStatusById(@Nonnull Long taskId) {
-        Task task = getTaskById(taskId);
+        Task task = taskRepository.getTaskById(taskId);
 
-        return task != null ? task.getStatus() : null;
+        return task.getStatus();
     }
 
     @Override
-    public List<Task> listRunningTasksByEnvAndCreateTimeBetween(@Nonnull Byte saasEnv, @Nonnull Date startDate, @Nonnull Date endDate) {
+    public boolean isTaskCompleted(Long taskId) {
+        Byte status = getTaskStatusById(taskId);
+        return isCompleted(status);
+    }
+
+    private boolean isCompleted(Byte status) {
+        if (status != null) {
+            for (Byte item : DONE_STATUSES) {
+                if (item.equals(status)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public Task queryCompletedTaskById(@Nonnull Long taskId) {
+        Task task = taskRepository.getTaskById(taskId);
+
+        if (isCompleted(task.getStatus())) {
+            return task;
+        }
+
+        return null;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public List<Long> listTaskIdsWithSameTrigger(@Nonnull Long taskId) {
+        Task task = taskRepository.getTaskById(taskId);
+
+        return taskRepository.listTaskIdsByAppIdAndBizTypeAndUniqueId(task.getAppId(), task.getBizType(), task.getUniqueId());
+    }
+
+    @Override
+    public List<Task> listRunningTasks(@Nonnull Byte saasEnv, @Nonnull Date startDate, @Nonnull Date endDate) {
         return taskRepository.listTasksByStatusAndEnvAndCreateTimeBetween(ETaskStatus.RUNNING.getStatus(), saasEnv, startDate, endDate);
+    }
+
+    @Override
+    public List<Task> queryPagingTasks(@Nonnull TaskPagingQuery query) {
+        return taskRepository.queryPagingTasks(query);
+    }
+
+    @Override
+    public long countPagingTasks(@Nonnull TaskPagingQuery query) {
+        return taskRepository.countPagingTasks(query);
     }
 
     @Override
@@ -103,36 +190,31 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         return taskRepository.countTasks(query);
     }
 
-    @Override
-    public List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskCompositeQuery query) {
-        return taskRepository.queryCompositeTasks(query);
-    }
-
-    @Override
-    public long countCompositeTasks(@Nonnull TaskCompositeQuery query) {
-        return taskRepository.countCompositeTasks(query);
-    }
-
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Long createTask(@Nonnull TaskDO taskDO, String source, String extra) {
-        Task task = taskRepository.insertTask(taskDO);
+    public Long createTask(@Nonnull TaskCreateObject object) {
+        TaskParams params = convertStrict(object, TaskParams.class);
+        Task task = taskRepository.insertTask(params);
 
         Long id = task.getId();
+        String extra = object.getExtra();
         if (StringUtils.isNotBlank(extra)) {
             JSONObject jsonObject = JSON.parseObject(extra);
             if (MapUtils.isNotEmpty(jsonObject)) {
                 setAttribute(id, jsonObject);
             }
         }
+
+        String source = object.getSource();
         if (StringUtils.isNotEmpty(source)) {
             taskAttributeService.insert(id, ETaskAttribute.SOURCE_TYPE.getAttribute(), source, false);
         }
+
         // 记录创建日志
         taskLogService.log(id, TaskStatusMsgEnum.CREATE_MSG);
+
         return id;
     }
-
 
     private void setAttribute(Long taskId, Map map) {
         String mobileAttribute = ETaskAttribute.MOBILE.getAttribute();
@@ -158,100 +240,72 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     }
 
     @Override
-    public TaskDTO getById(Long taskId) {
-        Task task = getTaskById(taskId);
-        if (task == null) {
-            return null;
-        }
-        return convert(task, TaskDTO.class);
+    public int updateProcessingTaskById(@Nonnull TaskUpdateObject object) {
+        TaskParams params = convert(object, TaskParams.class);
+
+        return updateProcessingTaskById(params, object.getId());
     }
 
-
-    @Override
-    public boolean isTaskCompleted(Long taskId) {
-        Byte status = getTaskStatusById(taskId);
-        if (status != null) {
-            for (Byte item : DONE_STATUSES) {
-                if (item.equals(status)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public List<Long> getUserTaskIdList(Long taskId) {
-        Task task = getTaskById(taskId);
-        Objects.requireNonNull(task);
-
-        List<Task> tasks = taskRepository.listTasksByAppIdAndBizTypeAndUniqueId(task.getAppId(), task.getBizType(), task.getUniqueId());
-
-        if (CollectionUtils.isNotEmpty(tasks)) {
-            return tasks.stream().map(Task::getId).collect(Collectors.toList());
-        }
-
-        return Collections.emptyList();
-    }
-
-    @Override
-    public void cancelTask(Long taskId) {
-        logger.info("取消任务 : taskId={} ", taskId);
-        Task existTask = taskRepository.getTaskById(taskId);
-        if (existTask != null && existTask.getStatus() == 0) {
-            logger.info("取消正在执行任务 : taskId={} ", taskId);
-            DirectiveDTO cancelDirective = new DirectiveDTO();
-            cancelDirective.setTaskId(taskId);
-            cancelDirective.setDirective(EDirective.TASK_CANCEL.getText());
-            directiveService.process(cancelDirective);
-        }
-    }
-
-
-    @Override
-    public int updateUnfinishedTask(Task task) {
-        return taskRepository.updateTaskByIdAndStatusNotIn(task, DONE_STATUSES);
-    }
-
-    private int updateUnfinishedTask(TaskDO task) {
-        return taskRepository.updateTaskByIdAndStatusNotIn(task, DONE_STATUSES);
-    }
-
-    @Override
-    public void updateStatusInStepById(Long id, Byte status, String stepCode) {
-        TaskDO task = new TaskDO();
-        task.setId(id);
-        task.setStatus(status);
-        task.setStepCode(stepCode);
-
-        updateUnfinishedTask(task);
-    }
-
-    @Override
-    public void updateStatusById(@Nonnull Long id, @Nonnull Byte status) {
-        TaskDO task = new TaskDO();
-        task.setId(id);
-        task.setStatus(status);
-
-        updateUnfinishedTask(task);
+    private int updateProcessingTaskById(TaskParams params, Long id) {
+        return taskRepository.updateTaskByIdAndStatusNotIn(params, id, DONE_STATUSES);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public String updateStatusIfDone(Long taskId, Byte status) {
-        if (status == null || ETaskStatus.RUNNING.getStatus().equals(status)) {
+    public TaskUpdateResult updateAccountNoAndWebsiteIfNeedWhenProcessing(@Nonnull Long taskId, @Nullable String accountNo, @Nullable String website) {
+        String account = null;
+        if (StringUtils.isNotEmpty(accountNo)) {
+            Task task = getTaskById(taskId);
+            if (StringUtils.isEmpty(task.getAccountNo())) {
+                account = accountNo;
+            }
+        }
+
+        return updateAccountNoAndWebsiteWhenProcessing(taskId, account, website);
+    }
+
+    @Override
+    public TaskUpdateResult updateAccountNoAndWebsiteWhenProcessing(@Nonnull Long taskId, @Nullable String accountNo, @Nullable String website) {
+        String account = StringUtils.trim(accountNo);
+        boolean notUpdateAccount = StringUtils.isEmpty(account);
+        String site = StringUtils.trim(website);
+        boolean notUpdateWebsite = StringUtils.isEmpty(site);
+
+        if (notUpdateAccount && notUpdateWebsite) {
+            return new TaskUpdateResult(false, false);
+        }
+
+        TaskParams task = new TaskParams();
+        task.setAccountNo(account);
+        task.setWebsite(site);
+        updateProcessingTaskById(task, taskId);
+
+        return new TaskUpdateResult(!notUpdateAccount, !notUpdateWebsite);
+    }
+
+    @Override
+    public void updateStatusWhenProcessing(@Nonnull Long id, @Nonnull Byte status) {
+        TaskParams task = new TaskParams();
+        task.setStatus(status);
+
+        updateProcessingTaskById(task, id);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public String updateStatusIfDone(@Nonnull Long taskId, @Nonnull Byte status) {
+        if (ETaskStatus.RUNNING.getStatus().equals(status)) {
             return null;
         }
 
         if (ETaskStatus.SUCCESS.getStatus().equals(status)) {
-            updateStatusById(taskId, status);
+            updateStatusWhenProcessing(taskId, status);
             taskLogService.log(taskId, TaskStatusMsgEnum.SUCCESS_MSG);
             return null;
         }
 
         String stepCode = taskLogService.getLastErrorStepCode(taskId);
-        updateStatusInStepById(taskId, status, stepCode);
+        updateStatusAndStepCodeIfFailed(taskId, status, stepCode);
 
         if (ETaskStatus.CANCEL.getStatus().equals(status)) {
             // 取消任务
@@ -265,41 +319,12 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         return stepCode;
     }
 
-    @Override
-    public void updateTask(Long taskId, String accountNo, String website) {
-        if (taskId == null || StringUtils.isEmpty(accountNo)) {
-            return;
-        }
+    private void updateStatusAndStepCodeIfFailed(Long id, Byte status, String stepCode) {
+        TaskParams task = new TaskParams();
+        task.setStatus(status);
+        task.setStepCode(stepCode);
 
-        updateAccountNoAndWebsiteById(taskId, accountNo, website);
-    }
-
-    @Override
-    public void updateAccountNoAndWebsiteIfNeed(@Nonnull Long taskId, @Nullable String accountNo, @Nullable String website) {
-        String account = null;
-        if (StringUtils.isNotEmpty(accountNo)) {
-            Task task = getTaskById(taskId);
-            Objects.requireNonNull(task);
-            if (StringUtils.isEmpty(task.getAccountNo())) {
-                account = accountNo;
-            }
-        }
-
-        updateAccountNoAndWebsiteById(taskId, account, website);
-    }
-
-    private void updateAccountNoAndWebsiteById(@Nonnull Long id, @Nullable String accountNo, @Nullable String website) {
-        String account = StringUtils.trimToNull(accountNo);
-        String site = StringUtils.trimToNull(website);
-        if (StringUtils.isEmpty(account) && StringUtils.isEmpty(site)) {
-            return;
-        }
-
-        TaskDO task = new TaskDO();
-        task.setId(id);
-        task.setAccountNo(account);
-        task.setWebsite(site);
-        updateUnfinishedTask(task);
+        updateProcessingTaskById(task, id);
     }
 
     @Override
@@ -307,4 +332,17 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         taskRepository.updateAccountNoById(taskId, accountNo);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void cancelTask(@Nonnull Long taskId) {
+        logger.info("准备取消任务，taskId={} ", taskId);
+        Task task = taskRepository.getTaskById(taskId);
+        if (ETaskStatus.isRunning(task.getStatus())) {
+            logger.info("正在取消任务 : taskId={} ", taskId);
+            DirectiveDTO cancelDirective = new DirectiveDTO();
+            cancelDirective.setTaskId(taskId);
+            cancelDirective.setDirective(EDirective.TASK_CANCEL.getText());
+            directiveService.process(cancelDirective);
+        }
+    }
 }

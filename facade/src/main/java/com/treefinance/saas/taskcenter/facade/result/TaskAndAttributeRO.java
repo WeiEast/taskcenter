@@ -8,6 +8,7 @@ import java.util.Date;
  * @author chengtong
  * @date 18/9/19 20:24
  */
+@Deprecated
 public class TaskAndAttributeRO extends BaseResult {
 
 

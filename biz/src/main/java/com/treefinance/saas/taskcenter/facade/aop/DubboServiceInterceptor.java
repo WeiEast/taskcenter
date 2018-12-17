@@ -1,11 +1,14 @@
 package com.treefinance.saas.taskcenter.facade.aop;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.google.common.base.Stopwatch;
 import com.treefinance.saas.taskcenter.exception.BusinessCheckFailException;
 import com.treefinance.saas.taskcenter.exception.BusinessProcessFailException;
+import com.treefinance.saas.taskcenter.exception.UnexpectedServiceException;
+import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
+import com.treefinance.toolkit.util.json.Jackson;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -27,35 +30,53 @@ public class DubboServiceInterceptor {
     public void facadePointcut() {}
 
     @Around("facadePointcut()")
-    public Object triggerAround(ProceedingJoinPoint jpj) throws Throwable {
-        long startTime = System.currentTimeMillis();
+    public Object triggerAround(ProceedingJoinPoint joinPoint) throws Throwable {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         Object result = null;
         try {
-            result = jpj.proceed();
+            result = joinPoint.proceed();
+            return result;
+        } catch (UnexpectedServiceException e) {
+            result = triggerAfterException(e, joinPoint);
             return result;
         } catch (BusinessCheckFailException e) {
             log.error("BusinessCheckFailException", e);
-            result = exceptionProcessor(jpj, e);
+            result = exceptionProcessor(joinPoint, e);
             return result;
         } catch (BusinessProcessFailException e) {
             log.error("BusinessProcessFailException", e);
-            result = exceptionProcessor(jpj, e);
+            result = exceptionProcessor(joinPoint, e);
             return result;
         } catch (Exception e) {
             log.error("Exception:", e);
-            result = exceptionProcessor(jpj, e);
+            result = exceptionProcessor(joinPoint, e);
             return result;
         } finally {
-            logProcessor(jpj, result, startTime);
+            triggerAfterCompletion(result, joinPoint, stopwatch);
         }
     }
 
-    private void logProcessor(ProceedingJoinPoint jpj, Object result, long startTime) {
-        MethodSignature signature = (MethodSignature) jpj.getSignature();
+    private Object triggerAfterException(Exception e, ProceedingJoinPoint joinPoint) {
+        MethodSignature signature = (MethodSignature)joinPoint.getSignature();
         Method method = signature.getMethod();
         String methodName = method.getDeclaringClass().getName() + "." + method.getName();
-        log.info("请求dubbo服务:{},参数:{},用时:{}ms,返回结果:{}", methodName, JSONArray.toJSONString(jpj.getArgs()),
-                System.currentTimeMillis() - startTime, JSON.toJSONString(result));
+
+        if (e instanceof UnexpectedServiceException) {
+            String errorCode = ((UnexpectedServiceException)e).getErrorCode();
+            String errorMsg = e.getMessage();
+            log.error("RPC服务异常！服务名: {}, 参数: {}, errorCode: {}, errorMsg: {}", methodName, Jackson.toJSONString(joinPoint.getArgs()), errorCode, errorMsg, e);
+            return TaskResponse.failure(errorCode, errorMsg);
+        } else {
+            // TODO: 李梁杰 2018/12/13 后面逐渐完善异常
+            return null;
+        }
+    }
+
+    private void triggerAfterCompletion(Object result, ProceedingJoinPoint joinPoint, Stopwatch stopwatch) {
+        MethodSignature signature = (MethodSignature)joinPoint.getSignature();
+        Method method = signature.getMethod();
+        String methodName = method.getDeclaringClass().getName() + "." + method.getName();
+        log.info("RPC服务响应，服务名: {}, 参数: {}, 耗时: {}, 返回结果: {}", methodName, Jackson.toJSONString(joinPoint.getArgs()), stopwatch.toString(), Jackson.toJSONString(result));
     }
 
     @SuppressWarnings("rawtypes")

@@ -10,6 +10,7 @@ import java.util.List;
  * @author chengtong
  * @date 18/9/19 20:27
  */
+@Deprecated
 public class TaskAndAttributeRequest extends PageRequest implements Serializable{
 
     private String appId;
@@ -18,7 +19,7 @@ public class TaskAndAttributeRequest extends PageRequest implements Serializable
 
     private String name;
 
-    private Integer status;
+    private Byte status;
 
     private Byte bizType;
 
@@ -58,11 +59,11 @@ public class TaskAndAttributeRequest extends PageRequest implements Serializable
         this.name = name;
     }
 
-    public Integer getStatus() {
+    public Byte getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(Byte status) {
         this.status = status;
     }
 

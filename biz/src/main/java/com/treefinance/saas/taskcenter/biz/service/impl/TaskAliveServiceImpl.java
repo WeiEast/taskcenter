@@ -62,9 +62,6 @@ public class TaskAliveServiceImpl implements TaskAliveService {
             lockMap = redisDao.acquireLock(String.format(PREFIX_ALIVE_TIME_UPDATE_LOCK_KEY, taskId), 60 * 1000L);
             if (lockMap != null) {
                 Task task = taskRepository.getTaskById(taskId);
-                if (task == null) {
-                    return;
-                }
                 if (!ETaskStatus.RUNNING.getStatus().equals(task.getStatus())) {
                     logger.info("任务已结束,无需更新任务活跃时间,taskId={}", taskId);
                     return;

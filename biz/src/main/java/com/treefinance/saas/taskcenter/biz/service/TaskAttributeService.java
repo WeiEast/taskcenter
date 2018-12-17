@@ -13,7 +13,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.dao.domain.TaskAttributeQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.toolkit.util.DateUtils;
 

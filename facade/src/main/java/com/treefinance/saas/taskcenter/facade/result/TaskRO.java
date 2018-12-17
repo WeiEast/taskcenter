@@ -8,6 +8,7 @@ import java.util.Date;
  * @author:guoguoyun
  * @date:Created in 2018/9/18上午11:41
  */
+@Deprecated
 public class TaskRO extends BaseResult {
 
     private Long id;

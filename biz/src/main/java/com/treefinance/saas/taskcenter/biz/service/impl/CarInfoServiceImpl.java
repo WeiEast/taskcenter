@@ -57,11 +57,11 @@ public class CarInfoServiceImpl implements CarInfoService {
             taskLogService.insertTaskLog(taskId, log.getMsg(), log.getOccurTime(), log.getErrorMsg());
             // 任务成功
             if (StringUtils.equalsIgnoreCase(log.getMsg(), ETaskStep.TASK_SUCCESS.getText())) {
-                taskService.updateStatusById(taskId, ETaskStatus.SUCCESS.getStatus());
+                taskService.updateStatusWhenProcessing(taskId, ETaskStatus.SUCCESS.getStatus());
             }
             // 任务失败
             if (StringUtils.equalsIgnoreCase(log.getMsg(), ETaskStep.TASK_FAIL.getText())) {
-                taskService.updateStatusById(taskId, ETaskStatus.FAIL.getStatus());
+                taskService.updateStatusWhenProcessing(taskId, ETaskStatus.FAIL.getStatus());
             }
         }
         monitorService.sendMonitorMessage(taskId);

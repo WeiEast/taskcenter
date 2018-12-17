@@ -10,6 +10,7 @@ import java.util.List;
  * @author:guoguoyun
  * @date:Created in 2018/9/18上午11:13
  */
+@Deprecated
 public class TaskRequest extends PageRequest implements Serializable{
 
     private Long id;

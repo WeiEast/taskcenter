@@ -14,7 +14,7 @@
 package com.treefinance.saas.taskcenter.dao.repository;
 
 import com.treefinance.commonservice.uid.UidService;
-import com.treefinance.saas.taskcenter.dao.domain.TaskCallbackLogQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLogCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskCallbackLogMapper;

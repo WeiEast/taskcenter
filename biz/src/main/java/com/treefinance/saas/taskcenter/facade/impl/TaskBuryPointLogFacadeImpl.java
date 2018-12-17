@@ -28,14 +28,14 @@ public class TaskBuryPointLogFacadeImpl extends AbstractFacade implements TaskBu
 
 
     @Override
-    public TaskResult<List<TaskBuryPointLogRO>> queryTaskBuryPointLog(TaskBuryPointLogRequest taskBuryPointLogRequest) {
-        logger.info("查询任务埋点日志信息，传入的请求参数为{}", taskBuryPointLogRequest.toString());
+    public TaskResult<List<TaskBuryPointLogRO>> queryTaskBuryPointLog(TaskBuryPointLogRequest request) {
+        logger.info("查询任务埋点日志信息，传入的请求参数为{}", request);
 
-        Long id = taskBuryPointLogRequest.getId();
-        String appId = taskBuryPointLogRequest.getAppId();
-        Long taskId = taskBuryPointLogRequest.getTaskId();
-        String code = taskBuryPointLogRequest.getCode();
-        String order = taskBuryPointLogRequest.getOrderByClause();
+        Long id = request.getId();
+        String appId = request.getAppId();
+        Long taskId = request.getTaskId();
+        String code = request.getCode();
+        String order = request.getOrderByClause();
 
         List<TaskBuryPointLog> list = taskBuryPointLogService.queryTaskBuryPointLogs(id, appId, taskId, code, order);
 

@@ -3,7 +3,7 @@ package com.treefinance.saas.taskcenter.facade.impl;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
-import com.treefinance.saas.taskcenter.dao.domain.TaskAttributeQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskAttributeRO;
@@ -33,7 +33,7 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
 
     @Override
     public TaskResult<List<TaskAttributeRO>> queryTaskAttribute(TaskAttributeRequest request) {
-        logger.info("查询任务变量信息，传入的请求参数为{}", request.toString());
+        logger.info("查询任务变量信息，传入的请求参数为{}", request);
         TaskAttributeQuery query = new TaskAttributeQuery();
         query.setId(request.getId());
         query.setTaskIds(request.getTaskIds());

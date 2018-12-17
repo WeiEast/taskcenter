@@ -28,19 +28,19 @@ public class TaskLogFacadeImpl extends AbstractFacade implements TaskLogFacade {
 
 
     @Override
-    public TaskResult<List<TaskLogRO>> queryTaskLog(TaskLogRequest taskLogRequest) {
-        logger.info("查询任务日志信息，传入的请求参数为{}", taskLogRequest.toString());
-        Long id = taskLogRequest.getId();
-        Long taskId = taskLogRequest.getTaskId();
-        List<Long> taskIds = taskLogRequest.getTaskIdList();
+    public TaskResult<List<TaskLogRO>> queryTaskLog(TaskLogRequest request) {
+        logger.info("查询任务日志信息，传入的请求参数为{}", request);
+        Long id = request.getId();
+        Long taskId = request.getTaskId();
+        List<Long> taskIds = request.getTaskIdList();
         if (CollectionUtils.isEmpty(taskIds) && taskId != null) {
             taskIds = Collections.singletonList(taskId);
         }
-        String msg = taskLogRequest.getMsg();
-        String stepCode = taskLogRequest.getStepCode();
-        String errorMsg = taskLogRequest.getErrorMsg();
-        Date occurTime = taskLogRequest.getOccurTime();
-        String order = taskLogRequest.getOrderByClause();
+        String msg = request.getMsg();
+        String stepCode = request.getStepCode();
+        String errorMsg = request.getErrorMsg();
+        Date occurTime = request.getOccurTime();
+        String order = request.getOrderByClause();
 
         List<TaskLog> list = taskLogService.queryTaskLogs(id, taskIds, msg, stepCode, errorMsg, occurTime, order);
 

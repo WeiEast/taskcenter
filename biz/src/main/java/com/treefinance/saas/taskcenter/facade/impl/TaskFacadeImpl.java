@@ -1,23 +1,34 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Lists;
+import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
+import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
+import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.exception.BusinessCheckFailException;
 import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
-import com.treefinance.saas.taskcenter.dao.domain.TaskCompositeQuery;
-import com.treefinance.saas.taskcenter.dao.domain.TaskDO;
-import com.treefinance.saas.taskcenter.dao.domain.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
+import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
+import com.treefinance.saas.taskcenter.facade.request.CompositeTaskAttrPagingQueryRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskAndAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskCreateRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskPagingQueryRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskQueryRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskUpdateRequest;
+import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
+import com.treefinance.saas.taskcenter.facade.result.CompositeTaskAttrDTO;
+import com.treefinance.saas.taskcenter.facade.result.PagingDataSet;
+import com.treefinance.saas.taskcenter.facade.result.SimpleTaskDTO;
 import com.treefinance.saas.taskcenter.facade.result.TaskAndAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
+import com.treefinance.saas.taskcenter.facade.result.TaskUpdateStatusDTO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskFacade;
+import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +40,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author:guoguoyun
@@ -40,11 +52,10 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
     @Autowired
     private TaskService taskService;
 
-
     @Override
     public TaskResult<List<TaskRO>> queryTask(TaskRequest request) {
-        logger.info("条件查询任务传入的参数为{}", request.toString());
-        TaskQuery query = new TaskQuery();
+        logger.info("条件查询任务传入的参数为{}", request);
+        TaskPagingQuery query = new TaskPagingQuery();
         query.setId(request.getId());
 
         List<String> appIds = request.getAppIdList();
@@ -66,18 +77,15 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
         query.setStatus(request.getStatus());
 
         Date startDate = request.getCreateTimeStart();
-        Date endDate = null;
-        if (startDate != null) {
-            endDate = request.getCreateTimeEnd();
-        }
-
         query.setStartDate(startDate);
-        query.setEndDate(endDate);
+        if (startDate != null) {
+            query.setEndDate(request.getCreateTimeEnd());
+        }
 
         query.setSaasEnv(request.getSaasEnv());
         query.setOrder(request.getOrderByClause());
 
-        List<Task> taskList = taskService.queryTasks(query);
+        List<Task> taskList = taskService.queryPagingTasks(query);
 
         if (CollectionUtils.isEmpty(taskList)) {
             return TaskResult.wrapErrorResult("失败", "找不到相关数据");
@@ -89,22 +97,52 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
     }
 
     @Override
-    public TaskResult<Long> createTask(TaskCreateRequest request) {
-        if (request == null) {
-            throw new BusinessCheckFailException("-1", "请求参数不能为空");
+    public TaskPagingResult<TaskRO> queryTaskWithPagination(TaskRequest request) {
+        logger.info("分页条件查询任务传入的参数为{}", request);
+
+        TaskPagingQuery query = new TaskPagingQuery();
+        query.setId(request.getId());
+
+        List<String> appIds = request.getAppIdList();
+        if (CollectionUtils.isEmpty(appIds) && request.getAppId() != null) {
+            appIds = Collections.singletonList(request.getAppId());
         }
-        if (StringUtils.isBlank(request.getAppId())) {
-            throw new BusinessCheckFailException("-1", "appId不能为空");
+        query.setAppIds(appIds);
+
+        List<Byte> bizTypes = request.getBizTypeList();
+        if (CollectionUtils.isEmpty(bizTypes) && request.getBizType() != null) {
+            bizTypes = Collections.singletonList(request.getBizType());
         }
-        if (request.getBizType() == null) {
-            throw new BusinessCheckFailException("-1", "业务类型不能为空");
+        query.setBizTypes(bizTypes);
+
+        query.setWebsite(request.getWebSite());
+        query.setUniqueId(request.getUniqueId());
+        query.setAccountNo(request.getAccountNo());
+        query.setStepCode(request.getStepCode());
+        query.setStatus(request.getStatus());
+
+        Date startDate = request.getCreateTimeStart();
+        query.setStartDate(startDate);
+        if (startDate != null) {
+            query.setEndDate(request.getCreateTimeEnd());
         }
 
-        TaskDO taskDO = convert(request, TaskDO.class);
+        query.setSaasEnv(request.getSaasEnv());
+        query.setOrder(request.getOrderByClause());
+        query.setOffset(request.getOffset());
+        query.setLimit(request.getPageSize());
 
-        Long taskId = taskService.createTask(taskDO, request.getSource(), request.getExtra());
+        List<Task> taskList = taskService.queryPagingTasks(query);
 
-        return TaskResult.wrapSuccessfulResult(taskId);
+        if (CollectionUtils.isEmpty(taskList)) {
+            return TaskPagingResult.wrapErrorResult("失败", "找不到相关数据");
+        }
+
+        int count = (int)taskService.countPagingTasks(query);
+
+        List<TaskRO> taskROList = convert(taskList, TaskRO.class);
+
+        return TaskPagingResult.wrapSuccessfulResult(taskROList, count);
     }
 
     @Override
@@ -127,15 +165,6 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
     }
 
     @Override
-    public TaskResult<Void> cancelTask(Long taskId) {
-        if (taskId == null) {
-            throw new BusinessCheckFailException("-1", "任务id不能为空");
-        }
-        taskService.cancelTask(taskId);
-        return TaskResult.wrapSuccessfulResult(null);
-    }
-
-    @Override
     public TaskResult<TaskRO> getTaskByPrimaryKey(TaskRequest request) {
         Task task = taskService.getTaskById(Objects.requireNonNull(request.getId()));
         if (Objects.isNull(task)) {
@@ -147,76 +176,25 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
     }
 
     @Override
-    public TaskPagingResult<TaskRO> queryTaskWithPagination(TaskRequest request) {
-        logger.info("分页条件查询任务传入的参数为{}", request.toString());
-
-        TaskQuery query = new TaskQuery();
-        query.setId(request.getId());
-
-        List<String> appIds = request.getAppIdList();
-        if (CollectionUtils.isEmpty(appIds) && request.getAppId() != null) {
-            appIds = Collections.singletonList(request.getAppId());
-        }
-        query.setAppIds(appIds);
-
-        List<Byte> bizTypes = request.getBizTypeList();
-        if (CollectionUtils.isEmpty(bizTypes) && request.getBizType() != null) {
-            bizTypes = Collections.singletonList(request.getBizType());
-        }
-        query.setBizTypes(bizTypes);
-
-        query.setWebsite(request.getWebSite());
-        query.setUniqueId(request.getUniqueId());
-        query.setAccountNo(request.getAccountNo());
-        query.setStepCode(request.getStepCode());
-        query.setStatus(request.getStatus());
-
-        Date startDate = request.getCreateTimeStart();
-        Date endDate = null;
-        if (startDate != null) {
-            endDate = request.getCreateTimeEnd();
-        }
-        query.setStartDate(startDate);
-        query.setEndDate(endDate);
-
-        query.setSaasEnv(request.getSaasEnv());
-        query.setOrder(request.getOrderByClause());
-        query.setOffset(request.getOffset());
-        query.setLimit(request.getPageSize());
-
-        List<Task> taskList = taskService.queryTasks(query);
-
-        if (CollectionUtils.isEmpty(taskList)) {
-            return TaskPagingResult.wrapErrorResult("失败", "找不到相关数据");
-        }
-
-        int count = (int)taskService.countTasks(query);
-
-        List<TaskRO> taskROList = convert(taskList, TaskRO.class);
-
-        return TaskPagingResult.wrapSuccessfulResult(taskROList, count);
-    }
-
-    @Override
     public TaskPagingResult<TaskRO> queryTaskListPage(TaskRequest request) {
-        TaskQuery query = new TaskQuery();
+        TaskPagingQuery query = new TaskPagingQuery();
         query.setId(request.getId());
         query.setAppIds(request.getAppIdList());
         query.setBizTypes(Collections.singletonList(request.getBizType()));
         query.setUniqueId(request.getUniqueId());
         query.setAccountNo(request.getAccountNo());
         query.setStartDate(request.getStartDate());
-        query.setEndDate(DateUtils.plusSeconds(request.getEndDate(), 24 * 60 * 60 - 1));
+        query.setEndDate(DateUtils.getEndTimeOfDay(request.getEndDate()));
         query.setOrder("lastUpdateTime desc");
         query.setOffset(request.getOffset());
         query.setLimit(request.getPageSize());
 
-        long count = taskService.countTasks(query);
+        long count = taskService.countPagingTasks(query);
         if (count <= 0) {
             return TaskPagingResult.wrapSuccessfulResult(null, 0);
         }
 
-        List<Task> taskList = taskService.queryTasks(query);
+        List<Task> taskList = taskService.queryPagingTasks(query);
 
         List<TaskRO> taskROList = convert(taskList, TaskRO.class);
 
@@ -226,14 +204,14 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
 
     @Override
     public TaskResult<List<TaskRO>> queryTaskList(TaskRequest request) {
-        TaskQuery query = new TaskQuery();
+        TaskPagingQuery query = new TaskPagingQuery();
         query.setId(request.getId());
         query.setAppIds(request.getAppIdList());
         query.setBizTypes(Collections.singletonList(request.getBizType()));
         query.setUniqueId(request.getUniqueId());
         query.setAccountNo(request.getAccountNo());
 
-        List<Task> taskList = taskService.queryTasks(query);
+        List<Task> taskList = taskService.queryPagingTasks(query);
 
         List<TaskRO> taskROList = convert(taskList, TaskRO.class);
 
@@ -243,7 +221,7 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
 
     @Override
     public TaskPagingResult<TaskAndAttributeRO> queryTaskAndTaskAttribute(TaskAndAttributeRequest request) {
-        TaskCompositeQuery query = new TaskCompositeQuery();
+        TaskAttrCompositeQuery query = new TaskAttrCompositeQuery();
         query.setAppId(request.getAppId());
 
         List<Byte> bizTypes = request.getBizTypeList();
@@ -262,12 +240,12 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
         query.setStartDate(request.getStartTime());
         query.setEndDate(request.getEndTime());
 
-        query.setName(request.getName());
+        query.setAttrName(request.getName());
         String value = null;
         if (StringUtils.isNotBlank(webSite)) {
             value = request.getValue();
         }
-        query.setValue(value);
+        query.setAttrValue(value);
 
         query.setOrder("createTime desc");
         query.setOffset(request.getStart());
@@ -286,13 +264,13 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
 
     @Override
     public TaskResult<List<Long>> getUserTaskIdList(Long taskId) {
-        List<Long> taskIdList = taskService.getUserTaskIdList(taskId);
+        List<Long> taskIdList = taskService.listTaskIdsWithSameTrigger(taskId);
         return TaskResult.wrapSuccessfulResult(taskIdList);
     }
 
     @Override
     public TaskResult<List<TaskRO>> selectRecentRunningTaskList(Byte saasEnv, Date startTime, Date endTime) {
-        List<Task> taskList = taskService.listRunningTasksByEnvAndCreateTimeBetween(saasEnv, endTime, startTime);
+        List<Task> taskList = taskService.listRunningTasks(saasEnv, endTime, startTime);
         if (CollectionUtils.isEmpty(taskList)) {
             return TaskResult.wrapSuccessfulResult(Lists.newArrayList());
         }
@@ -300,4 +278,231 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
         return TaskResult.wrapSuccessfulResult(taskROList);
     }
 
+    @Override
+    public TaskResponse<SimpleTaskDTO> getTaskById(Long id) {
+        Preconditions.notNull("id", id);
+        Task task = taskService.getTaskById(id);
+
+        SimpleTaskDTO dto = convertStrict(task, SimpleTaskDTO.class);
+        return TaskResponse.success(dto);
+    }
+
+    @Override
+    public TaskResponse<List<SimpleTaskDTO>> listRunningTasks(Byte saasEnv, Date startTime, Date endTime) {
+        Preconditions.notNull("saasEnv", saasEnv);
+        Preconditions.notNull("startTime", startTime);
+        Preconditions.notNull("endTime", endTime);
+        Preconditions.isFalse(startTime.after(endTime), "参数endTime必须大于startTime!");
+
+        List<Task> taskList = taskService.listRunningTasks(saasEnv, startTime, endTime);
+
+        List<SimpleTaskDTO> list = convert(taskList, SimpleTaskDTO.class);
+
+        return TaskResponse.success(list);
+    }
+
+    @Override
+    public TaskResponse<List<Long>> listTaskIdsWithSameTrigger(Long taskId) {
+        Preconditions.notNull("taskId", taskId);
+
+        List<Long> taskIds = taskService.listTaskIdsWithSameTrigger(taskId);
+
+        return TaskResponse.success(taskIds);
+    }
+
+    @Override
+    public TaskResponse<SimpleTaskDTO> queryCompletedTaskById(Long taskId) {
+        Preconditions.notNull("taskId", taskId);
+
+        Task task = taskService.queryCompletedTaskById(taskId);
+
+        SimpleTaskDTO dto = convertStrict(task, SimpleTaskDTO.class);
+
+        return TaskResponse.success(dto);
+    }
+
+    @Override
+    public TaskResponse<List<SimpleTaskDTO>> queryTasks(TaskQueryRequest request) {
+        logger.info("分页条件查询任务传入的参数为{}", request);
+        Preconditions.notNull("request", request);
+
+        TaskQuery query;
+        if (request instanceof TaskPagingQueryRequest) {
+            query = new TaskPagingQuery(((TaskPagingQueryRequest)request).getOffset(), ((TaskPagingQueryRequest)request).getPageSize());
+        } else {
+            query = new TaskQuery();
+        }
+        query.setAppIds(request.getAppIds());
+        query.setBizTypes(request.getBizTypes());
+        query.setWebsite(request.getWebsite());
+        query.setUniqueId(request.getUniqueId());
+        query.setAccountNo(request.getAccountNo());
+        query.setStepCode(request.getStepCode());
+        query.setStatus(request.getStatus());
+        query.setStartDate(request.getStartDate());
+        query.setEndDate(request.getEndDate());
+        query.setSaasEnv(request.getSaasEnv());
+        query.setOrder(request.getOrder());
+
+        List<Task> tasks = taskService.queryTasks(query);
+        List<SimpleTaskDTO> list = convert(tasks, SimpleTaskDTO.class);
+
+        return TaskResponse.success(list);
+    }
+
+    @Override
+    public TaskResponse<PagingDataSet<SimpleTaskDTO>> queryPagingTasks(TaskPagingQueryRequest request) {
+        logger.info("分页条件查询任务传入的参数为{}", request);
+        Preconditions.notNull("request", request);
+
+        TaskPagingQuery query = new TaskPagingQuery();
+        query.setAppIds(request.getAppIds());
+        query.setBizTypes(request.getBizTypes());
+        query.setWebsite(request.getWebsite());
+        query.setUniqueId(request.getUniqueId());
+        query.setAccountNo(request.getAccountNo());
+        query.setStepCode(request.getStepCode());
+        query.setStatus(request.getStatus());
+        query.setStartDate(request.getStartDate());
+        query.setEndDate(request.getEndDate());
+        query.setSaasEnv(request.getSaasEnv());
+        query.setOrder(request.getOrder());
+        query.setOffset(request.getOffset());
+        query.setLimit(request.getPageSize());
+
+        long count = taskService.countTasks(query);
+        List<SimpleTaskDTO> list;
+        if (count > 0) {
+            List<Task> tasks = taskService.queryTasks(query);
+            list = convert(tasks, SimpleTaskDTO.class);
+        } else {
+            list = Collections.emptyList();
+        }
+
+        PagingDataSet<SimpleTaskDTO> pagination = new PagingDataSet<>(list, count);
+
+        return TaskResponse.success(pagination);
+    }
+
+    @Override
+    public TaskResponse<PagingDataSet<CompositeTaskAttrDTO>> queryPagingCompositeTaskAttrs(CompositeTaskAttrPagingQueryRequest request) {
+        TaskAttrCompositeQuery query = new TaskAttrCompositeQuery();
+        query.setAppId(request.getAppId());
+        query.setBizTypes(request.getBizTypes());
+        query.setWebsite(request.getWebsite());
+        if (request.getSaasEnv() != null && request.getSaasEnv() != 0) {
+            query.setSaasEnv(request.getSaasEnv());
+        }
+        query.setStatus(request.getStatus());
+        query.setStartDate(request.getStartDate());
+        query.setEndDate(request.getEndDate());
+
+        query.setAttrName(request.getAttrName());
+        if (StringUtils.isNotBlank(request.getWebsite())) {
+            query.setAttrValue(request.getAttrValue());
+        }
+
+        query.setOrder(request.getOrder());
+        query.setOffset(request.getOffset());
+        query.setLimit(request.getPageSize());
+
+        long count = taskService.countCompositeTasks(query);
+        List<CompositeTaskAttrDTO> list;
+        if (count > 0) {
+            List<TaskAndTaskAttribute> taskAttrs = taskService.queryCompositeTasks(query);
+            if (CollectionUtils.isNotEmpty(taskAttrs)) {
+                list = taskAttrs.stream().map(taskAttr -> {
+                    CompositeTaskAttrDTO dto = new CompositeTaskAttrDTO();
+                    dto.setId(taskAttr.getId());
+                    dto.setUniqueId(taskAttr.getUniqueId());
+                    dto.setAppId(taskAttr.getAppId());
+                    dto.setAccountNo(taskAttr.getAccountNo());
+                    dto.setWebSite(taskAttr.getWebSite());
+                    dto.setBizType(taskAttr.getBizType());
+                    dto.setStatus(taskAttr.getStatus());
+                    dto.setStepCode(taskAttr.getStepCode());
+                    dto.setCreateTime(taskAttr.getCreateTime());
+                    dto.setLastUpdateTime(taskAttr.getLastUpdateTime());
+                    dto.setAttrName(taskAttr.getName());
+                    dto.setAttrValue(taskAttr.getValue());
+
+                    return dto;
+                }).collect(Collectors.toList());
+            } else {
+                list = Collections.emptyList();
+            }
+        } else {
+            list = Collections.emptyList();
+        }
+
+        PagingDataSet<CompositeTaskAttrDTO> pagination = new PagingDataSet<>(list, count);
+
+        return TaskResponse.success(pagination);
+    }
+
+    @Override
+    public TaskResponse<Long> createTask(TaskCreateRequest request) {
+        Preconditions.notNull("request", request);
+        Preconditions.notBlank("request.appId", request.getAppId());
+        Preconditions.notNull("request.bizType", request.getBizType());
+
+        TaskCreateObject params = convertStrict(request, TaskCreateObject.class);
+
+        Long taskId = taskService.createTask(params);
+
+        return TaskResponse.success(taskId);
+    }
+
+    @Override
+    public TaskResponse<Integer> updateProcessingTaskById(TaskUpdateRequest request) {
+        Preconditions.notNull("request", request);
+        Preconditions.notNull("request.id", request.getId());
+
+        TaskUpdateObject params = convertStrict(request, TaskUpdateObject.class);
+
+        int num = taskService.updateProcessingTaskById(params);
+
+        return TaskResponse.success(num);
+    }
+
+    @Override
+    public TaskResponse<TaskUpdateStatusDTO> updateAccountNoAndWebsiteIfNeedWhenProcessing(Long taskId, String accountNo, String website) {
+        Preconditions.notNull("taskId", taskId);
+
+        TaskUpdateResult result = taskService.updateAccountNoAndWebsiteIfNeedWhenProcessing(taskId, accountNo, website);
+
+        TaskUpdateStatusDTO status = convertStrict(result, TaskUpdateStatusDTO.class);
+
+        return TaskResponse.success(status);
+    }
+
+    @Override
+    public TaskResponse<TaskUpdateStatusDTO> updateAccountNoAndWebsiteWhenProcessing(Long taskId, String accountNo, String website) {
+        Preconditions.notNull("taskId", taskId);
+
+        TaskUpdateResult result = taskService.updateAccountNoAndWebsiteWhenProcessing(taskId, accountNo, website);
+
+        TaskUpdateStatusDTO status = convertStrict(result, TaskUpdateStatusDTO.class);
+
+        return TaskResponse.success(status);
+    }
+
+    @Override
+    public TaskResponse<String> updateStatusIfDone(Long taskId, Byte status) {
+        Preconditions.notNull("taskId", taskId);
+        Preconditions.notNull("status", status);
+
+        String result = taskService.updateStatusIfDone(taskId, status);
+
+        return TaskResponse.success(result);
+    }
+
+    @Override
+    public TaskResponse<Void> cancelTask(Long taskId) {
+        Preconditions.notNull("taskId", taskId);
+
+        taskService.cancelTask(taskId);
+
+        return TaskResponse.success(null);
+    }
 }

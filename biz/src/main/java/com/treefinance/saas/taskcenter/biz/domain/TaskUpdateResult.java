@@ -11,34 +11,24 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.dao.domain;
+package com.treefinance.saas.taskcenter.biz.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 /**
  * @author Jerry
- * @date 2018/11/21 22:57
+ * @date 2018/12/13 15:16
  */
 @Getter
 @Setter
-public class TaskCompositeQuery implements Serializable {
-    private String appId;
-    private List<Byte> bizTypes;
-    private String website;
-    private Byte saasEnv;
-    private Integer status;
-    private Date startDate;
-    private Date endDate;
-
-    private String name;
-    private String value;
-
-    private String order;
-    private Integer offset;
-    private Integer limit;
+@ToString
+@AllArgsConstructor
+public class TaskUpdateResult implements Serializable {
+    private Boolean accountNoUpdate;
+    private Boolean websiteUpdate;
 }

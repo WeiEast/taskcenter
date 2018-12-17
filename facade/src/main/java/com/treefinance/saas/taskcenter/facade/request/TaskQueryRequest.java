@@ -11,36 +11,83 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.dao.domain;
+package com.treefinance.saas.taskcenter.facade.request;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 /**
  * @author Jerry
- * @date 2018/11/21 19:42
+ * @date 2018/12/13 00:50
  */
 @Getter
 @Setter
-public class TaskQuery implements Serializable {
+@ToString
+public class TaskQueryRequest implements Serializable {
 
-    private Long id;
+    /**
+     * 商户ID列表
+     */
     private List<String> appIds;
+    /**
+     * 业务类型。注意hessian反序列化过程，Byte,Short类型利用序列化整型处理
+     */
     private List<Byte> bizTypes;
+    /**
+     * 网站标识
+     */
     private String website;
+    /**
+     * 用户ID
+     */
     private String uniqueId;
+    /**
+     * 账号
+     */
     private String accountNo;
+    /**
+     * 步骤
+     */
     private String stepCode;
-    private Byte status;
-    private Date startDate;
-    private Date endDate;
+    /**
+     * 环境标识
+     */
     private Byte saasEnv;
-
+    /**
+     * 状态
+     */
+    private Byte status;
+    /**
+     * 起始时间
+     */
+    private Date startDate;
+    /**
+     * 结束时间
+     */
+    private Date endDate;
+    /**
+     * 排序方式
+     */
     private String order;
-    private int offset = -1;
-    private int limit = -1;
+
+    public void addAppId(String appId) {
+        if (appIds == null) {
+            appIds = new ArrayList<>();
+        }
+        appIds.add(appId);
+    }
+
+    public void addBizType(Byte bizType) {
+        if (bizTypes == null) {
+            bizTypes = new ArrayList<>();
+        }
+        bizTypes.add(bizType);
+    }
+
 }

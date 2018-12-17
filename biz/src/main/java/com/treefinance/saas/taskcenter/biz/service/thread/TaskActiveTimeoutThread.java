@@ -58,7 +58,7 @@ public class TaskActiveTimeoutThread implements Runnable {
                 return;
             }
 
-            Long lastActiveTime = Long.parseLong(valueStr);
+            long lastActiveTime = Long.parseLong(valueStr);
             long diff = diamondConfig.getTaskMaxAliveTime();
             if (startTime.getTime() - lastActiveTime > diff) {
                 logger.info("任务活跃时间超时,取消任务,taskId={}", taskId);
