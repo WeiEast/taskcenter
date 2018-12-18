@@ -75,7 +75,7 @@ public final class Preconditions {
      */
     public static void notEmpty(final String name, final String text) {
         if (StringUtils.isEmpty(text)) {
-            throw new IllegalParameterException("参数[" + name + "]必须非空！");
+            throw new IllegalParameterException("参数[" + name + "]不能为空！");
         }
     }
 }

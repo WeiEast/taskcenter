@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 @Component
 public class DubboServiceInterceptor {
 
-    private static final Logger log = LoggerFactory.getLogger(DubboServiceInterceptor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DubboServiceInterceptor.class);
 
     @Pointcut("execution(* com.treefinance.saas.taskcenter.facade.impl..*.*(..))")
     public void facadePointcut() {}
@@ -35,25 +35,21 @@ public class DubboServiceInterceptor {
         Object result = null;
         try {
             result = joinPoint.proceed();
-            return result;
         } catch (UnexpectedServiceException e) {
             result = triggerAfterException(e, joinPoint);
-            return result;
         } catch (BusinessCheckFailException e) {
-            log.error("BusinessCheckFailException", e);
+            LOGGER.error("BusinessCheckFailException", e);
             result = exceptionProcessor(joinPoint, e);
-            return result;
         } catch (BusinessProcessFailException e) {
-            log.error("BusinessProcessFailException", e);
+            LOGGER.error("BusinessProcessFailException", e);
             result = exceptionProcessor(joinPoint, e);
-            return result;
         } catch (Exception e) {
-            log.error("Exception:", e);
+            LOGGER.error("Exception:", e);
             result = exceptionProcessor(joinPoint, e);
-            return result;
         } finally {
             triggerAfterCompletion(result, joinPoint, stopwatch);
         }
+        return result;
     }
 
     private Object triggerAfterException(Exception e, ProceedingJoinPoint joinPoint) {
@@ -64,7 +60,7 @@ public class DubboServiceInterceptor {
         if (e instanceof UnexpectedServiceException) {
             String errorCode = ((UnexpectedServiceException)e).getErrorCode();
             String errorMsg = e.getMessage();
-            log.error("RPC服务异常！服务名: {}, 参数: {}, errorCode: {}, errorMsg: {}", methodName, Jackson.toJSONString(joinPoint.getArgs()), errorCode, errorMsg, e);
+            LOGGER.error("RPC服务异常！服务名: {}, 参数: {}, errorCode: {}, errorMsg: {}", methodName, Jackson.toJSONString(joinPoint.getArgs()), errorCode, errorMsg, e);
             return TaskResponse.failure(errorCode, errorMsg);
         } else {
             // TODO: 李梁杰 2018/12/13 后面逐渐完善异常
@@ -76,7 +72,7 @@ public class DubboServiceInterceptor {
         MethodSignature signature = (MethodSignature)joinPoint.getSignature();
         Method method = signature.getMethod();
         String methodName = method.getDeclaringClass().getName() + "." + method.getName();
-        log.info("RPC服务响应，服务名: {}, 参数: {}, 耗时: {}, 返回结果: {}", methodName, Jackson.toJSONString(joinPoint.getArgs()), stopwatch.toString(), Jackson.toJSONString(result));
+        LOGGER.info("RPC服务响应，服务名: {}, 参数: {}, 耗时: {}, 返回结果: {}", methodName, Jackson.toJSONString(joinPoint.getArgs()), stopwatch.toString(), Jackson.toJSONString(result));
     }
 
     @SuppressWarnings("rawtypes")
@@ -85,7 +81,7 @@ public class DubboServiceInterceptor {
         MethodSignature signature = (MethodSignature) jpj.getSignature();
         Method method = signature.getMethod();
         String methodName = method.getDeclaringClass().getName() + "." + method.getName();
-        log.error("dubbo服务[method=" + methodName + "] params=" + JSONArray.toJSONString(args) + "异常：", e);
+        LOGGER.error("dubbo服务[method=" + methodName + "] params=" + JSONArray.toJSONString(args) + "异常：", e);
 
         Class<?> clazz = method.getReturnType();
         if (clazz.equals(TaskResult.class)) {
@@ -115,7 +111,7 @@ public class DubboServiceInterceptor {
             }
             return result;
         }
-        log.error("dubbo拦截器发现服务签名错误method={}, returnType=", methodName, clazz);
+        LOGGER.error("dubbo拦截器发现服务签名错误method={}, returnType=", methodName, clazz);
         return null;
     }
 
