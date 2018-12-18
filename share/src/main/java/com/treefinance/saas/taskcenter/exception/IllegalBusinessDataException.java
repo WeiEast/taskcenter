@@ -19,7 +19,7 @@ import com.treefinance.saas.taskcenter.context.ErrorCode;
  * @author Jerry
  * @date 2018/12/13 20:58
  */
-public class IllegalBusinessDataException extends UnexpectedServiceException {
+public class IllegalBusinessDataException extends BadServiceException {
 
     public IllegalBusinessDataException(String message) {
         super(ErrorCode.ILLEGAL_BUSINESS_DATA, message);

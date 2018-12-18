@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.google.common.base.Stopwatch;
 import com.treefinance.saas.taskcenter.exception.BusinessCheckFailException;
 import com.treefinance.saas.taskcenter.exception.BusinessProcessFailException;
-import com.treefinance.saas.taskcenter.exception.UnexpectedServiceException;
+import com.treefinance.saas.taskcenter.exception.BadServiceException;
 import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
@@ -35,7 +35,7 @@ public class DubboServiceInterceptor {
         Object result = null;
         try {
             result = joinPoint.proceed();
-        } catch (UnexpectedServiceException e) {
+        } catch (BadServiceException e) {
             result = triggerAfterException(e, joinPoint);
         } catch (BusinessCheckFailException e) {
             LOGGER.error("BusinessCheckFailException", e);
@@ -57,8 +57,8 @@ public class DubboServiceInterceptor {
         Method method = signature.getMethod();
         String methodName = method.getDeclaringClass().getName() + "." + method.getName();
 
-        if (e instanceof UnexpectedServiceException) {
-            String errorCode = ((UnexpectedServiceException)e).getErrorCode();
+        if (e instanceof BadServiceException) {
+            String errorCode = ((BadServiceException)e).getErrorCode();
             String errorMsg = e.getMessage();
             LOGGER.error("RPC服务异常！服务名: {}, 参数: {}, errorCode: {}, errorMsg: {}", methodName, Jackson.toJSONString(joinPoint.getArgs()), errorCode, errorMsg, e);
             return TaskResponse.failure(errorCode, errorMsg);

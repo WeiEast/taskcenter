@@ -19,7 +19,7 @@ import com.treefinance.saas.taskcenter.context.ErrorCode;
  * @author Jerry
  * @date 2018/12/13 19:59
  */
-public class IllegalParameterException extends UnexpectedServiceException {
+public class IllegalParameterException extends BadServiceException {
 
     public IllegalParameterException(String message) {
         super(ErrorCode.INVALID_PARAMETER, message);

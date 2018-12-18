@@ -20,20 +20,20 @@ import org.apache.commons.lang3.StringUtils;
  * @author Jerry
  * @date 2018/12/13 19:57
  */
-public class UnexpectedServiceException extends RuntimeException {
+public class BadServiceException extends RuntimeException {
     private ErrorCode errorCode;
 
-    public UnexpectedServiceException(ErrorCode errorCode, String message) {
+    public BadServiceException(ErrorCode errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
     }
 
-    public UnexpectedServiceException(ErrorCode errorCode, String message, Throwable cause) {
+    public BadServiceException(ErrorCode errorCode, String message, Throwable cause) {
         super(message + (cause != null ? " - detail: " + cause.toString() : StringUtils.EMPTY), cause);
         this.errorCode = errorCode;
     }
 
-    public UnexpectedServiceException(ErrorCode errorCode, Throwable cause) {
+    public BadServiceException(ErrorCode errorCode, Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
     }
