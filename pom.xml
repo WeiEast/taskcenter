@@ -51,9 +51,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <properties>
-        <task-center.version>2.0.1-SNAPSHOT</task-center.version>
-    </properties>
-
 </project>
