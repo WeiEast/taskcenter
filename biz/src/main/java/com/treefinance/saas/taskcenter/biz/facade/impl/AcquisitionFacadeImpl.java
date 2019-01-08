@@ -24,7 +24,7 @@ public class AcquisitionFacadeImpl implements AcquisitionFacade {
             throw new BusinessCheckFailException("-1", "请求参数不能为空");
         }
         acquisitionService.acquisition(request.getTaskId(), request.getHeader(), request.getCookie(), request.getUrl(),
-                request.getWebsite(), request.getAccountNo(), request.getTopic());
+                request.getWebsite(), request.getAccountNo(), request.getTopic(), request.getExtra());
         return TaskResult.wrapSuccessfulResult(null);
     }
 }

@@ -27,7 +27,7 @@ public class AcquisitionService {
     @Autowired
     private TaskTimeService taskTimeService;
 
-    public void acquisition(Long taskid, String header, String cookie, String url, String website, String accountNo, String topic) {
+    public void acquisition(Long taskid, String header, String cookie, String url, String website, String accountNo, String topic, String extra) {
         logger.info("acquisition : taskid={},header={},cookie={},url={},website={},accountNo={}", taskid, header, cookie, url, website, accountNo);
         LoginMessage loginMessage = new LoginMessage();
         loginMessage.setCookie(cookie);
@@ -36,11 +36,14 @@ public class AcquisitionService {
         loginMessage.setWebsiteName(website);
         loginMessage.setAccountNo(accountNo);
         if (StringUtils.isNotEmpty(header)) {
-            Map map = (Map) GsonUtils.fromJson(header, new TypeToken<Map>() {
-            }.getType());
+            Map map = (Map)GsonUtils.fromJson(header, new TypeToken<Map>() {}.getType());
             if (map.get("Set-Cookie") != null) {
-                loginMessage.setSetCookie((String) map.get("Set-Cookie"));
+                loginMessage.setSetCookie((String)map.get("Set-Cookie"));
             }
+        }
+        if (StringUtils.isNotEmpty(extra)) {
+            Map map = (Map)GsonUtils.fromJson(extra, new TypeToken<Map>() {}.getType());
+            loginMessage.setExtra(map);
         }
         try {
             messageProducer.send(GsonUtils.toJson(loginMessage), topic, "login_info", taskid.toString());
@@ -57,10 +60,10 @@ public class AcquisitionService {
     }
 
     @Deprecated
-    //兴海:这个已经不用了
+    // 兴海:这个已经不用了
     public void loginProcess(String directiveId, Long taskid, String html, String cookie) {
-//        HttpResult<Boolean> res = crawlerService.importAppCrawlResult(directiveId, taskid, html, cookie, null);
-//        taskNextDirectiveService.deleteNextDirective(taskid, EDirective.GRAB_URL.getText());
-//        logger.debug("taskId={}已发送sdk爬取结果={}", taskid, JSON.toJSONString(res));
+        // HttpResult<Boolean> res = crawlerService.importAppCrawlResult(directiveId, taskid, html, cookie, null);
+        // taskNextDirectiveService.deleteNextDirective(taskid, EDirective.GRAB_URL.getText());
+        // logger.debug("taskId={}已发送sdk爬取结果={}", taskid, JSON.toJSONString(res));
     }
 }

@@ -1,6 +1,8 @@
 package com.treefinance.saas.taskcenter.biz.mq.model;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by luyuan on 2017/5/3.
@@ -47,6 +49,8 @@ public class LoginMessage implements Serializable {
      * 运营商：分组名称
      */
     private String groupName;
+
+    private Map<String, Object> extra = new HashMap<String, Object>();
 
     public String getWebsiteName() {
         return websiteName;
@@ -116,5 +120,13 @@ public class LoginMessage implements Serializable {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public Map<String, Object> getExtra() {
+        return extra;
+    }
+
+    public void setExtra(Map<String, Object> extra) {
+        this.extra = extra;
     }
 }
