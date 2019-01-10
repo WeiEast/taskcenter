@@ -13,7 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirectiveCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskNextDirectiveMapper;
@@ -30,11 +29,9 @@ import java.util.List;
  * @date 2018/11/21 17:47
  */
 @Repository
-public class TaskNextDirectiveRepositoryImpl implements TaskNextDirectiveRepository {
+public class TaskNextDirectiveRepositoryImpl extends AbstractRepository implements TaskNextDirectiveRepository {
     @Autowired
     private TaskNextDirectiveMapper taskNextDirectiveMapper;
-    @Autowired
-    private UidService uidService;
 
     @Override
     public TaskNextDirective getLastDirectiveByTaskId(@Nonnull Long taskId) {
@@ -55,7 +52,7 @@ public class TaskNextDirectiveRepositoryImpl implements TaskNextDirectiveReposit
     @Override
     public TaskNextDirective insertDirective(@Nonnull Long taskId, String directive, String remark) {
         TaskNextDirective taskNextDirective = new TaskNextDirective();
-        taskNextDirective.setId(uidService.getId());
+        taskNextDirective.setId(generateUniqueId());
         taskNextDirective.setTaskId(taskId);
         taskNextDirective.setDirective(directive);
         taskNextDirective.setRemark(remark);

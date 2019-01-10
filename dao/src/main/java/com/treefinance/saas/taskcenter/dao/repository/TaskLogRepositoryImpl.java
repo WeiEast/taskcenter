@@ -13,7 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLogCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskLogMapper;
@@ -33,13 +32,11 @@ import java.util.List;
  * @date 2018/11/20 23:32
  */
 @Repository
-public class TaskLogRepositoryImpl implements TaskLogRepository {
+public class TaskLogRepositoryImpl extends AbstractRepository implements TaskLogRepository {
 
     private static final int MAX_ERROR_MSG_LENGTH = 1000;
     @Autowired
     private TaskLogMapper taskLogMapper;
-    @Autowired
-    private UidService uidService;
 
     @Override
     public List<TaskLog> listTaskLogsByTaskIdAndMsg(@Nonnull Long taskId, @Nonnull String msg) {
@@ -115,7 +112,7 @@ public class TaskLogRepositoryImpl implements TaskLogRepository {
     @Override
     public TaskLog insertTaskLog(@Nonnull Long taskId, String msg, String stepCode, Date processTime, String errorMsg) {
         TaskLog taskLog = new TaskLog();
-        taskLog.setId(uidService.getId());
+        taskLog.setId(generateUniqueId());
         taskLog.setTaskId(taskId);
         taskLog.setMsg(msg);
         taskLog.setStepCode(stepCode);

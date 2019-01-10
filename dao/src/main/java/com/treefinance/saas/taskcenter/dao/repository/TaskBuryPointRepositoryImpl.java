@@ -13,7 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLogCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskBuryPointLogMapper;
@@ -33,11 +32,9 @@ import java.util.List;
  * @date 2018/11/21 16:27
  */
 @Repository
-public class TaskBuryPointRepositoryImpl implements TaskBuryPointRepository {
+public class TaskBuryPointRepositoryImpl extends AbstractRepository implements TaskBuryPointRepository {
     @Autowired
     private TaskBuryPointLogMapper taskBuryPointLogMapper;
-    @Autowired
-    private UidService uidService;
 
     @Override
     public List<TaskBuryPointLog> queryTaskBuryPointLogsByTaskIdAndInCodes(@Nonnull Long taskId, @Nullable List<String> codes) {
@@ -89,7 +86,7 @@ public class TaskBuryPointRepositoryImpl implements TaskBuryPointRepository {
     @Override
     public void insert(@Nonnull List<TaskBuryPointLog> list) {
         for (TaskBuryPointLog log : list) {
-            log.setId(uidService.getId());
+            log.setId(generateUniqueId());
             log.setCreateTime(new Date());
         }
 

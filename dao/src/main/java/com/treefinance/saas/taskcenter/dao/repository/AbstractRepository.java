@@ -15,6 +15,7 @@ package com.treefinance.saas.taskcenter.dao.repository;
 
 import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
 import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
+import com.treefinance.commonservice.uid.UidService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,7 +27,13 @@ public abstract class AbstractRepository {
 
     private static final String ENCRYPTED_SIGN = "$";
     @Autowired
-    protected ISecurityCryptoService securityCryptoService;
+    private UidService uidService;
+    @Autowired
+    private ISecurityCryptoService securityCryptoService;
+
+    protected long generateUniqueId() {
+        return uidService.getId();
+    }
 
     protected String encryptNormal(String text) {
         if (StringUtils.isNotEmpty(text)) {
@@ -50,4 +57,13 @@ public abstract class AbstractRepository {
 
         return text;
     }
+
+    protected String decryptNormal(String text, boolean decrypt) {
+        if (decrypt) {
+            return decryptNormal(text);
+        }
+
+        return text;
+    }
+
 }

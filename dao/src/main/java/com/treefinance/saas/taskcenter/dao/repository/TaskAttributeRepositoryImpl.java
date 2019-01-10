@@ -13,8 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
-import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
@@ -44,8 +42,6 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     private TaskAttributeMapper taskAttributeMapper;
     @Autowired
     private TaskAttributeUpdateMapper taskAttributeUpdateMapper;
-    @Autowired
-    private UidService uidService;
 
     @Override
     public Map<String, String> getAttributeMapByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt) {
@@ -118,10 +114,7 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
         List<TaskAttribute> attributes = listTaskAttributesByTaskIdAndInNames(taskId, names);
         if (CollectionUtils.isNotEmpty(attributes)) {
             for (TaskAttribute attribute : attributes) {
-                if (decrypt && StringUtils.isNotEmpty(attribute.getValue())) {
-                    String value = securityCryptoService.decrypt(attribute.getValue(), EncryptionIntensityEnum.NORMAL);
-                    attribute.setValue(value);
-                }
+                attribute.setValue(decryptNormal(attribute.getValue(), decrypt));
             }
         }
 
@@ -164,7 +157,7 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     @Override
     public Long insertTagAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt) {
         TaskAttribute attribute = new TaskAttribute();
-        attribute.setId(uidService.getId());
+        attribute.setId(generateUniqueId());
         attribute.setTaskId(taskId);
         attribute.setName(name);
         attribute.setValue(encryptNormal(value, encrypt));
@@ -175,7 +168,7 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     @Override
     public void insertOrUpdateTagAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt) {
         TaskAttribute taskAttribute = new TaskAttribute();
-        taskAttribute.setId(uidService.getId());
+        taskAttribute.setId(generateUniqueId());
         taskAttribute.setTaskId(taskId);
         taskAttribute.setName(name);
         taskAttribute.setValue(encryptNormal(value, encrypt));

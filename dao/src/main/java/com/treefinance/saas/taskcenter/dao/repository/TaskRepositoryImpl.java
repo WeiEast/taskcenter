@@ -13,7 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.context.BizObjectValidator;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
@@ -48,8 +47,6 @@ public class TaskRepositoryImpl extends AbstractRepository implements TaskReposi
 
     @Autowired
     private TaskMapper taskMapper;
-    @Autowired
-    private UidService uidService;
     @Autowired
     private TaskAndTaskAttributeMapper taskAndTaskAttributeMapper;
 
@@ -103,7 +100,7 @@ public class TaskRepositoryImpl extends AbstractRepository implements TaskReposi
     @Override
     public Task insertTask(@Nonnull TaskParams taskParams) {
         Task task = new Task();
-        task.setId(uidService.getId());
+        task.setId(generateUniqueId());
         task.setUniqueId(taskParams.getUniqueId());
         task.setAppId(taskParams.getAppId());
         task.setBizType(taskParams.getBizType());

@@ -13,12 +13,11 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.commonservice.uid.UidService;
-import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLogCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskCallbackLogMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskCallbackLogUpdateMapper;
+import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +32,12 @@ import java.util.List;
  * @date 2018/11/21 17:01
  */
 @Repository
-public class TaskCallbackLogRepositoryImpl implements TaskCallbackLogRepository {
+public class TaskCallbackLogRepositoryImpl extends AbstractRepository implements TaskCallbackLogRepository {
 
     @Autowired
     private TaskCallbackLogMapper taskCallbackLogMapper;
     @Autowired
     private TaskCallbackLogUpdateMapper taskCallbackLogUpdateMapper;
-    @Autowired
-    private UidService uidService;
 
     @Override
     public List<TaskCallbackLog> listTaskCallbackLogsInTaskIds(@Nonnull List<Long> taskIds) {
@@ -147,7 +144,7 @@ public class TaskCallbackLogRepositoryImpl implements TaskCallbackLogRepository 
     public void insertOrUpdateLog(Long taskId, Byte type, Long configId, String url, String requestParam, String responseData, int httpCode, String callbackCode,
         String callbackMsg, int consumeTime) {
         TaskCallbackLog taskCallbackLog = new TaskCallbackLog();
-        taskCallbackLog.setId(uidService.getId());
+        taskCallbackLog.setId(generateUniqueId());
         taskCallbackLog.setTaskId(taskId);
         taskCallbackLog.setUrl(url);
         taskCallbackLog.setConfigId(configId);
@@ -165,7 +162,7 @@ public class TaskCallbackLogRepositoryImpl implements TaskCallbackLogRepository 
     @Override
     public void insertOrUpdateLog(Long taskId, Long configId, Byte failureReason) {
         TaskCallbackLog taskCallbackLog = new TaskCallbackLog();
-        taskCallbackLog.setId(uidService.getId());
+        taskCallbackLog.setId(generateUniqueId());
         taskCallbackLog.setTaskId(taskId);
         taskCallbackLog.setConfigId(configId);
         taskCallbackLog.setFailureReason(failureReason);

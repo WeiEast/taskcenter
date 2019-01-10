@@ -13,7 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskOperatorMaintainUserLog;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskOperatorMaintainUserLogMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +28,11 @@ import javax.annotation.Nonnull;
 public class TaskOperatorMaintainUserLogRepositoryImpl extends AbstractRepository implements TaskOperatorMaintainUserLogRepository {
     @Autowired
     private TaskOperatorMaintainUserLogMapper taskOperatorMaintainUserLogMapper;
-    @Autowired
-    private UidService uidService;
 
     @Override
     public void insertLog(@Nonnull Long taskId, @Nonnull String appId, @Nonnull String mobile,@Nonnull  String operatorName) {
         TaskOperatorMaintainUserLog log = new TaskOperatorMaintainUserLog();
-        log.setId(uidService.getId());
+        log.setId(generateUniqueId());
         log.setTaskId(taskId);
         log.setAppId(appId);
         log.setMobile(encryptNormal(mobile));
