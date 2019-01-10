@@ -13,8 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
-import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.context.BizObjectValidator;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
@@ -46,14 +44,12 @@ import java.util.stream.Collectors;
  * @date 2018/11/19 19:54
  */
 @Repository
-public class TaskRepositoryImpl implements TaskRepository {
+public class TaskRepositoryImpl extends AbstractRepository implements TaskRepository {
 
     @Autowired
     private TaskMapper taskMapper;
     @Autowired
     private UidService uidService;
-    @Autowired
-    private ISecurityCryptoService securityCryptoService;
     @Autowired
     private TaskAndTaskAttributeMapper taskAndTaskAttributeMapper;
 
@@ -69,8 +65,8 @@ public class TaskRepositoryImpl implements TaskRepository {
     }
 
     private void decryptFields(Task task) {
-        String actualAccount = securityCryptoService.decrypt(task.getAccountNo(), EncryptionIntensityEnum.NORMAL);
-        task.setAccountNo(actualAccount);
+        String accountNo = task.getAccountNo();
+        task.setAccountNo(decryptNormal(accountNo));
     }
 
     @Override
@@ -177,8 +173,7 @@ public class TaskRepositoryImpl implements TaskRepository {
     }
 
     private void addWithEncryption(Task task, String accountNo) {
-        String account = securityCryptoService.encrypt(accountNo, EncryptionIntensityEnum.NORMAL);
-        task.setAccountNo(account);
+        task.setAccountNo(encryptNormal(accountNo));
     }
 
     @Override
@@ -372,10 +367,9 @@ public class TaskRepositoryImpl implements TaskRepository {
             criteria.andUniqueIdEqualTo(uniqueId);
         }
 
-        String accountNo = query.getAccountNo();
+        String accountNo = encryptNormal(query.getAccountNo());
         if (StringUtils.isNotEmpty(accountNo)) {
-            String account = securityCryptoService.encrypt(accountNo, EncryptionIntensityEnum.NORMAL);
-            criteria.andAccountNoEqualTo(account);
+            criteria.andAccountNoEqualTo(accountNo);
         }
 
         Byte saasEnv = query.getSaasEnv();

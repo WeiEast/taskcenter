@@ -13,8 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
-import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskOperatorMaintainUserLog;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskOperatorMaintainUserLogMapper;
@@ -28,13 +26,11 @@ import javax.annotation.Nonnull;
  * @date 2018/11/21 16:49
  */
 @Repository
-public class TaskOperatorMaintainUserLogRepositoryImpl implements TaskOperatorMaintainUserLogRepository {
+public class TaskOperatorMaintainUserLogRepositoryImpl extends AbstractRepository implements TaskOperatorMaintainUserLogRepository {
     @Autowired
     private TaskOperatorMaintainUserLogMapper taskOperatorMaintainUserLogMapper;
     @Autowired
     private UidService uidService;
-    @Autowired
-    private ISecurityCryptoService iSecurityCryptoService;
 
     @Override
     public void insertLog(@Nonnull Long taskId, @Nonnull String appId, @Nonnull String mobile,@Nonnull  String operatorName) {
@@ -42,7 +38,7 @@ public class TaskOperatorMaintainUserLogRepositoryImpl implements TaskOperatorMa
         log.setId(uidService.getId());
         log.setTaskId(taskId);
         log.setAppId(appId);
-        log.setMobile(iSecurityCryptoService.encrypt(mobile, EncryptionIntensityEnum.NORMAL));
+        log.setMobile(encryptNormal(mobile));
         log.setOperatorName(operatorName);
 
         taskOperatorMaintainUserLogMapper.insertSelective(log);

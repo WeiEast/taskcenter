@@ -14,13 +14,12 @@
 package com.treefinance.saas.taskcenter.dao.repository;
 
 import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
-import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;
 import com.treefinance.commonservice.uid.UidService;
-import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeUpdateMapper;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,16 +29,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Jerry
  * @date 2018/11/20 20:49
  */
 @Repository
-public class TaskAttributeRepositoryImpl implements TaskAttributeRepository {
+public class TaskAttributeRepositoryImpl extends AbstractRepository implements TaskAttributeRepository {
 
     @Autowired
     private TaskAttributeMapper taskAttributeMapper;
@@ -47,22 +46,16 @@ public class TaskAttributeRepositoryImpl implements TaskAttributeRepository {
     private TaskAttributeUpdateMapper taskAttributeUpdateMapper;
     @Autowired
     private UidService uidService;
-    @Autowired
-    private ISecurityCryptoService securityCryptoService;
 
     @Override
     public Map<String, String> getAttributeMapByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt) {
         List<TaskAttribute> attributes = listTaskAttributesByTaskIdAndInNames(taskId, names);
         if (CollectionUtils.isNotEmpty(attributes)) {
-            Map<String, String> map = new HashMap<>();
-            for (TaskAttribute attribute : attributes) {
-                String value = attribute.getValue();
-                if (decrypt && StringUtils.isNotEmpty(value)) {
-                    value = securityCryptoService.decrypt(value, EncryptionIntensityEnum.NORMAL);
-                }
-                map.put(attribute.getName(), value);
+            if (decrypt) {
+                return attributes.stream().collect(Collectors.toMap(TaskAttribute::getName, attribute -> decryptNormal(attribute.getValue()), (a, b) -> b));
+            } else {
+                return attributes.stream().collect(Collectors.toMap(TaskAttribute::getName, TaskAttribute::getValue, (a, b) -> b));
             }
-            return map;
         }
 
         return Collections.emptyMap();
@@ -71,10 +64,8 @@ public class TaskAttributeRepositoryImpl implements TaskAttributeRepository {
     @Override
     public TaskAttribute getTaskAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name, boolean decrypt) {
         TaskAttribute attribute = getTaskAttributeByTaskIdAndName(taskId, name);
-        if (attribute != null && decrypt && StringUtils.isNotEmpty(attribute.getValue())) {
-            String value = securityCryptoService.decrypt(attribute.getValue(), EncryptionIntensityEnum.NORMAL);
-
-            attribute.setValue(value);
+        if (attribute != null && decrypt) {
+            attribute.setValue(decryptNormal(attribute.getValue()));
         }
 
         return attribute;
@@ -95,10 +86,7 @@ public class TaskAttributeRepositoryImpl implements TaskAttributeRepository {
 
     @Override
     public List<TaskAttribute> listTaskAttributesByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt) {
-        String val = value;
-        if (encrypt && StringUtils.isNotEmpty(val)) {
-            val = securityCryptoService.encrypt(val, EncryptionIntensityEnum.NORMAL);
-        }
+        String val = encryptNormal(value, encrypt);
         TaskAttributeCriteria criteria = new TaskAttributeCriteria();
         criteria.createCriteria().andNameEqualTo(name).andValueEqualTo(val);
         return taskAttributeMapper.selectByExample(criteria);
@@ -179,7 +167,7 @@ public class TaskAttributeRepositoryImpl implements TaskAttributeRepository {
         attribute.setId(uidService.getId());
         attribute.setTaskId(taskId);
         attribute.setName(name);
-        attribute.setValue(processEncryption(value, encrypt));
+        attribute.setValue(encryptNormal(value, encrypt));
         taskAttributeMapper.insertSelective(attribute);
         return attribute.getId();
     }
@@ -190,16 +178,8 @@ public class TaskAttributeRepositoryImpl implements TaskAttributeRepository {
         taskAttribute.setId(uidService.getId());
         taskAttribute.setTaskId(taskId);
         taskAttribute.setName(name);
-        taskAttribute.setValue(processEncryption(value, encrypt));
+        taskAttribute.setValue(encryptNormal(value, encrypt));
         taskAttributeUpdateMapper.insertOrUpdateSelective(taskAttribute);
-    }
-
-    private String processEncryption(String val, boolean encrypt) {
-        if (encrypt && StringUtils.isNotEmpty(val)) {
-            return securityCryptoService.encrypt(val, EncryptionIntensityEnum.NORMAL);
-        }
-
-        return val;
     }
 
     @Override
