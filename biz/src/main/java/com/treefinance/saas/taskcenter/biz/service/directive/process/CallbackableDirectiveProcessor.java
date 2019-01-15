@@ -314,6 +314,12 @@ public abstract class CallbackableDirectiveProcessor {
             }
             dataMap.remove("dataUrl");
         }
+        // 此时针对工商无需爬取时处理
+        if (dataMap.get("crawlerStatus") != null && (int)dataMap.get("crawlerStatus") == 1) {
+            logger.info("工商回调，回调code设置为005，taskId={}", directiveDTO.getTaskId());
+            dataMap.put("taskStatus", EGrapStatus.NO_NEED_CRAWLER.getCode());
+            dataMap.put("taskErrorMsg", "");
+        }
         // 如果是运营商数据
         if (directiveDTO.getTask() != null && EBizType.OPERATOR.getCode().equals(directiveDTO.getTask().getBizType())) {
             Long taskId = directiveDTO.getTask().getId();
