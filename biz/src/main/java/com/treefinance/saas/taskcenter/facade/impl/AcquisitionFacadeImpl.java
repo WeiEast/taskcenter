@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.AcquisitionService;
-import com.treefinance.saas.taskcenter.common.exception.BusinessCheckFailException;
+import com.treefinance.saas.taskcenter.exception.BusinessCheckFailException;
 import com.treefinance.saas.taskcenter.facade.request.AcquisitionRequest;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.AcquisitionFacade;
