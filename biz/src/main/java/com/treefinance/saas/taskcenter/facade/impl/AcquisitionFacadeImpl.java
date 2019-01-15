@@ -1,7 +1,7 @@
-package com.treefinance.saas.taskcenter.facade.impl;
+package com.treefinance.saas.taskcenter.biz.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.AcquisitionService;
-import com.treefinance.saas.taskcenter.exception.BusinessCheckFailException;
+import com.treefinance.saas.taskcenter.common.exception.BusinessCheckFailException;
 import com.treefinance.saas.taskcenter.facade.request.AcquisitionRequest;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.AcquisitionFacade;
@@ -23,8 +23,8 @@ public class AcquisitionFacadeImpl implements AcquisitionFacade {
         if (request == null) {
             throw new BusinessCheckFailException("-1", "请求参数不能为空");
         }
-        acquisitionService.acquisition(request.getTaskId(), request.getHeader(), request.getCookie(), request.getUrl(), request.getWebsite(), request.getAccountNo(),
-            request.getTopic(), request.getExtra());
+        acquisitionService.acquisition(request.getTaskId(), request.getHeader(), request.getCookie(), request.getUrl(),
+                request.getWebsite(), request.getAccountNo(), request.getTopic(), request.getExtra());
         return TaskResult.wrapSuccessfulResult(null);
     }
 }
