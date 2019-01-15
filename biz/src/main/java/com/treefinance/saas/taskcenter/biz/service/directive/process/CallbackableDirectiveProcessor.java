@@ -33,8 +33,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 支持回调的指令处理
- * Created by yh-treefinance on 2017/7/11.
+ * 支持回调的指令处理 Created by yh-treefinance on 2017/7/11.
  */
 public abstract class CallbackableDirectiveProcessor {
 
@@ -58,7 +57,6 @@ public abstract class CallbackableDirectiveProcessor {
     protected GrapDataCallbackService grapDataCallbackService;
     @Autowired
     protected MonitorService monitorService;
-
 
     /**
      * 回调前处理
@@ -177,7 +175,6 @@ public abstract class CallbackableDirectiveProcessor {
 
     }
 
-
     /**
      * 获取回调配置
      *
@@ -203,30 +200,26 @@ public abstract class CallbackableDirectiveProcessor {
         // 当前任务成功，但成功不通知
         if (EDirective.TASK_SUCCESS.getText().equals(directive) && !Byte.valueOf("1").equals(config.getIsNotifySuccess())) {
             if (logger.isDebugEnabled()) {
-                logger.debug("the task of {} success, but no need for callback : task={},config={}",
-                        taskId, JSON.toJSONString(directiveDTO), JSON.toJSONString(config));
+                logger.debug("the task of {} success, but no need for callback : task={},config={}", taskId, JSON.toJSONString(directiveDTO), JSON.toJSONString(config));
             }
             return false;
         }
         // 当前任务失败，但失败不通知
         else if (EDirective.TASK_FAIL.getText().equals(directive) && !Byte.valueOf("1").equals(config.getIsNotifyFailure())) {
             if (logger.isDebugEnabled()) {
-                logger.debug("the task of {} failed, but no need for callback : task={},config={}",
-                        taskId, JSON.toJSONString(directiveDTO), JSON.toJSONString(config));
+                logger.debug("the task of {} failed, but no need for callback : task={},config={}", taskId, JSON.toJSONString(directiveDTO), JSON.toJSONString(config));
             }
             return false;
         }
         // 当前任务取消，但取消不通知
         else if (EDirective.TASK_CANCEL.getText().equals(directive) && !Byte.valueOf("1").equals(config.getIsNotifyCancel())) {
             if (logger.isDebugEnabled()) {
-                logger.debug("the task of {} cancel, but no need for callback : task={},config={}",
-                        taskId, JSON.toJSONString(directiveDTO), JSON.toJSONString(config));
+                logger.debug("the task of {} cancel, but no need for callback : task={},config={}", taskId, JSON.toJSONString(directiveDTO), JSON.toJSONString(config));
             }
             return false;
         }
         return true;
     }
-
 
     /**
      * 生成数据Map
@@ -294,9 +287,9 @@ public abstract class CallbackableDirectiveProcessor {
                         dataMap.put("taskStatus", EGrapStatus.RESULT_EMPTY.getCode());
                         flushData(dataMap, appLicense, directiveDTO);
                     }
-//                    if (logger.isDebugEnabled()) {
-//                        logger.debug("download data success : {}  >>>>>>> {}", JSON.toJSONString(dataMap), data);
-//                    }
+                    // if (logger.isDebugEnabled()) {
+                    // logger.debug("download data success : {} >>>>>>> {}", JSON.toJSONString(dataMap), data);
+                    // }
                 } catch (IOException e) {
                     logger.error("download data failed : data={}", JSON.toJSONString(dataMap));
                     dataMap.put("taskErrorMsg", "下载数据失败");
@@ -305,6 +298,11 @@ public abstract class CallbackableDirectiveProcessor {
                 }
             }
             dataMap.remove("dataUrl");
+        }
+        // 此时针对工商无需爬取时处理
+        if ("1".equals(dataMap.get("crawlerStatus"))) {
+            dataMap.put("taskStatus", EGrapStatus.NO_NEED_CRAWLER.getCode());
+            dataMap.put("taskErrorMsg", "");
         }
         // 如果是运营商数据
         if (directiveDTO.getTask() != null && EBizType.OPERATOR.getCode().equals(directiveDTO.getTask().getBizType())) {
@@ -389,7 +387,6 @@ public abstract class CallbackableDirectiveProcessor {
         return params;
     }
 
-
     /**
      * 执行回调
      *
@@ -431,11 +428,10 @@ public abstract class CallbackableDirectiveProcessor {
         } finally {
             long consumeTime = System.currentTimeMillis() - startTime;
             // 保存的参数（含dataUrl）
-//            String paramsForLog = this.encryptParams(originalDataMap, appLicense, config);
+            // String paramsForLog = this.encryptParams(originalDataMap, appLicense, config);
             // 记录回调日志
-            taskCallbackLogService.insert(config, directiveDTO.getTaskId(), (byte) 1, JSON.toJSONString(originalDataMap),
-                    result, consumeTime, httpCode);
-            //主流程回调做监控
+            taskCallbackLogService.insert(config, directiveDTO.getTaskId(), (byte)1, JSON.toJSONString(originalDataMap), result, consumeTime, httpCode);
+            // 主流程回调做监控
             if (config.getDataType() != null && config.getDataType() == 0) {
                 monitorService.sendTaskCallbackMsgMonitorMessage(directiveDTO.getTaskId(), httpCode, result, true);
             }
@@ -446,7 +442,6 @@ public abstract class CallbackableDirectiveProcessor {
         }
         return true;
     }
-
 
     /**
      * 处理请求失败异常
