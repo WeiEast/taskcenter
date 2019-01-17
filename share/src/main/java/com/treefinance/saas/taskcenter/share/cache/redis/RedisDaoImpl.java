@@ -125,7 +125,7 @@ public class RedisDaoImpl implements RedisDao {
 
     @Override
     public Map<String, Object> acquireLock(String lockKey, long expired) {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>(2);
         long value = System.currentTimeMillis() + expired + 1;
         boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, String.valueOf(value));
         if (acquired) {

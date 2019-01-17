@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.context;
+package com.treefinance.saas.taskcenter.share.cache.redis;
 
 import com.google.common.base.Joiner;
 
