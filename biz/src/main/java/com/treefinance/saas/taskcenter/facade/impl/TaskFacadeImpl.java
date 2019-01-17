@@ -1,5 +1,6 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
 import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
@@ -386,6 +387,7 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
 
     @Override
     public TaskResponse<PagingDataSet<CompositeTaskAttrDTO>> queryPagingCompositeTaskAttrs(CompositeTaskAttrPagingQueryRequest request) {
+        logger.info("测试request参数,request={}", JSON.toJSONString(request));
         TaskAttrCompositeQuery query = new TaskAttrCompositeQuery();
         query.setAppId(request.getAppId());
         query.setBizTypes(request.getBizTypes());

@@ -53,7 +53,7 @@ public class TaskPagingQueryRequest extends TaskQueryRequest {
 
     public Integer getOffset() {
         if (offset == null) {
-            offset = (getPageNum() - 1) * pageSize;
+            offset = (getPageNum() - 1) * getPageSize();
         }
         return offset;
     }
