@@ -13,7 +13,7 @@
 
 package com.treefinance.saas.taskcenter.facade.request;
 
-import jdk.Exported;
+import lombok.Setter;
 
 import java.io.Serializable;
 
@@ -21,7 +21,7 @@ import java.io.Serializable;
  * @author Jerry
  * @date 2018/12/16 23:26
  */
-@Exported
+@Setter
 public abstract class BasePagingQueryRequest implements Serializable {
 
     /**
@@ -53,7 +53,7 @@ public abstract class BasePagingQueryRequest implements Serializable {
 
     public Integer getOffset() {
         if (offset == null) {
-            offset = (getPageNum() - 1) * pageSize;
+            offset = (getPageNum() - 1) * getPageSize();
         }
         return offset;
     }
