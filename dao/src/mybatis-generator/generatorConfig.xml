@@ -24,7 +24,7 @@
         </commentGenerator>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.5.24:3306/saas_main"
+                        connectionURL="jdbc:mysql://192.168.5.24:3306/saas_task"
                         userId="root"
                         password="Tianxing@0701">
         </jdbcConnection>
@@ -82,7 +82,7 @@
 
         <!--</table>-->
 
-        <table tableName="task_operator_maintain_user_log" domainObjectName="TaskOperatorMaintainUserLog"
+        <table tableName="task_point" domainObjectName="TaskPoint"
                enableSelectPaginationByExample="true"
                enableInsertOrUpdateBySelective="true"
                enableBatchInsert="true"
