@@ -46,7 +46,7 @@ public class TaskPointFacadeImpl implements TaskPointFacade {
             taskPoint.setUniqueId(Long.parseLong(list.get(0)));
             taskPoint.setBizType((Byte.valueOf(list.get(1))));
         }
-        if ("crawler".equals(taskPoint.getStep())) {
+        if ("crawler".equals(taskPoint.getStep()) && "start".equals(taskPoint.getSubStep())) {
             int i = taskPoint.getBizType();
             if (i == 1) {
                 taskPoint.setCode("2503");
