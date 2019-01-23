@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.biz.config.DiamondConfig;
+import com.treefinance.saas.taskcenter.common.enums.CodeStepEnum;
 import com.treefinance.saas.taskcenter.common.utils.HttpClientUtils;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskPoint;
@@ -18,10 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,6 +42,10 @@ public class TaskPointService {
     public void addTaskPoint(TaskPointRequest taskPointRequest) {
         TaskPoint taskPoint = new TaskPoint();
         BeanUtils.copyProperties(taskPointRequest, taskPoint);
+        taskPoint.setOccurTime(new Date());
+        taskPoint.setStep(CodeStepEnum.getStep(taskPoint.getCode()));
+        taskPoint.setSubStep(CodeStepEnum.getSubStep(taskPoint.getCode()));
+        taskPoint.setMsg(CodeStepEnum.getMsg(taskPoint.getCode()));
         if (taskPoint.getType() == null) {
             taskPoint.setType((byte)0);
         }

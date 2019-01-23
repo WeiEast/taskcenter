@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * @author 张琰佳
  * @since 2:45 PM 2019/1/22
  */
-@Service
+@Service("taskPointFacade")
 public class TaskPointFacadeImpl implements TaskPointFacade {
     @Autowired
     private TaskPointService taskPointService;
