@@ -46,9 +46,6 @@ public class TaskPointService {
         taskPoint.setStep(CodeStepEnum.getStep(taskPoint.getCode()));
         taskPoint.setSubStep(CodeStepEnum.getSubStep(taskPoint.getCode()));
         taskPoint.setMsg(CodeStepEnum.getMsg(taskPoint.getCode()));
-        if (taskPoint.getType() == null) {
-            taskPoint.setType((byte)0);
-        }
         String str = redisDao.get("UniqueId_bizType_" + taskPointRequest.getTaskId());
         if (str == null) {
             Task task = taskMapper.selectByPrimaryKey(taskPointRequest.getTaskId());
