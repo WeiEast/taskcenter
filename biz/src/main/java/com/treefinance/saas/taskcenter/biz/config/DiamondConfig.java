@@ -22,6 +22,9 @@ public class DiamondConfig {
     @DAttribute(key = "task.max.alive.time")
     private Integer taskMaxAliveTime;
 
+    @DAttribute(key = "gongfudai.http.url")
+    private String httpUrl;
+
     @BeforeUpdate
     public void before(String key, Object newValue) {
         logger.info(key + " update to " + newValue + " start...");
@@ -41,4 +44,11 @@ public class DiamondConfig {
         this.taskMaxAliveTime = taskMaxAliveTime;
     }
 
+    public String getHttpUrl() {
+        return httpUrl;
+    }
+
+    public void setHttpUrl(String httpUrl) {
+        this.httpUrl = httpUrl;
+    }
 }

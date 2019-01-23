@@ -10,6 +10,8 @@ public class TaskPointRequest extends BaseRequest {
 
     private Long taskId;
 
+    private String appId;
+
     private Long uniqueId;
 
     private Byte type;
@@ -27,6 +29,8 @@ public class TaskPointRequest extends BaseRequest {
     private String ip;
 
     private Date occurTime;
+
+    private String extra;
 
     public Long getTaskId() {
         return taskId;
@@ -106,5 +110,21 @@ public class TaskPointRequest extends BaseRequest {
 
     public void setOccurTime(Date occurTime) {
         this.occurTime = occurTime;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
     }
 }

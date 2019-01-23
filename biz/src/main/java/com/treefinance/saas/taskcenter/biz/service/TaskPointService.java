@@ -1,19 +1,27 @@
 package com.treefinance.saas.taskcenter.biz.service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.treefinance.commonservice.uid.UidGenerator;
 import com.treefinance.saas.taskcenter.biz.cache.redis.RedisDao;
+import com.treefinance.saas.taskcenter.biz.config.DiamondConfig;
+import com.treefinance.saas.taskcenter.common.utils.HttpClientUtils;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskPoint;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskPointMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,6 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class TaskPointService {
+    private static final Logger logger = LoggerFactory.getLogger(TaskPointService.class);
 
     @Autowired
     private TaskPointMapper taskPointMapper;
@@ -29,6 +38,8 @@ public class TaskPointService {
     private TaskMapper taskMapper;
     @Autowired
     private RedisDao redisDao;
+    @Autowired
+    private DiamondConfig diamondConfig;
 
     public void addTaskPoint(TaskPointRequest taskPointRequest) {
         TaskPoint taskPoint = new TaskPoint();
@@ -62,7 +73,25 @@ public class TaskPointService {
         taskPoint.setId(UidGenerator.getId());
         int i = taskPointMapper.insertSelective(taskPoint);
         if (i == 1) {
-            // TODO 调功夫贷接口返回
+            Map<String, Object> map = new HashMap<>(8);
+            map.put("taskId", taskPoint.getTaskId());
+            map.put("uniqueId", taskPoint.getUniqueId());
+            map.put("type", taskPoint.getType());
+            map.put("code", taskPoint.getCode());
+            map.put("step", taskPoint.getStep());
+            map.put("subStep", taskPoint.getSubStep());
+            map.put("msg", taskPoint.getMsg());
+            map.put("ip", taskPoint.getIp());
+            map.put("occurTime", taskPoint.getOccurTime());
+            String result = HttpClientUtils.doPost(diamondConfig.getHttpUrl(), map);
+            if (result == null) {
+                logger.error("埋点调用功夫贷返回结果为空，taskId={}", taskPoint.getTaskId());
+            } else {
+                JSONObject jsonObject = JSON.parseObject(result);
+                if ((int)jsonObject.get("code") != 0) {
+                    logger.error("埋点调用功夫贷返回错误，taskId={}，errorMsg", taskPoint.getTaskId(), jsonObject.get("errorMsg"));
+                }
+            }
         }
     }
 }
