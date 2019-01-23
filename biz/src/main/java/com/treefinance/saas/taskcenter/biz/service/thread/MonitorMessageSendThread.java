@@ -6,10 +6,10 @@ import com.treefinance.saas.taskcenter.biz.service.monitor.EcommerceMonitorServi
 import com.treefinance.saas.taskcenter.biz.service.monitor.EmailMonitorService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorPluginService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.OperatorMonitorService;
+import com.treefinance.saas.taskcenter.context.SpringUtils;
 import com.treefinance.saas.taskcenter.context.enums.EBizType;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.context.SpringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,68 +39,37 @@ public class MonitorMessageSendThread implements Runnable {
         this.taskId = taskId;
     }
 
-
     @Override
     public void run() {
         TaskDTO taskDTO = taskService.getById(taskId);
         Byte status = taskDTO.getStatus();
         // 仅成功、失败、取消发送任务
-        if (!ETaskStatus.SUCCESS.getStatus().equals(status)
-                && !ETaskStatus.FAIL.getStatus().equals(status)
-                && !ETaskStatus.CANCEL.getStatus().equals(status)) {
+        if (!ETaskStatus.SUCCESS.getStatus().equals(status) && !ETaskStatus.FAIL.getStatus().equals(status) && !ETaskStatus.CANCEL.getStatus().equals(status)) {
             return;
         }
 
-        //发送任务监控消息
+        // 发送任务监控消息
         monitorPluginService.sendTaskMonitorMessage(taskDTO);
-        EBizType eBizType = EBizType.of(taskDTO.getBizType());
-        switch (eBizType) {
-            case OPERATOR:
-                //发送运营商监控消息
-                this.sendTaskOperatorMonitorMessage(taskDTO);
-                break;
-            case ECOMMERCE:
-                // 发送电商监控消息
-                this.sendEcommerceMonitorMessage(taskDTO);
-                break;
-            case EMAIL:
-                this.sendEmailMonitorMessage(taskDTO);
-                break;
-            case EMAIL_H5:
-                this.sendEmailMonitorMessage(taskDTO);
-                break;
+        EBizType bizType = EBizType.of(taskDTO.getBizType());
+        if (bizType != null) {
+            switch (bizType) {
+                case OPERATOR:
+                    // 发送运营商监控消息
+                    operatorMonitorService.sendMessage(taskDTO);
+                    break;
+                case ECOMMERCE:
+                    // 发送电商监控消息
+                    ecommerceMonitorService.sendMessage(taskDTO);
+                    break;
+                case EMAIL:
+                case EMAIL_H5:
+                    emailMonitorService.sendMessage(taskDTO);
+                    break;
+                default:
+                    break;
+            }
+            logger.info("sendMonitorMessage: type={}, task={}", bizType, JSON.toJSONString(taskDTO));
         }
-    }
-
-    /**
-     * 发送运营商监控功能消息
-     *
-     * @param taskDTO
-     */
-    private void sendTaskOperatorMonitorMessage(TaskDTO taskDTO) {
-        operatorMonitorService.sendMessage(taskDTO);
-        logger.info("sendOperatorMonitorMessage: task={}", JSON.toJSONString(taskDTO));
-    }
-
-
-    /**
-     * 发送电商监控消息
-     *
-     * @param taskDTO
-     */
-    private void sendEcommerceMonitorMessage(TaskDTO taskDTO) {
-        ecommerceMonitorService.sendMessage(taskDTO);
-        logger.info("sendEcommerceMonitorMessage: task={}", JSON.toJSONString(taskDTO));
-    }
-
-    /**
-     * 发送邮箱监控消息
-     *
-     * @param taskDTO
-     */
-    private void sendEmailMonitorMessage(TaskDTO taskDTO) {
-        emailMonitorService.sendMessage(taskDTO);
-        logger.info("sendEcommerceMonitorMessage: task={}", JSON.toJSONString(taskDTO));
     }
 
 }

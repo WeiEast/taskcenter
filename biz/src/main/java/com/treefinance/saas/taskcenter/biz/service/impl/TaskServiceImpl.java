@@ -291,6 +291,14 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         updateProcessingTaskById(task, id);
     }
 
+    private void updateStatusAndStepCodeWhenProcessing(Long id, Byte status, String stepCode) {
+        TaskParams task = new TaskParams();
+        task.setStatus(status);
+        task.setStepCode(stepCode);
+
+        updateProcessingTaskById(task, id);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String updateStatusIfDone(@Nonnull Long taskId, @Nonnull Byte status) {
@@ -305,7 +313,7 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         }
 
         String stepCode = taskLogService.getLastErrorStepCode(taskId);
-        updateStatusAndStepCodeIfFailed(taskId, status, stepCode);
+        updateStatusAndStepCodeWhenProcessing(taskId, status, stepCode);
 
         if (ETaskStatus.CANCEL.getStatus().equals(status)) {
             // 取消任务
@@ -317,14 +325,6 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
             }
         }
         return stepCode;
-    }
-
-    private void updateStatusAndStepCodeIfFailed(Long id, Byte status, String stepCode) {
-        TaskParams task = new TaskParams();
-        task.setStatus(status);
-        task.setStepCode(stepCode);
-
-        updateProcessingTaskById(task, id);
     }
 
     @Override
