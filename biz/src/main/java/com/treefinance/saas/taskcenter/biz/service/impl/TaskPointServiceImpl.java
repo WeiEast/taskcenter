@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  * @author 张琰佳
  * @since 8:39 PM 2019/1/24
  */
+@Service
 public class TaskPointServiceImpl implements TaskPointService {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskPointService.class);
