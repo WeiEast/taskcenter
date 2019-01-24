@@ -57,13 +57,12 @@ public enum CodeStepEnum {
     EMAIL_IMPORTED_BACK("20100401", "importedBack", "imported_and_back", "退出邮箱导入成功页面。点击左上角“<\"按钮"),
     EMAIL_SUCCESS("20100402", "importSuccess", "success", "点击“导入成功”按钮"),
 
-    EMAIL_LOGIN("20900101","login","login","邮箱登录"),
+    EMAIL_LOGIN_START("20900101","login","start","邮箱开始登录"),
+    EMAIL_LOGIN_SUCCESS("20900102","login","success","邮箱登录完成"),
     EMAIL_CRAWLER_START("20900201","crawler","start","爬虫启动"),
     EMAIL_DATA_CLEAN("20900301","data","clean","数据清洗"),
     EMAIL_DATA_STORAGE("20900302","data","storage","数据入库"),
     EMAIL_CALLBACK_NOTIFY("20900401","callback","notify","回调通知"),
-
-
 
     /**
      * 电商
@@ -92,15 +91,6 @@ public enum CodeStepEnum {
     ECOMMERCE_DATA_CLEAN("30900301","data","clean","数据清洗"),
     ECOMMERCE_DATA_STORAGE("30900302","data","storage","数据入库"),
     ECOMMERCE_CALLBACK_NOTIFY("30900401","callback","notify","回调通知");
-
-
-
-
-
-
-
-
-
 
 
     private String code;
