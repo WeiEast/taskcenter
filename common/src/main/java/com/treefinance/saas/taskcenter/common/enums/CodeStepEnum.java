@@ -26,15 +26,15 @@ public enum CodeStepEnum {
     OPERATOR_LAST("10100203","loginBefore","last","退出当前页面。点击下方返回上一步按钮"),
     OPERATOR_FAQ("10100204","loginBefore","faq","查看FAQ"),
     OPERATOR_FEEDBACK("10100205","loginBefore","feedback","意见反馈"),
-    operator_Authentication("10100301","import","authentication","运营商安全验证。点击安全验证对话框的“确定”按钮"),
-    operator_success("10100401","importSuccess","success","点击“导入成功”按钮"),
+    OPERATOR_AUTHENTICATION("10100301","import","authentication","运营商安全验证。点击安全验证对话框的“确定”按钮"),
+    OPERATOR_SUCCESS("10100401","importSuccess","success","点击“导入成功”按钮"),
 
-    operator_login("10900101","login","login","运营商登录"),
-    operator_crawler_start("10900201","crawler","stsrt","爬虫启动"),
-    operator_crawler_sms_verify("10900202","crawler","sms_verify","触发短信验证"),
-    operator_data_clean("10900301","data","clean","数据清洗"),
-    operator_data_storage("10900302","data","storage","数据入库"),
-    operator_callback_notify("10900401","callback","notify","回调通知");
+    OPERATOR_LOGIN("10900101","login","login","运营商登录"),
+    OPERATOR_CRAWLER_START("10900201","crawler","stsrt","爬虫启动"),
+    OPERATOR_CRAWLER_SMS_VERIFY("10900202","crawler","sms_verify","触发短信验证"),
+    OPERATOR_DATA_CLEAN("10900301","data","clean","数据清洗"),
+    OPERATOR_DATA_STORAGE("10900302","data","storage","数据入库"),
+    OPERATOR_CALLBACK_NOTIFY("10900401","callback","notify","回调通知");
     private String code;
 
     private String step;
