@@ -57,12 +57,17 @@ public enum CodeStepEnum {
     ECOMMERCE_SUCCESS("30100501","importSuccess","success","点击“导入成功”按钮"),
     ECOMMERCE_EXIT("30100502","importSuccess","exit","退出当前页面。点击左上角“<\"按钮"),
 
-    ECOMMERCE_LOGIN("30900102","login","login","电商登录"),
+    ECOMMERCE_LOGIN_START("30900101","login","start","电商开始登录"),
+    ECOMMERCE_LOGIN_SUCCESS("30900102","login","success","电商登录完成"),
     ECOMMERCE_CRAWLER_START("30900201","crawler","start","爬虫启动"),
     ECOMMERCE_CRAWLER_SMS_VERIFY("30900202","crawler","sms_verify","触发短信验证"),
     ECOMMERCE_DATA_CLEAN("30900301","data","clean","数据清洗"),
     ECOMMERCE_DATA_STORAGE("30900302","data","storage","数据入库"),
     ECOMMERCE_CALLBACK_NOTIFY("30900401","callback","notify","回调通知");
+
+
+
+
 
 
 
