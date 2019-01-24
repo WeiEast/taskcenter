@@ -72,28 +72,28 @@ public class TaskPointService {
         taskPoint.setMsg(CodeStepEnum.getMsg(taskPoint.getCode()));
         taskPoint.setId(UidGenerator.getId());
         int i = taskPointMapper.insertSelective(taskPoint);
-//        if (i == 1) {
-//            if (bizType == 1 || bizType == 2 || bizType == 3) {
-//                Map<String, Object> map = new HashMap<>(9);
-//                map.put("taskId", taskPoint.getTaskId());
-//                map.put("uniqueId", taskPoint.getUniqueId());
-//                map.put("type", taskPoint.getType());
-//                map.put("code", taskPoint.getCode());
-//                map.put("step", taskPoint.getStep());
-//                map.put("subStep", taskPoint.getSubStep());
-//                map.put("msg", taskPoint.getMsg());
-//                map.put("ip", taskPoint.getIp());
-//                map.put("occurTime", taskPoint.getOccurTime());
-//                String result = HttpClientUtils.doPost(diamondConfig.getHttpUrl(), map);
-//                if (result == null) {
-//                    logger.error("埋点调用功夫贷返回结果为空，taskId={}", taskPoint.getTaskId());
-//                } else {
-//                    JSONObject jsonObject = JSON.parseObject(result);
-//                    if ((int)jsonObject.get("code") != 0) {
-//                        logger.error("埋点调用功夫贷返回错误，taskId={}，errorMsg", taskPoint.getTaskId(), jsonObject.get("errorMsg"));
-//                    }
-//                }
-//            }
-//        }
+        if (i == 1) {
+            if (bizType == 1 || bizType == 2 || bizType == 3) {
+                Map<String, Object> map = new HashMap<>(9);
+                map.put("taskId", taskPoint.getTaskId());
+                map.put("uniqueId", taskPoint.getUniqueId());
+                map.put("type", taskPoint.getType());
+                map.put("code", taskPoint.getCode());
+                map.put("step", taskPoint.getStep());
+                map.put("subStep", taskPoint.getSubStep());
+                map.put("msg", taskPoint.getMsg());
+                map.put("ip", taskPoint.getIp());
+                map.put("occurTime", taskPoint.getOccurTime());
+                String result = HttpClientUtils.doPost(diamondConfig.getHttpUrl(), map);
+                if (result == null) {
+                    logger.error("埋点调用功夫贷返回结果为空，taskId={}", taskPoint.getTaskId());
+                } else {
+                    JSONObject jsonObject = JSON.parseObject(result);
+                    if ((int)jsonObject.get("code") != 0) {
+                        logger.error("埋点调用功夫贷返回错误，taskId={}，errorMsg", taskPoint.getTaskId(), jsonObject.get("errorMsg"));
+                    }
+                }
+            }
+        }
     }
 }
