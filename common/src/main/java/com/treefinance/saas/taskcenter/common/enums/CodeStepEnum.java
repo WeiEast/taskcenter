@@ -30,11 +30,38 @@ public enum CodeStepEnum {
     OPERATOR_SUCCESS("10100401","importSuccess","success","点击“导入成功”按钮"),
 
     OPERATOR_LOGIN("10900101","login","login","运营商登录"),
-    OPERATOR_CRAWLER_START("10900201","crawler","stsrt","爬虫启动"),
+    OPERATOR_CRAWLER_START("10900201","crawler","start","爬虫启动"),
     OPERATOR_CRAWLER_SMS_VERIFY("10900202","crawler","sms_verify","触发短信验证"),
     OPERATOR_DATA_CLEAN("10900301","data","clean","数据清洗"),
     OPERATOR_DATA_STORAGE("10900302","data","storage","数据入库"),
-    OPERATOR_CALLBACK_NOTIFY("10900401","callback","notify","回调通知");
+    OPERATOR_CALLBACK_NOTIFY("10900401","callback","notify","回调通知"),
+
+    /**
+     * 邮箱账单
+     */
+    EMAIL_START("20100101", "loginBefore", "start", "邮箱账单流程启动，加载首页"),
+    EMAIL_CHOOSE_QQ("20100102", "loginBefore", "choose_qq", "选择QQ邮箱。点击“QQ邮箱”"),
+    EMAIL_CHOOSE_163("20100103", "loginBefore", "choose_163", "选择163邮箱。点击“163邮箱”"),
+    EMAIL_CHOOSE_126("20100104", "loginBefore", "choose_126", "选择126邮箱。点击“126邮箱”"),
+    EMAIL_CHOOSE_SINA("20100105", "loginBefore", "choose_sina", "选择新浪邮箱。点击“新浪邮箱”"),
+    EMAIL_CHOOSE_139("20100106", "loginBefore", "choose_139", "选择139邮箱。点击“139邮箱”"),
+    EMAIL_CHOOSE_QQEXMAIL("20100107", "loginBefore", "choose_qqexmail", "选择企业邮箱。点击“企业邮箱”"),
+    EMAIL_SELECT_AUTHORIZATION("20100108", "loginBefore", "select_authorization", "勾选个人信息查询授权书"),
+    EMAIL_CANCEL_AUTHORIZATION("20100109", "loginBefore", "cancel_authorization", "取消勾选个人信息查询授权书"),
+    EMAIL_LOOK_AUTHORIZATION("20100110", "loginBefore", "look_authorization", "点击查看个人信息查询授权书页面"),
+    EMAIL_EXIT_AUTHORIZATION_PAGE("20100111", "loginBefore", "exit_authorization", "退出个人信息查询授权书页面"),
+    EMAIL_BACK("20100112", "loginBefore", "exit_email_list_page", "邮箱列表页，点击左上角“<\"按钮"),
+    EMAIL_THIRD_PAGE_BACK("20100201", "loginBack", "exit_third_login_page", "第三方登录页面，点击左上角“<\"按钮"),
+    EMAIL_INTERRUPTED_AND_EXIT("20100301", "interruptedBack", "interrupted_and_exit", "中断邮箱导入并退出当前页。退出对话框中，点击“确定退出”按钮"),
+    EMAIL_IMPORTED_BACK("20100401", "importedBack", "imported_and_back", "退出邮箱导入成功页面。点击左上角“<\"按钮"),
+    EMAIL_SUCCESS("20100402", "importSuccess", "success", "点击“导入成功”按钮"),
+
+    EMAIL_LOGIN("20900101","login","login","邮箱登录"),
+    EMAIL_CRAWLER_START("20900201","crawler","start","爬虫启动"),
+    EMAIL_DATA_CLEAN("20900301","data","clean","数据清洗"),
+    EMAIL_DATA_STORAGE("20900302","data","storage","数据入库"),
+    EMAIL_CALLBACK_NOTIFY("20900401","callback","notify","回调通知");
+
     private String code;
 
     private String step;
