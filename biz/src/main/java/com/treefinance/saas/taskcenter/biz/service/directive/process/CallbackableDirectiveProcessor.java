@@ -1,5 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.shade.io.netty.util.internal.StringUtil;
 import com.google.common.collect.Lists;
@@ -17,6 +18,7 @@ import com.treefinance.saas.taskcenter.common.utils.HttpClientUtils;
 import com.treefinance.saas.taskcenter.common.utils.RemoteDataDownloadUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
+import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -57,6 +59,8 @@ public abstract class CallbackableDirectiveProcessor {
     protected GrapDataCallbackService grapDataCallbackService;
     @Autowired
     protected MonitorService monitorService;
+    @Autowired
+    private TaskPointService taskPointService;
 
     /**
      * 回调前处理
@@ -150,6 +154,12 @@ public abstract class CallbackableDirectiveProcessor {
         for (AppCallbackConfigDTO config : configList) {
             Boolean callbackSuccess = Boolean.TRUE;
             try {
+                TaskPointRequest taskPointRequest = new TaskPointRequest();
+                taskPointRequest.setTaskId(taskId);
+                taskPointRequest.setType((byte)1);
+                taskPointRequest.setCode("900401");
+                taskPointRequest.setIp(NetUtils.getLocalHost());
+                taskPointService.addTaskPoint(taskPointRequest);
                 // 执行回调
                 callbackSuccess = doCallBack(dataMap, appLicense, config, directiveDTO);
             } catch (Exception e) {
