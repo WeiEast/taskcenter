@@ -80,7 +80,8 @@ public class TaskPointServiceImpl implements TaskPointService {
             if (bizType == 1 || bizType == 2 || bizType == 3) {
                 Map<String, Object> map = new HashMap<>(9);
                 map.put("taskId", taskPoint.getTaskId());
-                map.put("uniqueId", taskPoint.getUniqueId());
+                //TODO 临时修改为Long
+                map.put("uniqueId", Long.parseLong(taskPoint.getUniqueId()));
                 map.put("type", taskPoint.getType());
                 map.put("code", taskPoint.getCode());
                 map.put("step", taskPoint.getStep());
