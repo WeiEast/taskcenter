@@ -23,9 +23,6 @@ import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dto.CarInfoCollectTaskLogDTO;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,8 +38,6 @@ import java.util.List;
 @Service
 public class CarInfoServiceImpl implements CarInfoService {
 
-    private final static Logger logger = LoggerFactory.getLogger(CarInfoServiceImpl.class);
-
     @Autowired
     private TaskService taskService;
     @Autowired
@@ -54,15 +49,15 @@ public class CarInfoServiceImpl implements CarInfoService {
     @Override
     public void updateCollectTaskStatusAndTaskLogAndSendMonitor(Long taskId, List<CarInfoCollectTaskLogDTO> logList) {
         for (CarInfoCollectTaskLogDTO log : logList) {
-            taskLogService.insertTaskLog(taskId, log.getMsg(), log.getOccurTime(), log.getErrorMsg());
-            // 任务成功
-            if (StringUtils.equalsIgnoreCase(log.getMsg(), ETaskStep.TASK_SUCCESS.getText())) {
+            if (ETaskStep.TASK_SUCCESS.getText().equalsIgnoreCase(log.getMsg())) {
+                // 任务成功
                 taskService.updateStatusWhenProcessing(taskId, ETaskStatus.SUCCESS.getStatus());
-            }
-            // 任务失败
-            if (StringUtils.equalsIgnoreCase(log.getMsg(), ETaskStep.TASK_FAIL.getText())) {
+            } else if (ETaskStep.TASK_FAIL.getText().equalsIgnoreCase(log.getMsg())) {
+                // 任务失败
                 taskService.updateStatusWhenProcessing(taskId, ETaskStatus.FAIL.getStatus());
             }
+
+            taskLogService.insertTaskLog(taskId, log.getMsg(), log.getOccurTime(), log.getErrorMsg());
         }
         monitorService.sendMonitorMessage(taskId);
     }
