@@ -82,12 +82,12 @@
 
         <!--</table>-->
 
-        <table tableName="task_point" domainObjectName="TaskPoint"
-               enableSelectPaginationByExample="true"
-               enableInsertOrUpdateBySelective="true"
-               enableBatchInsert="true"
-               enableBatchUpdateByPrimaryKey="true"
-               enableBatchUpdateByPrimaryKeySelective="true">
+        <table tableName="task_point" domainObjectName="TaskPoint">
+               <!--enableSelectPaginationByExample="true"-->
+               <!--enableInsertOrUpdateBySelective="true"-->
+               <!--enableBatchInsert="true"-->
+               <!--enableBatchUpdateByPrimaryKey="true"-->
+               <!--enableBatchUpdateByPrimaryKeySelective="true">-->
             <!--<property name="useActualColumnNames" value="true"/>-->
             <!--<generatedKey column="Id" sqlStatement="MySql" identity="true"/>-->
 

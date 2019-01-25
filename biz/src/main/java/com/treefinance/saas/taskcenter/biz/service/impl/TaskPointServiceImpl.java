@@ -50,13 +50,13 @@ public class TaskPointServiceImpl implements TaskPointService {
         String str = redisDao.get("UniqueId_bizType_" + taskPointRequest.getTaskId());
         if (str == null) {
             Task task = taskMapper.selectByPrimaryKey(taskPointRequest.getTaskId());
-            String taskId = task.getUniqueId();
+            String uniqueId = task.getUniqueId();
             redisDao.setEx("UniqueId_bizType_" + taskPointRequest.getTaskId(), task.getUniqueId() + "," + task.getBizType(), 10, TimeUnit.MINUTES);
-            taskPoint.setUniqueId(Long.parseLong(taskId));
+            taskPoint.setUniqueId(uniqueId);
             taskPoint.setBizType(task.getBizType());
         } else {
             List<String> list = Arrays.asList(str.split(","));
-            taskPoint.setUniqueId(Long.parseLong(list.get(0)));
+            taskPoint.setUniqueId(list.get(0));
             taskPoint.setBizType((Byte.valueOf(list.get(1))));
         }
         int bizType = taskPoint.getBizType();

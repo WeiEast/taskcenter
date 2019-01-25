@@ -12,7 +12,7 @@ public class TaskPointRequest extends BaseRequest {
 
     private String appId;
 
-    private Long uniqueId;
+    private String uniqueId;
 
     private Byte type;
 
@@ -40,11 +40,11 @@ public class TaskPointRequest extends BaseRequest {
         this.taskId = taskId;
     }
 
-    public Long getUniqueId() {
+    public String getUniqueId() {
         return uniqueId;
     }
 
-    public void setUniqueId(Long uniqueId) {
+    public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
     }
 
