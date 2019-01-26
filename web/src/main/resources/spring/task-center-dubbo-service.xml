@@ -61,7 +61,7 @@
                    validation="true"/>
 
     <dubbo:service ref="taskPointFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskPointFacade" version="1.0.0"
+                   interface="com.treefinance.saas.taskcenter.facade.service.TaskPointFacade"
                    validation="true"/>
 
 </beans>
