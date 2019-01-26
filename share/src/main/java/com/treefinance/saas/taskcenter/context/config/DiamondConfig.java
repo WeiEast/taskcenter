@@ -41,6 +41,9 @@ public class DiamondConfig {
     @DAttribute(key = "gongfudai.http.url")
     private String httpUrl;
 
+    @DAttribute(key="gongfudai.appid")
+    private String gfdAppId;
+
     @BeforeUpdate
     public void before(String key, Object newValue) {
         logger.info(key + " update to " + newValue + " start...");
@@ -66,5 +69,13 @@ public class DiamondConfig {
 
     public void setHttpUrl(String httpUrl) {
         this.httpUrl = httpUrl;
+    }
+
+    public String getGfdAppId() {
+        return gfdAppId;
+    }
+
+    public void setGfdAppId(String gfdAppId) {
+        this.gfdAppId = gfdAppId;
     }
 }
