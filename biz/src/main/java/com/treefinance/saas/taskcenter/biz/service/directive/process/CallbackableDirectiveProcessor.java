@@ -6,13 +6,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
-import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
-import com.treefinance.saas.taskcenter.biz.service.CallbackResultService;
-import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
-import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.treefinance.saas.taskcenter.biz.service.*;
+import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.context.enums.EBizType;
@@ -32,6 +27,7 @@ import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.toolkit.util.http.exception.HttpException;
+import com.treefinance.toolkit.util.net.NetUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -70,6 +66,8 @@ public abstract class CallbackableDirectiveProcessor {
     protected GrapDataCallbackService grapDataCallbackService;
     @Autowired
     protected MonitorService monitorService;
+    @Autowired
+    private TaskPointService taskPointService;
 
 
     /**
@@ -164,6 +162,12 @@ public abstract class CallbackableDirectiveProcessor {
         for (AppCallbackConfigDTO config : configList) {
             Boolean callbackSuccess = Boolean.TRUE;
             try {
+                TaskPointRequest taskPointRequest = new TaskPointRequest();
+                taskPointRequest.setTaskId(taskId);
+                taskPointRequest.setType((byte)1);
+                taskPointRequest.setCode("900401");
+                taskPointRequest.setIp(NetUtils.getLocalHost());
+                taskPointService.addTaskPoint(taskPointRequest);
                 // 执行回调
                 callbackSuccess = doCallBack(dataMap, appLicense, config, directiveDTO);
             } catch (Exception e) {
