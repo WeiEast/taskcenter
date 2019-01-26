@@ -47,17 +47,20 @@ public class TaskPointServiceImpl implements TaskPointService {
         TaskPoint taskPoint = new TaskPoint();
         BeanUtils.copyProperties(taskPointRequest, taskPoint);
         taskPoint.setOccurTime(new Date());
-        String str = redisDao.get("UniqueId_bizType_" + taskPointRequest.getTaskId());
+        String str = redisDao.get("UniqueId_bizType_appId" + taskPointRequest.getTaskId());
+        String appId;
         if (str == null) {
             Task task = taskMapper.selectByPrimaryKey(taskPointRequest.getTaskId());
             String uniqueId = task.getUniqueId();
-            redisDao.setEx("UniqueId_bizType_" + taskPointRequest.getTaskId(), task.getUniqueId() + "," + task.getBizType(), 10, TimeUnit.MINUTES);
+            redisDao.setEx("UniqueId_bizType_appId" + taskPointRequest.getTaskId(), task.getUniqueId() + "," + task.getBizType() + "," + task.getAppId(), 10, TimeUnit.MINUTES);
             taskPoint.setUniqueId(uniqueId);
             taskPoint.setBizType(task.getBizType());
+            appId = task.getAppId();
         } else {
             List<String> list = Arrays.asList(str.split(","));
             taskPoint.setUniqueId(list.get(0));
             taskPoint.setBizType((Byte.valueOf(list.get(1))));
+            appId = list.get(2);
         }
         int bizType = taskPoint.getBizType();
         if (taskPoint.getType() == 1) {
@@ -76,7 +79,7 @@ public class TaskPointServiceImpl implements TaskPointService {
         taskPoint.setMsg(CodeStepEnum.getMsg(taskPoint.getCode()));
         taskPoint.setId(uidService.getId());
         int i = taskPointMapper.insertSelective(taskPoint);
-        if (i == 1) {
+        if (i == 1 && diamondConfig.getGfdAppId().equals(appId)) {
             if (bizType == 1 || bizType == 2 || bizType == 3) {
                 Map<String, Object> map = new HashMap<>(9);
                 map.put("taskId", taskPoint.getTaskId());
