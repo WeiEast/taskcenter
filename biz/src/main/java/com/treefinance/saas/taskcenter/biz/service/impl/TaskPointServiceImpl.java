@@ -83,8 +83,7 @@ public class TaskPointServiceImpl implements TaskPointService {
             if (bizType == 1 || bizType == 2 || bizType == 3) {
                 Map<String, Object> map = new HashMap<>(9);
                 map.put("taskId", taskPoint.getTaskId());
-                //TODO 临时修改为Long
-                map.put("uniqueId", Long.parseLong(taskPoint.getUniqueId()));
+                map.put("uniqueId", taskPoint.getUniqueId());
                 map.put("type", taskPoint.getType());
                 map.put("code", taskPoint.getCode());
                 map.put("step", taskPoint.getStep());
@@ -92,14 +91,18 @@ public class TaskPointServiceImpl implements TaskPointService {
                 map.put("msg", taskPoint.getMsg());
                 map.put("ip", taskPoint.getIp());
                 map.put("occurTime", taskPoint.getOccurTime());
-                String result = HttpClientUtils.doPost(diamondConfig.getHttpUrl(), map);
-                if (result == null) {
-                    logger.error("埋点调用功夫贷返回结果为空，taskId={}", taskPoint.getTaskId());
-                } else {
-                    JSONObject jsonObject = JSON.parseObject(result);
-                    if ((int)jsonObject.get("code") != 0) {
-                        logger.error("埋点调用功夫贷返回错误，taskId={}，errorMsg", taskPoint.getTaskId(), jsonObject.get("errorMsg"));
+                try {
+                    String result = HttpClientUtils.doPost(diamondConfig.getHttpUrl(), map);
+                    if (result == null) {
+                        logger.error("埋点调用功夫贷返回结果为空，taskId={}", taskPoint.getTaskId());
+                    } else {
+                        JSONObject jsonObject = JSON.parseObject(result);
+                        if ((int)jsonObject.get("code") != 0) {
+                            logger.error("埋点调用功夫贷返回错误，taskId={}，errorMsg", taskPoint.getTaskId(), jsonObject.get("errorMsg"));
+                        }
                     }
+                } catch (Exception e) {
+                    logger.error("埋点调用功夫贷异常，taskId={}", taskPoint.getTaskId(), e);
                 }
             }
         }
