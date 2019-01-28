@@ -80,7 +80,9 @@ public class TaskPointServiceImpl implements TaskPointService {
             taskPoint.setMsg(CodeStepEnum.getMsg(taskPoint.getCode()));
             taskPoint.setId(uidService.getId());
             int i = taskPointMapper.insertSelective(taskPoint);
-            if (i == 1 && diamondConfig.getGfdAppId().equals(appId)) {
+            String appIds = diamondConfig.getGfdAppId();
+            List<String> list = Arrays.asList(appIds.split(","));
+            if (i == 1 && list.contains(appId)) {
                 if (bizType == 1 || bizType == 2 || bizType == 3) {
                     logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
                     Map<String, Object> map = new HashMap<>(9);
@@ -108,4 +110,5 @@ public class TaskPointServiceImpl implements TaskPointService {
             logger.error("埋点调用功夫贷异常，taskId={}", taskPointRequest.getTaskId(), e);
         }
     }
+
 }
