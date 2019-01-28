@@ -44,55 +44,55 @@ public class TaskPointServiceImpl implements TaskPointService {
 
     @Override
     public void addTaskPoint(TaskPointRequest taskPointRequest) {
-        TaskPoint taskPoint = new TaskPoint();
-        BeanUtils.copyProperties(taskPointRequest, taskPoint);
-        taskPoint.setOccurTime(new Date());
-        String str = redisDao.get("UniqueId_bizType_appId" + taskPointRequest.getTaskId());
-        String appId;
-        if (str == null) {
-            Task task = taskMapper.selectByPrimaryKey(taskPointRequest.getTaskId());
-            String uniqueId = task.getUniqueId();
-            redisDao.setEx("UniqueId_bizType_appId" + taskPointRequest.getTaskId(), task.getUniqueId() + "," + task.getBizType() + "," + task.getAppId(), 10, TimeUnit.MINUTES);
-            taskPoint.setUniqueId(uniqueId);
-            taskPoint.setBizType(task.getBizType());
-            appId = task.getAppId();
-        } else {
-            List<String> list = Arrays.asList(str.split(","));
-            taskPoint.setUniqueId(list.get(0));
-            taskPoint.setBizType((Byte.valueOf(list.get(1))));
-            appId = list.get(2);
-        }
-        int bizType = taskPoint.getBizType();
-        if (taskPoint.getType() == 1) {
-            if (bizType == 1) {
-                taskPoint.setCode("20" + taskPoint.getCode());
-            } else if (bizType == 2) {
-                taskPoint.setCode("30" + taskPoint.getCode());
-            } else if (bizType == 3) {
-                taskPoint.setCode("10" + taskPoint.getCode());
+        try {
+            TaskPoint taskPoint = new TaskPoint();
+            BeanUtils.copyProperties(taskPointRequest, taskPoint);
+            taskPoint.setOccurTime(new Date());
+            String str = redisDao.get("UniqueId_bizType_appId" + taskPointRequest.getTaskId());
+            String appId;
+            if (str == null) {
+                Task task = taskMapper.selectByPrimaryKey(taskPointRequest.getTaskId());
+                String uniqueId = task.getUniqueId();
+                redisDao.setEx("UniqueId_bizType_appId" + taskPointRequest.getTaskId(), task.getUniqueId() + "," + task.getBizType() + "," + task.getAppId(), 10, TimeUnit.MINUTES);
+                taskPoint.setUniqueId(uniqueId);
+                taskPoint.setBizType(task.getBizType());
+                appId = task.getAppId();
             } else {
-                taskPoint.setCode("00" + taskPoint.getCode());
+                List<String> list = Arrays.asList(str.split(","));
+                taskPoint.setUniqueId(list.get(0));
+                taskPoint.setBizType((Byte.valueOf(list.get(1))));
+                appId = list.get(2);
             }
-        }
-        taskPoint.setStep(CodeStepEnum.getStep(taskPoint.getCode()));
-        taskPoint.setSubStep(CodeStepEnum.getSubStep(taskPoint.getCode()));
-        taskPoint.setMsg(CodeStepEnum.getMsg(taskPoint.getCode()));
-        taskPoint.setId(uidService.getId());
-        int i = taskPointMapper.insertSelective(taskPoint);
-        if (i == 1 && diamondConfig.getGfdAppId().equals(appId)) {
-            if (bizType == 1 || bizType == 2 || bizType == 3) {
-                logger.info("开始封装参数，taskId={}",taskPoint.getTaskId());
-                Map<String, Object> map = new HashMap<>(9);
-                map.put("taskId", taskPoint.getTaskId());
-                map.put("uniqueId", taskPoint.getUniqueId());
-                map.put("type", taskPoint.getType());
-                map.put("code", taskPoint.getCode());
-                map.put("step", taskPoint.getStep());
-                map.put("subStep", taskPoint.getSubStep());
-                map.put("msg", taskPoint.getMsg());
-                map.put("ip", taskPoint.getIp());
-                map.put("occurTime", taskPoint.getOccurTime());
-                try {
+            int bizType = taskPoint.getBizType();
+            if (taskPoint.getType() == 1) {
+                if (bizType == 1) {
+                    taskPoint.setCode("20" + taskPoint.getCode());
+                } else if (bizType == 2) {
+                    taskPoint.setCode("30" + taskPoint.getCode());
+                } else if (bizType == 3) {
+                    taskPoint.setCode("10" + taskPoint.getCode());
+                } else {
+                    taskPoint.setCode("00" + taskPoint.getCode());
+                }
+            }
+            taskPoint.setStep(CodeStepEnum.getStep(taskPoint.getCode()));
+            taskPoint.setSubStep(CodeStepEnum.getSubStep(taskPoint.getCode()));
+            taskPoint.setMsg(CodeStepEnum.getMsg(taskPoint.getCode()));
+            taskPoint.setId(uidService.getId());
+            int i = taskPointMapper.insertSelective(taskPoint);
+            if (i == 1 && diamondConfig.getGfdAppId().equals(appId)) {
+                if (bizType == 1 || bizType == 2 || bizType == 3) {
+                    logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
+                    Map<String, Object> map = new HashMap<>(9);
+                    map.put("taskId", taskPoint.getTaskId());
+                    map.put("uniqueId", taskPoint.getUniqueId());
+                    map.put("type", taskPoint.getType());
+                    map.put("code", taskPoint.getCode());
+                    map.put("step", taskPoint.getStep());
+                    map.put("subStep", taskPoint.getSubStep());
+                    map.put("msg", taskPoint.getMsg());
+                    map.put("ip", taskPoint.getIp());
+                    map.put("occurTime", taskPoint.getOccurTime());
                     String result = HttpClientUtils.doPost(diamondConfig.getHttpUrl(), map);
                     if (result == null) {
                         logger.error("埋点调用功夫贷返回结果为空，taskId={}", taskPoint.getTaskId());
@@ -102,10 +102,10 @@ public class TaskPointServiceImpl implements TaskPointService {
                             logger.error("埋点调用功夫贷返回错误，taskId={}，errorMsg", taskPoint.getTaskId(), jsonObject.get("errorMsg"));
                         }
                     }
-                } catch (Exception e) {
-                    logger.error("埋点调用功夫贷异常，taskId={}", taskPoint.getTaskId(), e);
                 }
             }
+        } catch (Exception e) {
+            logger.error("埋点调用功夫贷异常，taskId={}", taskPointRequest.getTaskId(), e);
         }
     }
 }
