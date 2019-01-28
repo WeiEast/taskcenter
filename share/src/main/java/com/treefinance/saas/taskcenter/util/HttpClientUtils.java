@@ -20,7 +20,9 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -62,6 +64,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * httpclient 调用工具类
@@ -356,7 +359,6 @@ public class HttpClientUtils {
         return doPost(url, Collections.emptyMap());
     }
 
-
     /**
      * 发送 POST 请求（HTTP）
      *
@@ -368,32 +370,36 @@ public class HttpClientUtils {
      */
     public static String doPostWithTimeoutAndRetryTimes(String url, Byte timeOut, Byte retryTimes, Map<String, Object> params) {
         long start = System.currentTimeMillis();
-        CloseableHttpClient httpClient = getRetryClient(url, retryTimes);
+
         String result = "";
-        HttpPost httpPost = new HttpPost(url);
+
         CloseableHttpResponse response = null;
 
         int statusCode = 0;
-        StringBuilder paramsBf = new StringBuilder();
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            paramsBf.append(entry.getKey()).append("=").append(entry.getValue());
-        }
         try {
-            httpPost.setConfig(getConfigWithTimeOut(timeOut * 1000));
-            StringEntity stringEntity = new StringEntity(paramsBf.toString(), "UTF-8");
-            stringEntity.setContentType("application/x-www-form-urlencoded");
+            StringEntity stringEntity = null;
+            if (MapUtils.isNotEmpty(params)) {
+                List<BasicNameValuePair> paramList = params.entrySet().stream()
+                    .map(entry -> new BasicNameValuePair(entry.getKey(), entry.getValue() == null ? StringUtils.EMPTY : entry.getValue().toString())).collect(Collectors.toList());
+                stringEntity = new UrlEncodedFormEntity(paramList, "UTF-8");
+            }
 
+            HttpPost httpPost = new HttpPost(url);
             httpPost.setEntity(stringEntity);
+            httpPost.setConfig(getConfigWithTimeOut(timeOut * 1000));
+
+            CloseableHttpClient httpClient = getRetryClient(url, retryTimes);
             response = httpClient.execute(httpPost);
 
-            statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 result = EntityUtils.toString(entity, "UTF-8");
             }
+            statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != HttpStatus.SC_OK) {
                 throw new RequestFailedException(url, statusCode, result);
             }
+            return result;
         } catch (IOException e) {
             logger.error("doPostWithTimeoutAndRetryTimes exception: url={},timeout={}s,retryTimes={},params={},statusCode={},result={}",
                     url, timeOut, retryTimes, JSON.toJSONString(params), statusCode, result, e);
@@ -405,8 +411,6 @@ public class HttpClientUtils {
             }
             closeResponse(response);
         }
-        return result;
-
     }
 
     /**
