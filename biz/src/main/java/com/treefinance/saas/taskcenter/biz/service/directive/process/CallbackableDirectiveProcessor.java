@@ -350,20 +350,13 @@ public abstract class CallbackableDirectiveProcessor {
     protected String encryptParams(Map<String, Object> dataMap, AppLicenseDTO appLicense, AppCallbackConfigDTO config) throws Exception {
         String params = null;
 
-        // 2.获取商户密钥、回调密钥
-        CallBackLicenseDTO callbackLicense = appLicenseService.getCallbackLicense(config.getId());
         // 是否使用新密钥，0-否，1-是
         Byte isNewKey = config.getIsNewKey();
         String aesDataKey = "";
         if (Byte.valueOf("0").equals(isNewKey)) {
-            if (appLicense == null) {
-                throw new CallbackEncryptException("appLicense is null");
-            }
             aesDataKey = appLicense.getDataSecretKey();
         } else if (Byte.valueOf("1").equals(isNewKey)) {
-            if (callbackLicense == null) {
-                throw new CallbackEncryptException("callbackLicense is null");
-            }
+            CallBackLicenseDTO callbackLicense = appLicenseService.getCallbackLicense(config.getId());
             aesDataKey = callbackLicense.getDataSecretKey();
         }
         byte version = config.getVersion();
