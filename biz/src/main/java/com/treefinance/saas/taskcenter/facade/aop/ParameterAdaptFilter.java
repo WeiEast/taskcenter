@@ -58,26 +58,31 @@ public class ParameterAdaptFilter implements Filter {
                         continue;
                     }
 
-                    if (CUSTOM_BEAN_PACKAGE.equals(parameterTypes[i].getPackage().getName())) {
-                        List<Field> fields = Reflections.getFields(parameterTypes[i]);
-                        for (Field field : fields) {
-                            if (field.getType() == List.class) {
-                                Type genericType = field.getGenericType();
-                                if (genericType instanceof ParameterizedType && ((ParameterizedType)genericType).getActualTypeArguments()[0] == Byte.class) {
-                                    field.setAccessible(true);
-                                    List<Integer> list = (List<Integer>)field.get(arguments[i]);
-                                    if (CollectionUtils.isNotEmpty(list)) {
-                                        List<Byte> result = list.stream().map(Integer::byteValue).collect(Collectors.toList());
-                                        field.set(arguments[i], result);
+                    try {
+                        Package pkg = parameterTypes[i].getPackage();
+                        if (pkg != null && CUSTOM_BEAN_PACKAGE.equals(pkg.getName())) {
+                            List<Field> fields = Reflections.getFields(parameterTypes[i]);
+                            for (Field field : fields) {
+                                if (field.getType() == List.class) {
+                                    Type genericType = field.getGenericType();
+                                    if (genericType instanceof ParameterizedType && ((ParameterizedType)genericType).getActualTypeArguments()[0] == Byte.class) {
+                                        field.setAccessible(true);
+                                        List<Integer> list = (List<Integer>)field.get(arguments[i]);
+                                        if (CollectionUtils.isNotEmpty(list)) {
+                                            List<Byte> result = list.stream().map(Integer::byteValue).collect(Collectors.toList());
+                                            field.set(arguments[i], result);
+                                        }
                                     }
                                 }
                             }
                         }
+                    } catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
+                        LOGGER.warn("Error reading and adapt field in special parameter! parameterType: {}, value: {}", parameterTypes[i], arguments[i], e);
                     }
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("[dubbo] Parameter adapt error! invoker: {}", invocation.getInvoker(), e);
+            LOGGER.error("[dubbo] Parameter adapt error! invocation: {}, invoker: {}", invocation, invoker, e);
         }
 
         return invoker.invoke(invocation);
