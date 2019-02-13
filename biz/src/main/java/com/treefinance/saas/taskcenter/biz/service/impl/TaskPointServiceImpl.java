@@ -19,7 +19,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.text.DateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -94,7 +100,9 @@ public class TaskPointServiceImpl implements TaskPointService {
                     map.put("subStep", taskPoint.getSubStep());
                     map.put("msg", taskPoint.getMsg());
                     map.put("ip", taskPoint.getIp());
-                    map.put("occurTime", taskPoint.getOccurTime());
+                    DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    map.put("occurTime", dateFormat.format(taskPoint.getOccurTime()));
                     String result = HttpClientUtils.doPost(diamondConfig.getHttpUrl(), map);
                     if (result == null) {
                         logger.error("埋点调用功夫贷返回结果为空，taskId={}", taskPoint.getTaskId());
