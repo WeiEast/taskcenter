@@ -1,68 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+  xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-    <dubbo:provider timeout="5000"/>
+  <dubbo:provider timeout="5000" validation="true"/>
 
-    <!--提供者-->
-    <dubbo:service ref="taskFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskFacade"
-                   version="1.0.0" validation="true"/>
+  <!--提供者-->
+  <dubbo:service ref="taskFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskFacade" version="1.0.0"/>
 
-    <dubbo:service ref="taskLogFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskLogFacade" version="1.0.0"
-                   validation="true"/>
-    <dubbo:service ref="taskAttributeFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskAttributeFacade" version="1.0.0"
-                   validation="true"/>
-    <dubbo:service ref="taskCallbackLogFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskCallbackLogFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="taskLogFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskLogFacade" version="1.0.0"/>
 
-    <dubbo:service ref="taskBuryPointLogFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskBuryPointLogFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="taskAttributeFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskAttributeFacade" version="1.0.0"/>
 
-    <dubbo:service ref="taskNextDirectiveFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskNextDirectiveFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="taskCallbackLogFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskCallbackLogFacade" version="1.0.0"/>
 
-    <dubbo:service ref="carInfoFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.CarInfoFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="taskBuryPointLogFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskBuryPointLogFacade" version="1.0.0"/>
 
-    <dubbo:service ref="acquisitionFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.AcquisitionFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="taskNextDirectiveFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskNextDirectiveFacade" version="1.0.0"/>
 
-    <dubbo:service ref="taskTimeFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskTimeFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="carInfoFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.CarInfoFacade" version="1.0.0"/>
 
-    <dubbo:service ref="moxieTaskEventNoticeFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.MoxieTaskEventNoticeFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="acquisitionFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.AcquisitionFacade" version="1.0.0"/>
 
-    <dubbo:service ref="moxieTimeoutFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.MoxieTimeoutFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="taskTimeFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskTimeFacade" version="1.0.0"/>
 
-    <dubbo:service ref="taskDeviceFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskDeviceFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="moxieTaskEventNoticeFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.MoxieTaskEventNoticeFacade" version="1.0.0"/>
 
-    <dubbo:service ref="taskSupportFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskSupportFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="moxieTimeoutFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.MoxieTimeoutFacade" version="1.0.0"/>
 
-    <dubbo:service ref="taskAliveFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskAliveFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="taskDeviceFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskDeviceFacade" version="1.0.0"/>
 
-    <dubbo:service ref="taskPointFacade"
-                   interface="com.treefinance.saas.taskcenter.facade.service.TaskPointFacade" version="1.0.0"
-                   validation="true"/>
+  <dubbo:service ref="taskSupportFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskSupportFacade" version="1.0.0"/>
+
+  <dubbo:service ref="taskAliveFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskAliveFacade" version="1.0.0"/>
+
+  <dubbo:service ref="taskPointFacade"
+    interface="com.treefinance.saas.taskcenter.facade.service.TaskPointFacade" version="1.0.0"/>
 
 </beans>
 
