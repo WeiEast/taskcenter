@@ -13,6 +13,7 @@
 
 package com.treefinance.saas.taskcenter.facade.result;
 
+import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -40,4 +41,8 @@ public class SimpleTaskDTO implements Serializable {
     private Byte status;
     private Date createTime;
     private Date lastUpdateTime;
+
+    public String getBizTypeName() {
+        return EBizType.getName(bizType);
+    }
 }

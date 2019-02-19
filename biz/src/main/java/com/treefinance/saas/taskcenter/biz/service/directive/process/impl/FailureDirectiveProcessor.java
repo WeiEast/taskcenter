@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
-import com.treefinance.saas.taskcenter.context.enums.EBizType;
+import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.Constants;

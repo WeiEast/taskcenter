@@ -3,7 +3,7 @@ package com.treefinance.saas.taskcenter.biz.service.task.timeout;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
-import com.treefinance.saas.taskcenter.context.enums.EBizType;
+import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;

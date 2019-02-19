@@ -10,7 +10,7 @@ import com.treefinance.saas.taskcenter.biz.service.*;
 import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
-import com.treefinance.saas.taskcenter.context.enums.EBizType;
+import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
