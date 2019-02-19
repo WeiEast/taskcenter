@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.treefinance.b2b.saas</groupId>
         <artifactId>b2b-saas-data-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
         <relativePath/>
     </parent>
 
@@ -38,7 +38,7 @@
             <dependency>
                 <groupId>com.datatrees.spider</groupId>
                 <artifactId>spider-share-api</artifactId>
-                <version>3.0.7-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
