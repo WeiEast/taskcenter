@@ -39,7 +39,7 @@ public class CancelDirectiveProcessor extends AbstractDirectiveProcessor {
         monitorService.sendMonitorMessage(taskDTO.getId());
 
         // 异步触发触发回调
-        asyncExecutor.runAsync(directiveDTO, _directiveDTO -> callback(_directiveDTO));
+        asyncExecutor.runAsync(directiveDTO, this::callback);
     }
 
 

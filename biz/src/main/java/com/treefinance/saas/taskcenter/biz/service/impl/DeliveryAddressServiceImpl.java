@@ -27,15 +27,16 @@ import com.treefinance.saas.taskcenter.biz.service.DeliveryAddressService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
-import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
-import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
+import com.treefinance.saas.taskcenter.exception.RequestFailedException;
+import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,10 +107,11 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         boolean isSuccess = Integer.valueOf(1).equals(message.getStatus());
         if (isSuccess) {
             dataMap.put("taskStatus", "001");
-            dataMap.put("taskErrorMsg", "");
-            if (dataMap.get("dataUrl") != null) {
-                String dataUrl = dataMap.get("dataUrl").toString();
+            dataMap.put("taskErrorMsg", StringUtils.EMPTY);
+            Object dataUrlObj = dataMap.remove("dataUrl");
+            if (dataUrlObj != null) {
                 try {
+                    String dataUrl = dataUrlObj.toString();
                     String appDataKey = appLicense.getDataSecretKey();
                     // oss 下载数据
                     byte[] result = RemoteDataUtils.download(dataUrl, byte[].class);
@@ -126,9 +128,9 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
                     logger.error("delivery address callback :  download data failed : data={}", JSON.toJSONString(dataMap));
                     dataMap.put("taskErrorMsg", "下载数据失败");
                     dataMap.put("taskStatus", "004");
+                    dataMap.put("dataUrl", dataUrlObj);
                 }
             }
-            dataMap.remove("dataUrl");
         } else {
             dataMap.put("taskStatus", "002");
             dataMap.put("taskErrorMsg", "抓取失败");

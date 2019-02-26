@@ -16,6 +16,9 @@
 
 package com.treefinance.saas.taskcenter.dto;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 /**
  * Created by yh-treefinance on 2017/7/6.
  */
@@ -80,5 +83,11 @@ public class DirectiveDTO extends BaseDTO {
 
     public void setTask(TaskDTO task) {
         this.task = task;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.JSON_STYLE).append("directiveId", directiveId).append("directive", directive).append("taskId", taskId)
+            .append("remark", remark).append("task", task).toString();
     }
 }

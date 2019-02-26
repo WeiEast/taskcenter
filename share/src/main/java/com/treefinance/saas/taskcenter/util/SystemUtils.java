@@ -16,6 +16,7 @@
 
 package com.treefinance.saas.taskcenter.util;
 
+import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.toolkit.util.RegExp;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDateTime;
@@ -63,5 +64,17 @@ public final class SystemUtils {
         }
 
         return RegExp.matches(dest, regex);
+    }
+
+    public static boolean isDataNotifyModel(Byte notifyModel) {
+        return Constants.NOTIFY_MODEL_1.equals(notifyModel);
+    }
+
+    public static boolean isTrue(Byte value) {
+        return Constants.YES.equals(value);
+    }
+
+    public static boolean isNotTrue(Byte value) {
+        return !isTrue(value);
     }
 }

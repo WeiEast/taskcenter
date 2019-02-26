@@ -45,9 +45,7 @@ public class MoxieFailureDirectiveProcessor extends MoxieAbstractDirectiveProces
         //回调之前预处理
         precallback(dataMap, appLicense, directiveDTO);
         //异步触发触发回调
-        asyncExecutor.runAsync(directiveDTO, _directiveDTO -> {
-            callback(dataMap, appLicense, _directiveDTO);
-        });
+        asyncExecutor.runAsync(directiveDTO, dto -> callback(dataMap, appLicense, dto));
 
 
     }

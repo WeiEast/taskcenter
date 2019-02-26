@@ -49,9 +49,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
 
         handleTaskFailMsg(directiveDTO, taskDTO);
         // 7.异步触发触发回调
-        asyncExecutor.runAsync(directiveDTO, _directiveDTO -> {
-            callback(dataMap, appLicense, _directiveDTO);
-        });
+        asyncExecutor.runAsync(directiveDTO, dto -> callback(dataMap, appLicense, dto));
     }
 
     /**
@@ -66,9 +64,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
                 Map<String, Object> remarkMap = JSON.parseObject(directiveDTO.getRemark());
                 //如果是运营商维护导致任务失败,爬数发来的任务指令中,directiveDTO的remark字段为{"errorMsg","当前运营商正在维护中，请稍后重试"}.
                 //如果是其他原因导致的任务失败,则返回下面的默认值.
-                if (remarkMap.get("errorMsg") == null) {
-                    remarkMap.put("errorMsg", Constants.OPERATOR_TASK_FAIL_MSG);
-                }
+                remarkMap.putIfAbsent("errorMsg", Constants.OPERATOR_TASK_FAIL_MSG);
                 directiveDTO.setRemark(JSON.toJSONString(remarkMap));
                 logger.info("handle task-fail-msg: result={},directiveDTO={}", JSON.toJSONString(directiveDTO));
             }
