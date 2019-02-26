@@ -85,10 +85,11 @@ public class TaskPointServiceImpl implements TaskPointService {
             taskPoint.setSubStep(CodeStepEnum.getSubStep(taskPoint.getCode()));
             taskPoint.setMsg(CodeStepEnum.getMsg(taskPoint.getCode()));
             taskPoint.setId(uidService.getId());
+            taskPoint.setAppId(appId);
             int i = taskPointMapper.insertSelective(taskPoint);
-            String appIds = diamondConfig.getGfdAppId();
-            List<String> list = Arrays.asList(appIds.split(","));
-            if (i == 1 && list.contains(appId)) {
+//            String appIds = diamondConfig.getGfdAppId();
+//            List<String> list = Arrays.asList(appIds.split(","));
+            if (i == 1) {
                 if (bizType == 1 || bizType == 2 || bizType == 3) {
                     logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
                     Map<String, Object> map = new HashMap<>(9);
@@ -100,6 +101,7 @@ public class TaskPointServiceImpl implements TaskPointService {
                     map.put("subStep", taskPoint.getSubStep());
                     map.put("msg", taskPoint.getMsg());
                     map.put("ip", taskPoint.getIp());
+                    map.put("appId",appId);
                     DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
                     dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
                     map.put("occurTime", dateFormat.format(taskPoint.getOccurTime()));
