@@ -3,11 +3,11 @@ package com.treefinance.saas.taskcenter.biz.service.directive.process;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.biz.service.impl.QRCodeAccountNoLogServiceImpl;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.AccountNoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public abstract class AbstractDirectiveProcessor extends CallbackableDirectivePr
     @Autowired
     protected TaskNextDirectiveService taskNextDirectiveService;
     @Autowired
-    private QRCodeAccountNoLogServiceImpl qrCodeAccountNoLogService;
+    private AccountNoService accountNoService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -65,7 +65,7 @@ public abstract class AbstractDirectiveProcessor extends CallbackableDirectivePr
         try {
             this.doProcess(directive, directiveDTO);
         } finally {
-            qrCodeAccountNoLogService.logQRCodeAccountNo(taskId);
+            accountNoService.saveAccountNoIfAbsent(taskId);
             taskNextDirectiveService.insertAndCacheNextDirective(taskId, directiveDTO);
             logger.info("process directive completed  cost {} ms : directive={}", System.currentTimeMillis() - start, JSON.toJSONString(directiveDTO));
         }

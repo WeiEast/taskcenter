@@ -12,6 +12,7 @@
         <module>facade</module>
         <module>web</module>
         <module>share</module>
+      <module>service</module>
     </modules>
 
     <name>taskcenter</name>
