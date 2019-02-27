@@ -8,23 +8,17 @@ import java.util.Date;
  * @author:guoguoyun
  * @date:Created in 2018/9/18下午1:46
  */
-public class TaskAttributeRO extends BaseResult{
-
+public class TaskAttributeRO extends BaseResult {
 
     private Long id;
 
-
     private Long taskId;
-
 
     private String name;
 
-
     private String value;
 
-
     private Date createTime;
-
 
     private Date lastUpdateTime;
 
@@ -78,13 +72,7 @@ public class TaskAttributeRO extends BaseResult{
 
     @Override
     public String toString() {
-        return "TaskAttributeRO{" +
-                "id=" + id +
-                ", taskId=" + taskId +
-                ", name='" + name + '\'' +
-                ", value='" + value + '\'' +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        return "TaskAttributeRO{" + "id=" + id + ", taskId=" + taskId + ", name='" + name + '\'' + ", value='" + value + '\'' + ", createTime=" + createTime + ", lastUpdateTime="
+            + lastUpdateTime + '}';
     }
 }

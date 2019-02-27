@@ -20,8 +20,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * 主流程数据的超时处理
- * Created by yh-treefinance on 2017/12/25.
+ * 主流程数据的超时处理 Created by yh-treefinance on 2017/12/25.
  */
 @Component
 public class MainStreamTaskTimeoutHandler implements TaskTimeoutHandler {
@@ -39,13 +38,11 @@ public class MainStreamTaskTimeoutHandler implements TaskTimeoutHandler {
         Long taskId = task.getId();
         // 任务超时: 当前时间-登录时间>超时时间
         Date currentTime = new Date();
-        logger.info("主流程数据：isTaskTimeout: taskid={}，loginTime={},current={},timeout={}",
-                taskId, DateUtils.format(loginTime),DateUtils.format(currentTime), timeout);
+        logger.info("主流程数据：isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
 
         // 增加日志：任务超时
-        String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss")
-                + ") - 登录时间(" + DateFormatUtils.format(loginTime, "yyyy-MM-dd HH:mm:ss")
-                + ")> 超时时间(" + timeout + "秒)";
+        String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss") + ") - 登录时间(" + DateFormatUtils.format(loginTime, "yyyy-MM-dd HH:mm:ss")
+            + ")> 超时时间(" + timeout + "秒)";
         taskLogService.log(task.getId(), TaskStatusMsgEnum.TIMEOUT_MSG, errorMessage);
 
         // 通知爬数取消任务

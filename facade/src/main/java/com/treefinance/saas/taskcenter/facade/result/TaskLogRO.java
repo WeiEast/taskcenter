@@ -11,23 +11,17 @@ import java.util.Date;
 public class TaskLogRO extends BaseResult {
     private Long id;
 
-
     private Long taskId;
-
 
     private String stepCode;
 
-
     private String msg;
-
 
     private Date occurTime;
 
     private String errorMsg;
 
-
     private Date createTime;
-
 
     private Date lastUpdateTime;
 
@@ -97,15 +91,7 @@ public class TaskLogRO extends BaseResult {
 
     @Override
     public String toString() {
-        return "TaskLogRO{" +
-                "id=" + id +
-                ", taskId=" + taskId +
-                ", stepCode='" + stepCode + '\'' +
-                ", msg='" + msg + '\'' +
-                ", occurTime=" + occurTime +
-                ", errorMsg='" + errorMsg + '\'' +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        return "TaskLogRO{" + "id=" + id + ", taskId=" + taskId + ", stepCode='" + stepCode + '\'' + ", msg='" + msg + '\'' + ", occurTime=" + occurTime + ", errorMsg='" + errorMsg
+            + '\'' + ", createTime=" + createTime + ", lastUpdateTime=" + lastUpdateTime + '}';
     }
 }

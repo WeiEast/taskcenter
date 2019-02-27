@@ -24,14 +24,12 @@ public interface TaskCallbackLogFacade {
      */
     TaskResult<List<TaskCallbackLogRO>> queryTaskCallbackLog(List<Long> taskIdList);
 
-
     /**
      * 分页的返回taskCallBackLog数据
      *
      * @param request 任务编号的列表
      */
     TaskPagingResult<TaskCallbackLogRO> queryTaskCallbackLogPage(TaskCallbackLogPageRequest request);
-
 
     TaskResult<List<TaskCallbackLogRO>> getTaskCallbackLogs(Long taskId, List<Long> configIds);
 

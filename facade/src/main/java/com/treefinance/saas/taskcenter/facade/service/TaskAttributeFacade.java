@@ -15,12 +15,9 @@ public interface TaskAttributeFacade {
 
     TaskResult<List<TaskAttributeRO>> queryTaskAttribute(TaskAttributeRequest taskAttributeRequest);
 
-
     TaskResult<List<TaskAttributeRO>> queryTaskAttributeByTaskId(TaskAttributeRequest taskAttributeRequest);
 
-
     TaskResult<Map<String, TaskAttributeRO>> findByNames(Long taskId, boolean decrypt, String... names);
-
 
     TaskResult<Long> insert(Long taskId, String name, String value);
 
@@ -37,14 +34,10 @@ public interface TaskAttributeFacade {
 
     TaskResult<Void> insertOrUpdateSelective(Long taskId, String name, String value);
 
-
     TaskResult<TaskAttributeRO> findByName(Long taskId, String name, boolean decrypt);
-
 
     TaskResult<TaskAttributeRO> findByNameAndValue(String name, String value, boolean encrypt);
 
-
     TaskResult<List<TaskAttributeRO>> findByTaskId(Long taskId);
-
 
 }

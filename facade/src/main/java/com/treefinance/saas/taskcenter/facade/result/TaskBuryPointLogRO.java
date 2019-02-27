@@ -12,12 +12,9 @@ public class TaskBuryPointLogRO extends BaseResult {
 
     private Long id;
 
-
     private Long taskId;
 
-
     private String appId;
-
 
     private String code;
 
@@ -75,13 +72,7 @@ public class TaskBuryPointLogRO extends BaseResult {
 
     @Override
     public String toString() {
-        return "TaskBuryPointLogRO{" +
-                "id=" + id +
-                ", taskId=" + taskId +
-                ", appId='" + appId + '\'' +
-                ", code='" + code + '\'' +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        return "TaskBuryPointLogRO{" + "id=" + id + ", taskId=" + taskId + ", appId='" + appId + '\'' + ", code='" + code + '\'' + ", createTime=" + createTime
+            + ", lastUpdateTime=" + lastUpdateTime + '}';
     }
 }

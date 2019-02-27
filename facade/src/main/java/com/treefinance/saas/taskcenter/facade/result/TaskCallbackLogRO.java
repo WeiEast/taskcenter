@@ -8,20 +8,16 @@ import java.util.Date;
  * @author:guoguoyun
  * @date:Created in 2018/9/18下午2:07
  */
-public class TaskCallbackLogRO extends BaseResult{
+public class TaskCallbackLogRO extends BaseResult {
     private Long id;
-
 
     private Long taskId;
 
-
     private Long configId;
-
 
     private Byte type;
 
     private String url;
-
 
     private String requestParam;
 
@@ -29,21 +25,15 @@ public class TaskCallbackLogRO extends BaseResult{
 
     private Integer consumeTime;
 
-
     private Integer httpCode;
-
 
     private String callbackCode;
 
-
     private String callbackMsg;
-
 
     private Byte failureReason;
 
-
     private Date createTime;
-
 
     private Date lastUpdateTime;
 
@@ -161,21 +151,8 @@ public class TaskCallbackLogRO extends BaseResult{
 
     @Override
     public String toString() {
-        return "TaskCallbackLogRO{" +
-                "id=" + id +
-                ", taskId=" + taskId +
-                ", configId=" + configId +
-                ", type=" + type +
-                ", url='" + url + '\'' +
-                ", requestParam='" + requestParam + '\'' +
-                ", responseData='" + responseData + '\'' +
-                ", consumeTime=" + consumeTime +
-                ", httpCode=" + httpCode +
-                ", callbackCode='" + callbackCode + '\'' +
-                ", callbackMsg='" + callbackMsg + '\'' +
-                ", failureReason=" + failureReason +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        return "TaskCallbackLogRO{" + "id=" + id + ", taskId=" + taskId + ", configId=" + configId + ", type=" + type + ", url='" + url + '\'' + ", requestParam='" + requestParam
+            + '\'' + ", responseData='" + responseData + '\'' + ", consumeTime=" + consumeTime + ", httpCode=" + httpCode + ", callbackCode='" + callbackCode + '\''
+            + ", callbackMsg='" + callbackMsg + '\'' + ", failureReason=" + failureReason + ", createTime=" + createTime + ", lastUpdateTime=" + lastUpdateTime + '}';
     }
 }

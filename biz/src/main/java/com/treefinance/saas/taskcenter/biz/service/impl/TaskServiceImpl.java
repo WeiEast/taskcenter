@@ -1,17 +1,14 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
@@ -64,9 +61,8 @@ import java.util.Map;
 @Service
 public class TaskServiceImpl extends AbstractService implements TaskService {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Byte[] DONE_STATUSES = {ETaskStatus.CANCEL.getStatus(), ETaskStatus.SUCCESS.getStatus(), ETaskStatus.FAIL.getStatus()};
-
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
@@ -132,18 +128,6 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     public boolean isTaskCompleted(Long taskId) {
         Byte status = getTaskStatusById(taskId);
         return isCompleted(status);
-    }
-
-    private boolean isCompleted(Byte status) {
-        if (status != null) {
-            for (Byte item : DONE_STATUSES) {
-                if (item.equals(status)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     @Override
@@ -216,38 +200,11 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         return id;
     }
 
-    private void setAttribute(Long taskId, Map map) {
-        String mobileAttribute = ETaskAttribute.MOBILE.getAttribute();
-        String nameAttribute = ETaskAttribute.NAME.getAttribute();
-        String idCardAttribute = ETaskAttribute.ID_CARD.getAttribute();
-        String mobile = map.get(mobileAttribute) == null ? "" : String.valueOf(map.get(mobileAttribute));
-        if (StringUtils.isNotBlank(mobile)) {
-            boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
-            if (!b) {
-                throw new ValidationException(String.format("the mobile number is illegal! mobile=%s", mobile));
-            }
-
-            taskAttributeService.insert(taskId, mobileAttribute, mobile, true);
-        }
-        String name = map.get(nameAttribute) == null ? "" : String.valueOf(map.get(nameAttribute));
-        if (StringUtils.isNotBlank(name)) {
-            taskAttributeService.insert(taskId, nameAttribute, name, true);
-        }
-        String idCard = map.get(idCardAttribute) == null ? "" : String.valueOf(map.get(idCardAttribute));
-        if (StringUtils.isNotBlank(idCard)) {
-            taskAttributeService.insert(taskId, idCardAttribute, idCard, true);
-        }
-    }
-
     @Override
     public int updateProcessingTaskById(@Nonnull TaskUpdateObject object) {
         TaskParams params = convert(object, TaskParams.class);
 
         return updateProcessingTaskById(params, object.getId());
-    }
-
-    private int updateProcessingTaskById(TaskParams params, Long id) {
-        return taskRepository.updateTaskByIdAndStatusNotIn(params, id, DONE_STATUSES);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -287,14 +244,6 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     public void updateStatusWhenProcessing(@Nonnull Long id, @Nonnull Byte status) {
         TaskParams task = new TaskParams();
         task.setStatus(status);
-
-        updateProcessingTaskById(task, id);
-    }
-
-    private void updateStatusAndStepCodeWhenProcessing(Long id, Byte status, String stepCode) {
-        TaskParams task = new TaskParams();
-        task.setStatus(status);
-        task.setStepCode(stepCode);
 
         updateProcessingTaskById(task, id);
     }
@@ -344,5 +293,52 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
             cancelDirective.setDirective(EDirective.TASK_CANCEL.getText());
             directiveService.process(cancelDirective);
         }
+    }
+
+    private boolean isCompleted(Byte status) {
+        if (status != null) {
+            for (Byte item : DONE_STATUSES) {
+                if (item.equals(status)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void setAttribute(Long taskId, Map map) {
+        String mobileAttribute = ETaskAttribute.MOBILE.getAttribute();
+        String nameAttribute = ETaskAttribute.NAME.getAttribute();
+        String idCardAttribute = ETaskAttribute.ID_CARD.getAttribute();
+        String mobile = map.get(mobileAttribute) == null ? "" : String.valueOf(map.get(mobileAttribute));
+        if (StringUtils.isNotBlank(mobile)) {
+            boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
+            if (!b) {
+                throw new ValidationException(String.format("the mobile number is illegal! mobile=%s", mobile));
+            }
+
+            taskAttributeService.insert(taskId, mobileAttribute, mobile, true);
+        }
+        String name = map.get(nameAttribute) == null ? "" : String.valueOf(map.get(nameAttribute));
+        if (StringUtils.isNotBlank(name)) {
+            taskAttributeService.insert(taskId, nameAttribute, name, true);
+        }
+        String idCard = map.get(idCardAttribute) == null ? "" : String.valueOf(map.get(idCardAttribute));
+        if (StringUtils.isNotBlank(idCard)) {
+            taskAttributeService.insert(taskId, idCardAttribute, idCard, true);
+        }
+    }
+
+    private int updateProcessingTaskById(TaskParams params, Long id) {
+        return taskRepository.updateTaskByIdAndStatusNotIn(params, id, DONE_STATUSES);
+    }
+
+    private void updateStatusAndStepCodeWhenProcessing(Long id, Byte status, String stepCode) {
+        TaskParams task = new TaskParams();
+        task.setStatus(status);
+        task.setStepCode(stepCode);
+
+        updateProcessingTaskById(task, id);
     }
 }

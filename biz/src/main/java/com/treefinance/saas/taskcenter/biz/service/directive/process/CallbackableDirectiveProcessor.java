@@ -108,17 +108,6 @@ public abstract class CallbackableDirectiveProcessor {
     }
 
     /**
-     * 刷新数据
-     *
-     * @param dataMap
-     * @param appLicense
-     * @param directiveDTO
-     */
-    private void flushData(Map<String, Object> dataMap, AppLicenseDTO appLicense, DirectiveDTO directiveDTO) {
-        this.precallback(dataMap, appLicense, directiveDTO);
-    }
-
-    /**
      * 执行回调(无需预处理)
      *
      * @param directiveDTO
@@ -191,46 +180,6 @@ public abstract class CallbackableDirectiveProcessor {
         taskLogService.insertTaskLog(taskId, "回调通知成功", new Date(), null);
         return 1;
 
-    }
-
-    /**
-     * 获取回调配置
-     *
-     * @return
-     */
-    private List<AppCallbackConfigDTO> getCallbackConfigs(TaskDTO taskDTO) {
-        return grapDataCallbackService.getCallbackConfigs(taskDTO, EDataType.MAIN_STREAM);
-    }
-
-    /**
-     * 校验是否需要回调
-     *
-     * @param config
-     * @param directiveDTO
-     * @return
-     */
-    private boolean needCallback(AppCallbackConfigDTO config, DirectiveDTO directiveDTO) {
-        if (config == null) {
-            return false;
-        }
-
-        String directive = directiveDTO.getDirective();
-
-        logger.debug("Check task notify config! - taskId: {}, directive: {}, callback-config: {}", directiveDTO.getTaskId(), directive, config);
-
-        // 当前任务成功，但成功不通知
-        if (EDirective.isTaskSuccess(directive) && SystemUtils.isNotTrue(config.getIsNotifySuccess())) {
-            return false;
-        }
-        // 当前任务失败，但失败不通知
-        else if (EDirective.isTaskFailure(directive) && SystemUtils.isNotTrue(config.getIsNotifyFailure())) {
-            return false;
-        }
-        // 当前任务取消，但取消不通知
-        else if (EDirective.isTaskCancel(directive) && SystemUtils.isNotTrue(config.getIsNotifyCancel())) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -329,6 +278,69 @@ public abstract class CallbackableDirectiveProcessor {
     }
 
     /**
+     * null 值判断
+     *
+     * @param value
+     * @param defaultValue
+     * @param <T>
+     * @return
+     */
+    protected <T> T ifNull(T value, T defaultValue) {
+        return value == null ? defaultValue : value;
+    }
+
+    /**
+     * 刷新数据
+     *
+     * @param dataMap
+     * @param appLicense
+     * @param directiveDTO
+     */
+    private void flushData(Map<String, Object> dataMap, AppLicenseDTO appLicense, DirectiveDTO directiveDTO) {
+        this.precallback(dataMap, appLicense, directiveDTO);
+    }
+
+    /**
+     * 获取回调配置
+     *
+     * @return
+     */
+    private List<AppCallbackConfigDTO> getCallbackConfigs(TaskDTO taskDTO) {
+        return grapDataCallbackService.getCallbackConfigs(taskDTO, EDataType.MAIN_STREAM);
+    }
+
+    /**
+     * 校验是否需要回调
+     *
+     * @param config
+     * @param directiveDTO
+     * @return
+     */
+    private boolean needCallback(AppCallbackConfigDTO config, DirectiveDTO directiveDTO) {
+        if (config == null) {
+            return false;
+        }
+
+        String directive = directiveDTO.getDirective();
+
+        logger.debug("Check task notify config! - taskId: {}, directive: {}, callback-config: {}", directiveDTO.getTaskId(), directive, config);
+
+        // 当前任务成功，但成功不通知
+        if (EDirective.isTaskSuccess(directive) && SystemUtils.isNotTrue(config.getIsNotifySuccess())) {
+            return false;
+        }
+        // 当前任务失败，但失败不通知
+        else if (EDirective.isTaskFailure(directive) && SystemUtils.isNotTrue(config.getIsNotifyFailure())) {
+            return false;
+        }
+        // 当前任务取消，但取消不通知
+        else if (EDirective.isTaskCancel(directive) && SystemUtils.isNotTrue(config.getIsNotifyCancel())) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 初始化回调参数
      *
      * @param dataMap
@@ -393,8 +405,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @param config
      * @return
      */
-    private boolean doCallBack(Map<String, Object> dataMap, AppLicenseDTO appLicense, AppCallbackConfigDTO config,
-        DirectiveDTO directiveDTO) throws Exception {
+    private boolean doCallBack(Map<String, Object> dataMap, AppLicenseDTO appLicense, AppCallbackConfigDTO config, DirectiveDTO directiveDTO) throws Exception {
         // 1.备份数据
         Map<String, Object> originalDataMap = Maps.newHashMap(dataMap);
 
@@ -464,17 +475,5 @@ public abstract class CallbackableDirectiveProcessor {
         } catch (Exception e) {
             logger.info("handle result failed : directiveDTO={},   result={}", JSON.toJSONString(directiveDTO), result, e);
         }
-    }
-
-    /**
-     * null 值判断
-     *
-     * @param value
-     * @param defaultValue
-     * @param <T>
-     * @return
-     */
-    protected <T> T ifNull(T value, T defaultValue) {
-        return value == null ? defaultValue : value;
     }
 }

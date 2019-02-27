@@ -57,11 +57,8 @@ public abstract class AbstractDirectiveProcessor extends CallbackableDirectivePr
         }
         // 3.任务是否是已经完成
         Byte taskStatus = taskDTO.getStatus();
-        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus)
-                || ETaskStatus.SUCCESS.getStatus().equals(taskStatus)
-                || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
-            logger.info("handle directive error : the task id={} is completed: directive={}", taskId,
-                JSON.toJSONString(directiveDTO));
+        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus) || ETaskStatus.SUCCESS.getStatus().equals(taskStatus) || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
+            logger.info("handle directive error : the task id={} is completed: directive={}", taskId, JSON.toJSONString(directiveDTO));
             return;
         }
         // 4.处理指令

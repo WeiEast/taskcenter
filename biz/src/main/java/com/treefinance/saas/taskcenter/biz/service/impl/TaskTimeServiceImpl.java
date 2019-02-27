@@ -1,17 +1,14 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
@@ -57,6 +54,15 @@ public class TaskTimeServiceImpl implements TaskTimeService {
 
     @Autowired
     private TaskRepository taskRepository;
+    /**
+     * 本地任务缓存
+     */
+    private final LoadingCache<Long, Task> cache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).maximumSize(20000).build(new CacheLoader<Long, Task>() {
+        @Override
+        public Task load(Long taskId) throws Exception {
+            return taskRepository.getTaskById(taskId);
+        }
+    });
     @Autowired
     private AppBizTypeService appBizTypeService;
     @Autowired
@@ -67,16 +73,6 @@ public class TaskTimeServiceImpl implements TaskTimeService {
     private TaskAttributeService taskAttributeService;
     @Autowired
     private ThreadPoolTaskExecutor threadPoolExecutor;
-
-    /**
-     * 本地任务缓存
-     */
-    private final LoadingCache<Long, Task> cache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).maximumSize(20000).build(new CacheLoader<Long, Task>() {
-        @Override
-        public Task load(Long taskId) throws Exception {
-            return taskRepository.getTaskById(taskId);
-        }
-    });
 
     @Override
     public void updateLoginTime(Long taskId, Date date) {
@@ -108,7 +104,6 @@ public class TaskTimeServiceImpl implements TaskTimeService {
         }
     }
 
-
     @Override
     public Integer getCrawlerTimeoutSeconds(Long taskId) {
         Task task = null;
@@ -127,7 +122,6 @@ public class TaskTimeServiceImpl implements TaskTimeService {
         }
         return bizType.getTimeout();
     }
-
 
     @Override
     public void handleTaskTimeout(Long taskId) {

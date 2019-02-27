@@ -13,8 +13,8 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -12,7 +12,7 @@ public class TaskCallbackLogPageRequest extends PageRequest {
 
     /**
      * 编号列表
-     * */
+     */
     List<Long> taskIdList;
 
     public List<Long> getTaskIdList() {

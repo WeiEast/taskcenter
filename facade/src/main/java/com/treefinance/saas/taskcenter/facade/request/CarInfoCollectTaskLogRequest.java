@@ -15,7 +15,6 @@ public class CarInfoCollectTaskLogRequest implements Serializable {
     private Date occurTime;
     private String errorMsg;
 
-
     public CarInfoCollectTaskLogRequest() {
 
     }

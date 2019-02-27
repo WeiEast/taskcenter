@@ -7,23 +7,17 @@ import java.util.List;
  * @author:guoguoyun
  * @date:Created in 2018/9/18上午11:47
  */
-public class TaskAttributeRequest extends BaseRequest{
-
+public class TaskAttributeRequest extends BaseRequest {
 
     private Long id;
 
-
     private List<Long> taskIds;
-
 
     private String name;
 
-
     private String value;
 
-
     private Date createTime;
-
 
     private Date lastUpdateTime;
 
@@ -77,13 +71,7 @@ public class TaskAttributeRequest extends BaseRequest{
 
     @Override
     public String toString() {
-        return "TaskAttributeRequest{" +
-                "id=" + id +
-                ", taskIds=" + taskIds +
-                ", name='" + name + '\'' +
-                ", value='" + value + '\'' +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        return "TaskAttributeRequest{" + "id=" + id + ", taskIds=" + taskIds + ", name='" + name + '\'' + ", value='" + value + '\'' + ", createTime=" + createTime
+            + ", lastUpdateTime=" + lastUpdateTime + '}';
     }
 }

@@ -3,8 +3,8 @@ package com.treefinance.saas.taskcenter.facade.impl;
 import com.google.common.collect.Lists;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
-import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
+import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.facade.request.TaskCallbackLogPageRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskCallbackLogRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskCallbackLogRO;
@@ -28,7 +28,6 @@ import java.util.List;
 @Component("taskCallbackLogFacade")
 public class TaskCallbackLogFacadeImpl extends AbstractFacade implements TaskCallbackLogFacade {
     private static final Logger logger = LoggerFactory.getLogger(TaskBuryPointLogFacade.class);
-
 
     @Autowired
     private TaskCallbackLogService taskCallbackLogService;
@@ -62,7 +61,6 @@ public class TaskCallbackLogFacadeImpl extends AbstractFacade implements TaskCal
 
         return TaskResult.wrapSuccessfulResult(attributeROList);
     }
-
 
     @Override
     public TaskResult<List<TaskCallbackLogRO>> queryTaskCallbackLog(List<Long> taskIdList) {

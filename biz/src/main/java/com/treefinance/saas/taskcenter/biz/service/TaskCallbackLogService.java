@@ -13,9 +13,9 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
+import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -32,8 +32,7 @@ public interface TaskCallbackLogService {
 
     long countTaskCallbackLogsInTaskIds(@Nonnull List<Long> taskIds);
 
-    List<TaskCallbackLog> listTaskCallbackLogsInTaskIdsWithRowBounds(@Nonnull List<Long> taskIds, int offset,
-        int limit);
+    List<TaskCallbackLog> listTaskCallbackLogsInTaskIdsWithRowBounds(@Nonnull List<Long> taskIds, int offset, int limit);
 
     List<TaskCallbackLog> queryTaskCallbackLogsByTaskIdAndInConfigIds(@Nonnull Long taskId, @Nullable List<Long> configIds);
 

@@ -6,9 +6,9 @@ import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.Moxie
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
+import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +36,6 @@ public class MoxieLoginFailDirectiveProcessor extends MoxieAbstractDirectiveProc
 
         // 1.记录登录日志
         taskLogService.insertTaskLog(taskDTO.getId(), ETaskStep.LOGIN_FAIL.getText(), new Date(), JSON.toJSONString(map));
-
 
     }
 }

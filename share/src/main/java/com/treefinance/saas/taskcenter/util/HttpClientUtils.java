@@ -1,17 +1,14 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package com.treefinance.saas.taskcenter.util;
@@ -67,20 +64,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * httpclient 调用工具类
- * Created by yh-treefinance on 2017/5/17.
+ * httpclient 调用工具类 Created by yh-treefinance on 2017/5/17.
  */
 public class HttpClientUtils {
     // 日志
     private static final Logger logger = LoggerFactory.getLogger(HttpClientUtils.class);
-    // 连接池
-    private static PoolingHttpClientConnectionManager connMgr;
     // 超时时间
     private static final int MAX_TIMEOUT = 3000;
+    // 连接池
+    private static PoolingHttpClientConnectionManager connMgr;
 
     static {
 
-        //采用绕过验证的方式处理https请求
+        // 采用绕过验证的方式处理https请求
         SSLContext sslcontext;
         try {
             sslcontext = createIgnoreVerifySSL();
@@ -88,10 +84,8 @@ public class HttpClientUtils {
             throw new RuntimeException(e);
         }
         // 设置协议http和https对应的处理socket链接工厂的对象
-        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", PlainConnectionSocketFactory.INSTANCE)
-                .register("https", new SSLConnectionSocketFactory(sslcontext))
-                .build();
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.INSTANCE)
+            .register("https", new SSLConnectionSocketFactory(sslcontext)).build();
 
         // 设置连接池
         connMgr = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
@@ -112,16 +106,10 @@ public class HttpClientUtils {
         // 实现一个X509TrustManager接口，用于绕过验证，不用修改里面的方法
         X509TrustManager trustManager = new X509TrustManager() {
             @Override
-            public void checkClientTrusted(
-                    java.security.cert.X509Certificate[] paramArrayOfX509Certificate,
-                    String paramString) throws CertificateException {
-            }
+            public void checkClientTrusted(java.security.cert.X509Certificate[] paramArrayOfX509Certificate, String paramString) throws CertificateException {}
 
             @Override
-            public void checkServerTrusted(
-                    java.security.cert.X509Certificate[] paramArrayOfX509Certificate,
-                    String paramString) throws CertificateException {
-            }
+            public void checkServerTrusted(java.security.cert.X509Certificate[] paramArrayOfX509Certificate, String paramString) throws CertificateException {}
 
             @Override
             public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -129,7 +117,7 @@ public class HttpClientUtils {
             }
         };
 
-        sc.init(null, new TrustManager[]{trustManager}, null);
+        sc.init(null, new TrustManager[] {trustManager}, null);
         return sc;
     }
 
@@ -139,13 +127,8 @@ public class HttpClientUtils {
      * @return
      */
     private static RequestConfig getDefaultConfig() {
-        return RequestConfig.custom()
-                .setCookieSpec(CookieSpecs.BEST_MATCH)
-                .setExpectContinueEnabled(true)
-                .setStaleConnectionCheckEnabled(true)
-                .setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.NTLM, AuthSchemes.DIGEST))
-                .setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC))
-                .build();
+        return RequestConfig.custom().setCookieSpec(CookieSpecs.BEST_MATCH).setExpectContinueEnabled(true).setStaleConnectionCheckEnabled(true)
+            .setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.NTLM, AuthSchemes.DIGEST)).setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC)).build();
     }
 
     /**
@@ -155,11 +138,7 @@ public class HttpClientUtils {
      */
     private static RequestConfig getBaseConfig() {
         RequestConfig defaultRequestConfig = getDefaultConfig();
-        return RequestConfig.copy(defaultRequestConfig)
-                .setSocketTimeout(MAX_TIMEOUT)
-                .setConnectTimeout(MAX_TIMEOUT)
-                .setConnectionRequestTimeout(MAX_TIMEOUT)
-                .build();
+        return RequestConfig.copy(defaultRequestConfig).setSocketTimeout(MAX_TIMEOUT).setConnectTimeout(MAX_TIMEOUT).setConnectionRequestTimeout(MAX_TIMEOUT).build();
     }
 
     /**
@@ -170,11 +149,7 @@ public class HttpClientUtils {
      */
     private static RequestConfig getConfigWithTimeOut(int timeOut) {
         RequestConfig defaultRequestConfig = getDefaultConfig();
-        return RequestConfig.copy(defaultRequestConfig)
-                .setSocketTimeout(timeOut)
-                .setConnectTimeout(timeOut)
-                .setConnectionRequestTimeout(timeOut)
-                .build();
+        return RequestConfig.copy(defaultRequestConfig).setSocketTimeout(timeOut).setConnectTimeout(timeOut).setConnectionRequestTimeout(timeOut).build();
     }
 
     /**
@@ -252,8 +227,8 @@ public class HttpClientUtils {
             throw new RequestFailedException(apiUrl, statusCode, result, e);
         } finally {
             if (logger.isInfoEnabled()) {
-                logger.info(" doGet completed: url={}, params={}, statusCode={} , result={} , cost {} ms ",
-                        url, JSON.toJSONString(params), statusCode, result, (System.currentTimeMillis() - start));
+                logger.info(" doGet completed: url={}, params={}, statusCode={} , result={} , cost {} ms ", url, JSON.toJSONString(params), statusCode, result,
+                    (System.currentTimeMillis() - start));
             }
             closeResponse(response);
         }
@@ -295,14 +270,13 @@ public class HttpClientUtils {
             throw new RequestFailedException(apiUrl, statusCode, result, e);
         } finally {
             if (logger.isInfoEnabled()) {
-                logger.info(" doGet completed: url={}, params={}, statusCode={} , result={} , cost {} ms ",
-                        url, JSON.toJSONString(params), statusCode, result, (System.currentTimeMillis() - start));
+                logger.info(" doGet completed: url={}, params={}, statusCode={} , result={} , cost {} ms ", url, JSON.toJSONString(params), statusCode, result,
+                    (System.currentTimeMillis() - start));
             }
             closeResponse(response);
         }
         return result;
     }
-
 
     /**
      * 发送 GET 请求（HTTP），K-V形式
@@ -336,13 +310,12 @@ public class HttpClientUtils {
                 throw new RequestFailedException(url, statusCode, result);
             }
         } catch (IOException e) {
-            logger.error("doGet exception:url={}, params={}, statusCode={} , result={}",
-                    apiUrl, JSON.toJSONString(params), statusCode, result, e);
+            logger.error("doGet exception:url={}, params={}, statusCode={} , result={}", apiUrl, JSON.toJSONString(params), statusCode, result, e);
             throw new RequestFailedException(url, statusCode, result, e);
         } finally {
             if (logger.isInfoEnabled()) {
-                logger.info(" doGet completed: url={}, params={}, statusCode={} , result={} , cost {} ms ",
-                        apiUrl, JSON.toJSONString(params), statusCode, result, (System.currentTimeMillis() - start));
+                logger.info(" doGet completed: url={}, params={}, statusCode={} , result={} , cost {} ms ", apiUrl, JSON.toJSONString(params), statusCode, result,
+                    (System.currentTimeMillis() - start));
             }
             closeResponse(response);
         }
@@ -363,9 +336,9 @@ public class HttpClientUtils {
      * 发送 POST 请求（HTTP）
      *
      * @param url
-     * @param timeOut    秒
+     * @param timeOut 秒
      * @param retryTimes 重试次数
-     * @param params     参数
+     * @param params 参数
      * @return
      */
     public static String doPostWithTimeoutAndRetryTimes(String url, Byte timeOut, Byte retryTimes, Map<String, Object> params) {
@@ -401,13 +374,13 @@ public class HttpClientUtils {
             }
             return result;
         } catch (IOException e) {
-            logger.error("doPostWithTimeoutAndRetryTimes exception: url={},timeout={}s,retryTimes={},params={},statusCode={},result={}",
-                    url, timeOut, retryTimes, JSON.toJSONString(params), statusCode, result, e);
+            logger.error("doPostWithTimeoutAndRetryTimes exception: url={},timeout={}s,retryTimes={},params={},statusCode={},result={}", url, timeOut, retryTimes,
+                JSON.toJSONString(params), statusCode, result, e);
             throw new RequestFailedException(url, statusCode, result, e);
         } finally {
             if (logger.isInfoEnabled()) {
-                logger.info(" doPostWithTimeoutAndRetryTimes completed: url={},timeout={}s,retryTimes={},params={},statusCode={},result={},cost {} ms ",
-                        url, timeOut, retryTimes, JSON.toJSONString(params), statusCode, result, (System.currentTimeMillis() - start));
+                logger.info(" doPostWithTimeoutAndRetryTimes completed: url={},timeout={}s,retryTimes={},params={},statusCode={},result={},cost {} ms ", url, timeOut, retryTimes,
+                    JSON.toJSONString(params), statusCode, result, (System.currentTimeMillis() - start));
             }
             closeResponse(response);
         }
@@ -432,8 +405,7 @@ public class HttpClientUtils {
             httpPost.setConfig(getBaseConfig());
             List<NameValuePair> pairList = new ArrayList<>(params.size());
             for (Map.Entry<String, Object> entry : params.entrySet()) {
-                NameValuePair pair = new BasicNameValuePair(entry.getKey(), entry
-                        .getValue().toString());
+                NameValuePair pair = new BasicNameValuePair(entry.getKey(), entry.getValue().toString());
                 pairList.add(pair);
             }
             httpPost.setEntity(new UrlEncodedFormEntity(pairList, Charset.forName("UTF-8")));
@@ -451,8 +423,8 @@ public class HttpClientUtils {
             throw new RequestFailedException(url, statusCode, result, e);
         } finally {
             if (logger.isInfoEnabled()) {
-                logger.info(" doPost completed: url={}, params={}, statusCode={} ,result={}, cost {} ms ",
-                        url, JSON.toJSONString(params), statusCode, result, (System.currentTimeMillis() - start));
+                logger.info(" doPost completed: url={}, params={}, statusCode={} ,result={}, cost {} ms ", url, JSON.toJSONString(params), statusCode, result,
+                    (System.currentTimeMillis() - start));
             }
             closeResponse(response);
         }
@@ -502,8 +474,8 @@ public class HttpClientUtils {
             throw new RequestFailedException(url, statusCode, result, e);
         } finally {
             if (logger.isInfoEnabled()) {
-                logger.info(" doPost completed: url={}, params={}, statusCode={} ,result={}, cost {} ms ",
-                        url, JSON.toJSONString(params), statusCode, result, (System.currentTimeMillis() - start));
+                logger.info(" doPost completed: url={}, params={}, statusCode={} ,result={}, cost {} ms ", url, JSON.toJSONString(params), statusCode, result,
+                    (System.currentTimeMillis() - start));
             }
             closeResponse(response);
         }
@@ -527,7 +499,7 @@ public class HttpClientUtils {
         int statusCode = 0;
         try {
             httpPost.setConfig(getBaseConfig());
-            //解决中文乱码问题
+            // 解决中文乱码问题
             StringEntity stringEntity = new StringEntity(json.toString(), "UTF-8");
             stringEntity.setContentEncoding("UTF-8");
             stringEntity.setContentType("application/json");
@@ -546,8 +518,8 @@ public class HttpClientUtils {
             throw new RequestFailedException(url, statusCode, httpStr, e);
         } finally {
             if (logger.isInfoEnabled()) {
-                logger.info(" doPost completed: url={}, json={}, statusCode={} ,result={}, cost {} ms ",
-                        url, JSON.toJSONString(json), statusCode, httpStr, (System.currentTimeMillis() - start));
+                logger.info(" doPost completed: url={}, json={}, statusCode={} ,result={}, cost {} ms ", url, JSON.toJSONString(json), statusCode, httpStr,
+                    (System.currentTimeMillis() - start));
             }
             closeResponse(response);
         }

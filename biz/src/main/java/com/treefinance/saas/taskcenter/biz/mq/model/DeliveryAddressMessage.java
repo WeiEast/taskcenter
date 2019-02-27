@@ -3,8 +3,7 @@ package com.treefinance.saas.taskcenter.biz.mq.model;
 import java.io.Serializable;
 
 /**
- * 收货地址消息
- * Created by yh-treefinance on 2017/9/28.
+ * 收货地址消息 Created by yh-treefinance on 2017/9/28.
  */
 public class DeliveryAddressMessage implements Serializable {
     /**

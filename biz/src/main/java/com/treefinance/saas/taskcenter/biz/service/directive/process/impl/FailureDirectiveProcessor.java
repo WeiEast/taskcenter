@@ -1,24 +1,23 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
-import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 /**
- * 任务失败回调
- * Created by yh-treefinance on 2017/7/10.
+ * 任务失败回调 Created by yh-treefinance on 2017/7/10.
  */
 @Component
 public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
@@ -62,8 +61,8 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
         try {
             if (EBizType.OPERATOR.getCode().equals(taskDTO.getBizType())) {
                 Map<String, Object> remarkMap = JSON.parseObject(directiveDTO.getRemark());
-                //如果是运营商维护导致任务失败,爬数发来的任务指令中,directiveDTO的remark字段为{"errorMsg","当前运营商正在维护中，请稍后重试"}.
-                //如果是其他原因导致的任务失败,则返回下面的默认值.
+                // 如果是运营商维护导致任务失败,爬数发来的任务指令中,directiveDTO的remark字段为{"errorMsg","当前运营商正在维护中，请稍后重试"}.
+                // 如果是其他原因导致的任务失败,则返回下面的默认值.
                 remarkMap.putIfAbsent("errorMsg", Constants.OPERATOR_TASK_FAIL_MSG);
                 directiveDTO.setRemark(JSON.toJSONString(remarkMap));
                 logger.info("handle task-fail-msg: result={},directiveDTO={}", JSON.toJSONString(directiveDTO));

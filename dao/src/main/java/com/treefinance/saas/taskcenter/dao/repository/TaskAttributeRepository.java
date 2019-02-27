@@ -13,8 +13,8 @@
 
 package com.treefinance.saas.taskcenter.dao.repository;
 
-import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

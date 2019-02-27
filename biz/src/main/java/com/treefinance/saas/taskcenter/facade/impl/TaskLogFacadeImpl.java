@@ -26,7 +26,6 @@ public class TaskLogFacadeImpl extends AbstractFacade implements TaskLogFacade {
     @Autowired
     private TaskLogService taskLogService;
 
-
     @Override
     public TaskResult<List<TaskLogRO>> queryTaskLog(TaskLogRequest request) {
         logger.info("查询任务日志信息，传入的请求参数为{}", request);
@@ -49,7 +48,6 @@ public class TaskLogFacadeImpl extends AbstractFacade implements TaskLogFacade {
         return TaskResult.wrapSuccessfulResult(attributeROList);
 
     }
-
 
     @Override
     public TaskResult<List<TaskLogRO>> queryTaskLogById(TaskLogRequest taskLogRequest) {

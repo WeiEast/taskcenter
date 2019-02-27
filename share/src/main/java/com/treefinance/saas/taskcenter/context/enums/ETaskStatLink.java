@@ -6,23 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Good Luck Bro , No Bug !
- * 需要实时统计的任务环节
+ * Good Luck Bro , No Bug ! 需要实时统计的任务环节
  *
  * @author haojiahong
  * @date 2018/6/19
  */
 public enum ETaskStatLink {
 
-    TASK_CREATE("任务创建", "taskCreate", "任务创建", "task_log"),
-    LOGIN_SUCCESS("登陆成功", "loginSuccess", "登陆成功", "task_log"),
-    CRAWL_SUCCESS("抓取成功", "crawlSuccess", "抓取成功", "task_log"),
-    DATA_SAVE_SUCCESS("数据保存成功", "dataSaveSuccess", "洗数成功", "task_log"),
-    CALLBACK_SUCCESS("回调通知成功", "callbackSuccess", "回调通知成功", "task_log"),
+    TASK_CREATE("任务创建", "taskCreate", "任务创建", "task_log"), LOGIN_SUCCESS("登陆成功", "loginSuccess", "登陆成功", "task_log"), CRAWL_SUCCESS("抓取成功", "crawlSuccess", "抓取成功", "task_log"),
+    DATA_SAVE_SUCCESS("数据保存成功", "dataSaveSuccess", "洗数成功", "task_log"), CALLBACK_SUCCESS("回调通知成功", "callbackSuccess", "回调通知成功", "task_log"),
     TASK_SUCCESS("任务成功", "taskSuccess", "任务成功", "task_log"),
 
     NO_DATA("无数据", "noData", "无数据", "self-define");
-
 
     private String stepCode;
     private String statCode;
@@ -71,7 +66,6 @@ public enum ETaskStatLink {
         return result;
     }
 
-
     public static ETaskStatLink getItemByStepCode(String code) {
         if (StringUtils.isBlank(code)) {
             return null;
@@ -83,7 +77,6 @@ public enum ETaskStatLink {
         }
         return null;
     }
-
 
     public static List<String> getStepCodeListBySource(String source) {
         if (StringUtils.isBlank(source)) {

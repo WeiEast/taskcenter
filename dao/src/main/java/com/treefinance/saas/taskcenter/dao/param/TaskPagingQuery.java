@@ -29,8 +29,7 @@ public class TaskPagingQuery extends TaskQuery {
     private int offset = -1;
     private int limit = -1;
 
-    public TaskPagingQuery() {
-    }
+    public TaskPagingQuery() {}
 
     public TaskPagingQuery(int offset, int limit) {
         this.offset = offset;

@@ -22,10 +22,8 @@ import java.util.List;
 public class TaskBuryPointLogFacadeImpl extends AbstractFacade implements TaskBuryPointLogFacade {
     private static final Logger logger = LoggerFactory.getLogger(TaskBuryPointLogFacade.class);
 
-
     @Autowired
     private TaskBuryPointLogService taskBuryPointLogService;
-
 
     @Override
     public TaskResult<List<TaskBuryPointLogRO>> queryTaskBuryPointLog(TaskBuryPointLogRequest request) {

@@ -15,8 +15,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * 成功指令处理
- * Created by yh-treefinance on 2017/7/6.
+ * 成功指令处理 Created by yh-treefinance on 2017/7/6.
  */
 @Component
 public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
@@ -41,8 +40,8 @@ public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
         // 5.触发回调: 0-无需回调，1-回调成功，-1-回调失败
         int result = callback(dataMap, appLicense, directiveDTO);
         if (result == 0) {
-            //任务成功但是不需要回调(前端回调),仍需记录回调日志,获取dataUrl提供数据下载以及回调统计
-            taskCallbackLogService.insert(null, taskId, (byte) 2, JSON.toJSONString(dataMap), null, 0, 0);
+            // 任务成功但是不需要回调(前端回调),仍需记录回调日志,获取dataUrl提供数据下载以及回调统计
+            taskCallbackLogService.insert(null, taskId, (byte)2, JSON.toJSONString(dataMap), null, 0, 0);
             taskLogService.insertTaskLog(taskId, "回调通知成功", new Date(), null);
 
             taskDTO.setStatus(ETaskStatus.SUCCESS.getStatus());

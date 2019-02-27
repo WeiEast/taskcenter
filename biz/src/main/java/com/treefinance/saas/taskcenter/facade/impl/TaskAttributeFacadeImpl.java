@@ -3,8 +3,8 @@ package com.treefinance.saas.taskcenter.facade.impl;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
-import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
+import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
@@ -46,7 +46,6 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
 
         return TaskResult.wrapSuccessfulResult(attributeROList);
     }
-
 
     @Override
     public TaskResult<List<TaskAttributeRO>> queryTaskAttributeByTaskId(TaskAttributeRequest request) {

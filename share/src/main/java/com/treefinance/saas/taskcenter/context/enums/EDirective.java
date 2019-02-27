@@ -48,22 +48,6 @@ public enum EDirective {
         this.text = text;
     }
 
-    public Byte getCode() {
-        return code;
-    }
-
-    public void setCode(Byte code) {
-        this.code = code;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
     public static Byte getCode(String text) {
         if (StringUtils.isNotEmpty(text)) {
             for (EDirective item : EDirective.values()) {
@@ -96,5 +80,21 @@ public enum EDirective {
 
     public static boolean isTaskCancel(String directive) {
         return EDirective.TASK_CANCEL.getText().equals(directive);
+    }
+
+    public Byte getCode() {
+        return code;
+    }
+
+    public void setCode(Byte code) {
+        this.code = code;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 }

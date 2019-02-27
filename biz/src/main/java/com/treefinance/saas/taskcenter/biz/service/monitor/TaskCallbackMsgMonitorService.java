@@ -52,7 +52,7 @@ public class TaskCallbackMsgMonitorService {
         message.setWebSite(taskDTO.getWebSite());
         message.setUniqueId(taskDTO.getUniqueId());
         message.setSaasEnv(String.valueOf(taskDTO.getSaasEnv()));
-        //有回调
+        // 有回调
         if (isCallback) {
             Map<String, Object> attributeMap = Maps.newHashMap();
             attributeMap.put("callbackHttpCode", httpCode);
@@ -77,7 +77,6 @@ public class TaskCallbackMsgMonitorService {
             }
             message.setAttributes(attributeMap);
         }
-
 
         taskCallbackMsgMonitorPlugin.sendMessage(message);
         logger.info("send task callbackMsg message to saas-monitor, message={}", JSON.toJSONString(message));

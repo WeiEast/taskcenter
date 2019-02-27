@@ -8,8 +8,7 @@ import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import org.springframework.stereotype.Component;
 
 /**
- * 取消任务执行
- * Created by yh-treefinance on 2017/7/10.
+ * 取消任务执行 Created by yh-treefinance on 2017/7/10.
  */
 @Component
 public class MoxieCancelDirectiveProcessor extends MoxieAbstractDirectiveProcessor {

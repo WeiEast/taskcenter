@@ -19,7 +19,6 @@ public class MonitorPluginService {
     @Autowired
     private TaskMonitorPlugin taskMonitorPlugin;
 
-
     /**
      * 发送任务监控消息
      *

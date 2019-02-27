@@ -15,22 +15,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class MoxieDirectiveServiceImpl implements MoxieDirectiveService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    //登录成功处理
+    // 登录成功处理
     @Autowired
     private MoxieLoginSuccessDirectiveProcessor moxieLoginSuccessDirectiveProcessor;
-    //登录失败处理
+    // 登录失败处理
     @Autowired
     private MoxieLoginFailDirectiveProcessor moxieLoginFailDirectiveProcessor;
-    //任务成功处理
+    // 任务成功处理
     @Autowired
     private MoxieSuccessDirectiveProcessor moxieSuccessDirectiveProcessor;
-    //任务失败处理
+    // 任务失败处理
     @Autowired
     private MoxieFailureDirectiveProcessor moxieFailureDirectiveProcessor;
     // 任务取消处理

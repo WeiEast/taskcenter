@@ -50,14 +50,10 @@ public class DirectiveMessageListener implements BizMqMessageListener {
             directiveService.process(directiveDTO);
         } catch (Throwable cause) {
             if (msg.getReconsumeTimes() > 0) {
-                logger.error(
-                        String.format("丢弃该消息,因为重试一次之后, 消费指令数据消息仍然出错.body=%s",
-                                message),
-                        cause);
+                logger.error(String.format("丢弃该消息,因为重试一次之后, 消费指令数据消息仍然出错.body=%s", message), cause);
                 return CONSUME_SUCCESS;
             } else {
-                logger.error(String.format("消费指令数据的消息时出错,即将再重试一次body=%s",
-                        message), cause);
+                logger.error(String.format("消费指令数据的消息时出错,即将再重试一次body=%s", message), cause);
                 return ConsumeConcurrentlyStatus.RECONSUME_LATER;
             }
         }

@@ -2,9 +2,9 @@ package com.treefinance.saas.taskcenter.facade.aop;
 
 import com.alibaba.fastjson.JSONArray;
 import com.google.common.base.Stopwatch;
+import com.treefinance.saas.taskcenter.exception.BadServiceException;
 import com.treefinance.saas.taskcenter.exception.BusinessCheckFailException;
 import com.treefinance.saas.taskcenter.exception.BusinessProcessFailException;
-import com.treefinance.saas.taskcenter.exception.BadServiceException;
 import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
@@ -78,7 +78,7 @@ public class DubboServiceInterceptor {
     @SuppressWarnings("rawtypes")
     private Object exceptionProcessor(ProceedingJoinPoint jpj, Exception e) {
         Object[] args = jpj.getArgs();
-        MethodSignature signature = (MethodSignature) jpj.getSignature();
+        MethodSignature signature = (MethodSignature)jpj.getSignature();
         Method method = signature.getMethod();
         String methodName = method.getDeclaringClass().getName() + "." + method.getName();
         LOGGER.error("dubbo服务[method=" + methodName + "] params=" + JSONArray.toJSONString(args) + "异常：", e);
@@ -89,9 +89,9 @@ public class DubboServiceInterceptor {
             result.setSuccess(false);
             result.setMessage(e.getMessage());
             if (e instanceof BusinessCheckFailException) {
-                result.setCode(((BusinessCheckFailException) e).getErrorCode());
+                result.setCode(((BusinessCheckFailException)e).getErrorCode());
             } else if (e instanceof BusinessProcessFailException) {
-                result.setCode(((BusinessProcessFailException) e).getErrorCode());
+                result.setCode(((BusinessProcessFailException)e).getErrorCode());
             } else {
                 result.setCode("-100");
                 result.setMessage("系统内部错误");
@@ -102,9 +102,9 @@ public class DubboServiceInterceptor {
             result.setSuccess(false);
             result.setMessage(e.getMessage());
             if (e instanceof BusinessCheckFailException) {
-                result.setCode(((BusinessCheckFailException) e).getErrorCode());
+                result.setCode(((BusinessCheckFailException)e).getErrorCode());
             } else if (e instanceof BusinessProcessFailException) {
-                result.setCode(((BusinessProcessFailException) e).getErrorCode());
+                result.setCode(((BusinessProcessFailException)e).getErrorCode());
             } else {
                 result.setCode("-100");
                 result.setMessage("系统内部错误");

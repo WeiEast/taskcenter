@@ -35,8 +35,7 @@ public interface TaskLogRepository {
 
     List<TaskLog> queryTaskLogsByTaskIdAndInMsgs(@Nonnull Long taskId, @Nullable List<String> msgs);
 
-    List<TaskLog> queryTaskLogs(Long id, List<Long> taskIds, String msg, String stepCode, String errorMsg,
-        Date occurTime, String order);
+    List<TaskLog> queryTaskLogs(Long id, List<Long> taskIds, String msg, String stepCode, String errorMsg, Date occurTime, String order);
 
     /**
      * 添加一条日志记录

@@ -202,7 +202,6 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
         return TaskPagingResult.wrapSuccessfulResult(taskROList, (int)count);
     }
 
-
     @Override
     public TaskResult<List<TaskRO>> queryTaskList(TaskRequest request) {
         TaskPagingQuery query = new TaskPagingQuery();

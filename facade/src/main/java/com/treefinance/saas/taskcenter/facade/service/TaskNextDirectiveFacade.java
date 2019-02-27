@@ -27,5 +27,4 @@ public interface TaskNextDirectiveFacade {
 
     TaskResult<Void> deleteNextDirective(Long taskId, String directive);
 
-
 }

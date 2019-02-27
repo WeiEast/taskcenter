@@ -19,7 +19,6 @@ public class TaskDeviceFacadeImpl extends AbstractFacade implements TaskDeviceFa
     @Autowired
     private TaskDeviceRepository taskDeviceRepository;
 
-
     @Override
     public TaskResult<Void> insertSelective(TaskDeviceRequest request) {
         TaskDevice taskDevice = convert(request, TaskDevice.class);

@@ -7,8 +7,7 @@ import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import org.springframework.stereotype.Component;
 
 /**
- * 基础指令处理
- * Created by yh-treefinance on 2017/7/6.
+ * 基础指令处理 Created by yh-treefinance on 2017/7/6.
  */
 @Component
 public class MoxieBaseDirectiveProcessor extends MoxieAbstractDirectiveProcessor {

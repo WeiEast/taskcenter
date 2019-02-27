@@ -13,8 +13,7 @@ import org.springframework.util.Assert;
 import java.util.Date;
 
 /**
- * 异步数据回调处理
- * Created by yh-treefinance on 2017/12/19.
+ * 异步数据回调处理 Created by yh-treefinance on 2017/12/19.
  */
 @Component
 public class AsyncGrapDataMessageListener extends AbstractRocketMqMessageListener {

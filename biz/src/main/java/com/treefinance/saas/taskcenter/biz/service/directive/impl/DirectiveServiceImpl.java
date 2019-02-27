@@ -13,15 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class DirectiveServiceImpl implements DirectiveService {
     // logger
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    //任务成功处理
+    // 任务成功处理
     @Autowired
     private SuccessDirectiveProcessor successDirectiveProcessor;
-    //任务失败处理
+    // 任务失败处理
     @Autowired
     private FailureDirectiveProcessor failureDirectiveProcessor;
     // 任务失败处理

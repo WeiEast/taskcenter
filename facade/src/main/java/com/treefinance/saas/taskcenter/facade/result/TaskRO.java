@@ -23,11 +23,9 @@ public class TaskRO extends BaseResult {
 
     private Byte bizType;
 
-
     private Byte status;
 
     private String stepCode;
-
 
     private Date createTime;
 
@@ -35,10 +33,10 @@ public class TaskRO extends BaseResult {
 
     private Byte saasEnv;
 
-    public TaskRO() {
-    }
+    public TaskRO() {}
 
-    public TaskRO(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime, Byte saasEnv) {
+    public TaskRO(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime,
+        Byte saasEnv) {
         this.id = id;
         this.uniqueId = uniqueId;
         this.appId = appId;
@@ -142,18 +140,8 @@ public class TaskRO extends BaseResult {
 
     @Override
     public String toString() {
-        return "TaskRequest{" +
-                "id=" + id +
-                ", uniqueId='" + uniqueId + '\'' +
-                ", appId='" + appId + '\'' +
-                ", accountNo='" + accountNo + '\'' +
-                ", webSite='" + webSite + '\'' +
-                ", bizType=" + bizType +
-                ", status=" + status +
-                ", stepCode='" + stepCode + '\'' +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                ", saasEnv=" + saasEnv +
-                '}';
+        return "TaskRequest{" + "id=" + id + ", uniqueId='" + uniqueId + '\'' + ", appId='" + appId + '\'' + ", accountNo='" + accountNo + '\'' + ", webSite='" + webSite + '\''
+            + ", bizType=" + bizType + ", status=" + status + ", stepCode='" + stepCode + '\'' + ", createTime=" + createTime + ", lastUpdateTime=" + lastUpdateTime + ", saasEnv="
+            + saasEnv + '}';
     }
 }

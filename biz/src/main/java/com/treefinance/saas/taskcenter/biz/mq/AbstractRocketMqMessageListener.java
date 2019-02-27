@@ -13,8 +13,7 @@ import java.util.List;
 import static com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 
 /**
- * 抽象消息监听
- * Created by yh-treefinance on 2017/12/19.
+ * 抽象消息监听 Created by yh-treefinance on 2017/12/19.
  */
 public abstract class AbstractRocketMqMessageListener extends AbstractService implements BizMqMessageListener {
     /**
@@ -37,8 +36,7 @@ public abstract class AbstractRocketMqMessageListener extends AbstractService im
             logger.error("消费指令数据的消息时出错,即将再重试一次body=%s", message, cause);
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         } finally {
-            logger.info("消费MQ消息,耗时{}ms: topic={},tag={},msgId={},body={}", (System.currentTimeMillis() - start),
-                    msg.getTopic(), msg.getTags(), msg.getMsgId(), message);
+            logger.info("消费MQ消息,耗时{}ms: topic={},tag={},msgId={},body={}", (System.currentTimeMillis() - start), msg.getTopic(), msg.getTags(), msg.getMsgId(), message);
         }
         return CONSUME_SUCCESS;
     }
