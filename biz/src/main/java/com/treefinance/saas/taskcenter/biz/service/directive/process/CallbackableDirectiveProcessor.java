@@ -157,17 +157,17 @@ public abstract class CallbackableDirectiveProcessor {
             monitorService.sendTaskCallbackMsgMonitorMessage(taskId, null, null, false);
             return 0;
         }
+        TaskPointRequest taskPointRequest = new TaskPointRequest();
+        taskPointRequest.setTaskId(taskId);
+        taskPointRequest.setType((byte)1);
+        taskPointRequest.setCode("900401");
+        taskPointRequest.setIp(NetUtils.getLocalHost());
+        taskPointService.addTaskPoint(taskPointRequest);
         // 6.执行回调，支持一个任务回调多方
         List<Boolean> callbackFlags = Lists.newArrayList();
         for (AppCallbackConfigDTO config : configList) {
-            Boolean callbackSuccess = Boolean.TRUE;
+            Boolean callbackSuccess;
             try {
-                TaskPointRequest taskPointRequest = new TaskPointRequest();
-                taskPointRequest.setTaskId(taskId);
-                taskPointRequest.setType((byte)1);
-                taskPointRequest.setCode("900401");
-                taskPointRequest.setIp(NetUtils.getLocalHost());
-                taskPointService.addTaskPoint(taskPointRequest);
                 // 执行回调
                 callbackSuccess = doCallBack(dataMap, appLicense, config, directiveDTO);
             } catch (Exception e) {
@@ -186,6 +186,12 @@ public abstract class CallbackableDirectiveProcessor {
         if (callbackFlags.contains(Boolean.FALSE)) {
             return -1;
         }
+        taskPointRequest = new TaskPointRequest();
+        taskPointRequest.setTaskId(taskId);
+        taskPointRequest.setType((byte)1);
+        taskPointRequest.setCode("900402");
+        taskPointRequest.setIp(NetUtils.getLocalHost());
+        taskPointService.addTaskPoint(taskPointRequest);
         dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
         dataMap.put("taskErrorMsg", "");
         taskLogService.insertTaskLog(taskId, "回调通知成功", new Date(), null);

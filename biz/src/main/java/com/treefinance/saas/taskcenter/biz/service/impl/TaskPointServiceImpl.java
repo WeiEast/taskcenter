@@ -5,12 +5,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
 import com.treefinance.saas.taskcenter.context.config.DiamondConfig;
-import com.treefinance.saas.taskcenter.context.enums.CodeStepEnum;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskPoint;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskPointMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
+import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.slf4j.Logger;
@@ -27,6 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+
+import static com.treefinance.saas.taskcenter.context.enums.CodeStepEnum.createSystemTaskPointCode;
+import static com.treefinance.saas.taskcenter.context.enums.CodeStepEnum.getMsg;
+import static com.treefinance.saas.taskcenter.context.enums.CodeStepEnum.getStep;
+import static com.treefinance.saas.taskcenter.context.enums.CodeStepEnum.getSubStep;
 
 /**
  * @author 张琰佳
@@ -51,6 +56,8 @@ public class TaskPointServiceImpl implements TaskPointService {
     @Override
     public void addTaskPoint(TaskPointRequest taskPointRequest) {
         try {
+            Preconditions.notNull("request", taskPointRequest);
+            Preconditions.notBlank("request.code", taskPointRequest.getCode());
             TaskPoint taskPoint = new TaskPoint();
             BeanUtils.copyProperties(taskPointRequest, taskPoint);
             taskPoint.setOccurTime(new Date());
@@ -71,19 +78,11 @@ public class TaskPointServiceImpl implements TaskPointService {
             }
             int bizType = taskPoint.getBizType();
             if (taskPoint.getType() == 1) {
-                if (bizType == 1) {
-                    taskPoint.setCode("20" + taskPoint.getCode());
-                } else if (bizType == 2) {
-                    taskPoint.setCode("30" + taskPoint.getCode());
-                } else if (bizType == 3) {
-                    taskPoint.setCode("10" + taskPoint.getCode());
-                } else {
-                    taskPoint.setCode("00" + taskPoint.getCode());
-                }
+                taskPoint.setCode(createSystemTaskPointCode(bizType, taskPoint.getCode()));
             }
-            taskPoint.setStep(CodeStepEnum.getStep(taskPoint.getCode()));
-            taskPoint.setSubStep(CodeStepEnum.getSubStep(taskPoint.getCode()));
-            taskPoint.setMsg(CodeStepEnum.getMsg(taskPoint.getCode()));
+            taskPoint.setStep(getStep(taskPoint.getCode()));
+            taskPoint.setSubStep(getSubStep(taskPoint.getCode()));
+            taskPoint.setMsg(getMsg(taskPoint.getCode()));
             taskPoint.setId(uidService.getId());
             taskPoint.setAppId(appId);
             int i = taskPointMapper.insertSelective(taskPoint);
