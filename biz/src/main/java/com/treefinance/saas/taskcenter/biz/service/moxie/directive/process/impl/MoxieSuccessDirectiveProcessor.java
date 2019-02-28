@@ -4,9 +4,9 @@ import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.MoxieAbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class MoxieSuccessDirectiveProcessor extends MoxieAbstractDirectiveProces
         String appId = taskDTO.getAppId();
 
         // 获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
         // 生成数据map
         Map<String, Object> dataMap = generateDataMap(directiveDTO);
         // 回调之前预处理

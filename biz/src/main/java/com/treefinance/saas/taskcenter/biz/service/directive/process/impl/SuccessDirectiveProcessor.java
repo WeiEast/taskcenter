@@ -5,9 +5,9 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDir
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +31,7 @@ public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
         taskLogService.insertTaskLog(taskId, "爬数任务执行完成", new Date(), null);
 
         // 2.获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
         // 3.生成数据map
         Map<String, Object> dataMap = generateDataMap(directiveDTO);
         // 4.回调之前预处理

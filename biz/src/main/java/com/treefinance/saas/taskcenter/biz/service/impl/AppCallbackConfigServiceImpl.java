@@ -30,7 +30,7 @@ import com.treefinance.saas.merchant.facade.result.grapsever.AppCallbackResult;
 import com.treefinance.saas.merchant.facade.service.AppCallBackBizFacade;
 import com.treefinance.saas.merchant.facade.service.AppCallbackConfigFacade;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.context.component.AbstractService;
+import com.treefinance.saas.taskcenter.biz.service.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.dto.AppCallbackBizDTO;
 import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;

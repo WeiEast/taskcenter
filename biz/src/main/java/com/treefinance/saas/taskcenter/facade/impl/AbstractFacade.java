@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.service;
+package com.treefinance.saas.taskcenter.facade.impl;
+
+import com.treefinance.b2b.saas.context.adapter.AbstractDomainObjectAdapter;
 
 /**
  * @author Jerry
- * @date 2019-02-27 19:59
+ * @date 2018/12/5 22:37
  */
-public interface AccountNoService {
+public abstract class AbstractFacade extends AbstractDomainObjectAdapter {
 
-    /**
-     * save account_no if it's absent in task record.
-     * 
-     * @param taskId 任务ID
-     */
-    void saveAccountNoIfAbsent(Long taskId);
 }

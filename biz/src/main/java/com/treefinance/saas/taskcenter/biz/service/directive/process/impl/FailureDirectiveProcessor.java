@@ -6,10 +6,10 @@ import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,7 +40,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
         monitorService.sendMonitorMessage(taskDTO.getId());
 
         // 4.获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
         // 5.成数据map
         Map<String, Object> dataMap = generateDataMap(directiveDTO);
         // 6.回调之前预处理

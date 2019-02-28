@@ -14,7 +14,6 @@
 package com.treefinance.saas.taskcenter.dao.repository.impl;
 
 import com.treefinance.saas.taskcenter.context.BizObjectValidator;
-import com.treefinance.saas.taskcenter.context.component.AbstractRepository;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCriteria;

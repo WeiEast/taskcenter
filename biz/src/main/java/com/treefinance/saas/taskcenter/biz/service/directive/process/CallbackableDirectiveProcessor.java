@@ -7,7 +7,6 @@ import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
 import com.treefinance.saas.taskcenter.biz.service.CallbackResultService;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
@@ -23,13 +22,14 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
-import com.treefinance.saas.taskcenter.dto.CallBackLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
+import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackLicense;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
@@ -40,6 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Nonnull;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -58,7 +60,7 @@ public abstract class CallbackableDirectiveProcessor {
     @Autowired
     protected AppCallbackConfigService appCallbackConfigService;
     @Autowired
-    protected AppLicenseService appLicenseService;
+    protected LicenseManager licenseManager;
     @Autowired
     protected TaskCallbackLogService taskCallbackLogService;
     @Autowired
@@ -79,7 +81,7 @@ public abstract class CallbackableDirectiveProcessor {
      *
      * @param directiveDTO
      */
-    protected boolean precallback(Map<String, Object> dataMap, AppLicenseDTO appLicense, DirectiveDTO directiveDTO) {
+    protected boolean precallback(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveDTO directiveDTO) {
         // 使用商户密钥加密数据，返回给前端
         Map<String, Object> paramMap = Maps.newHashMap();
         String remark = directiveDTO.getRemark();
@@ -117,7 +119,7 @@ public abstract class CallbackableDirectiveProcessor {
         TaskDTO taskDTO = directiveDTO.getTask();
         String appId = taskDTO.getAppId();
         // 1.获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
         // 2.成数据map
         Map<String, Object> dataMap = generateDataMap(directiveDTO);
         // 3.回调
@@ -132,7 +134,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @param directiveDTO
      * @return 0-无需回调，1-回调成功，-1-回调失败
      */
-    protected int callback(Map<String, Object> dataMap, AppLicenseDTO appLicense, DirectiveDTO directiveDTO) {
+    protected int callback(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveDTO directiveDTO) {
         TaskDTO taskDTO = directiveDTO.getTask();
         Long taskId = directiveDTO.getTaskId();
 
@@ -227,7 +229,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @return
      * @throws Exception
      */
-    protected void initDataMap(Map<String, Object> dataMap, AppLicenseDTO appLicense, AppCallbackConfigDTO config, DirectiveDTO directiveDTO) throws Exception {
+    protected void initDataMap(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, AppCallbackConfigDTO config, DirectiveDTO directiveDTO) throws Exception {
         // 如果是数据传输，则需先下载数据
         Byte notifyModel = config.getNotifyModel();
         if (SystemUtils.isDataNotifyModel(notifyModel)) {
@@ -278,12 +280,9 @@ public abstract class CallbackableDirectiveProcessor {
     }
 
     /**
-     * null 值判断
+     * null值判断,
      *
-     * @param value
-     * @param defaultValue
-     * @param <T>
-     * @return
+     * @return <code>defaultValue</code> if given <code>value</code> was null.
      */
     protected <T> T ifNull(T value, T defaultValue) {
         return value == null ? defaultValue : value;
@@ -296,7 +295,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @param appLicense
      * @param directiveDTO
      */
-    private void flushData(Map<String, Object> dataMap, AppLicenseDTO appLicense, DirectiveDTO directiveDTO) {
+    private void flushData(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveDTO directiveDTO) {
         this.precallback(dataMap, appLicense, directiveDTO);
     }
 
@@ -349,7 +348,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @return
      * @throws Exception
      */
-    private String encryptParams(Map<String, Object> dataMap, AppLicenseDTO appLicense, AppCallbackConfigDTO config) throws Exception {
+    private String encryptParams(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, AppCallbackConfigDTO config) throws Exception {
         byte version = config.getVersion();
         if (version > 0) {
             // 默认使用AES方式
@@ -357,7 +356,7 @@ public abstract class CallbackableDirectiveProcessor {
             Byte isNewKey = config.getIsNewKey();
             String aesDataKey;
             if (SystemUtils.isTrue(isNewKey)) {
-                CallBackLicenseDTO callbackLicense = appLicenseService.getCallbackLicense(config.getId());
+                CallbackLicense callbackLicense = licenseManager.getCallbackLicenseByCallbackId(config.getId());
                 aesDataKey = callbackLicense.getDataSecretKey();
             } else {
                 aesDataKey = appLicense.getDataSecretKey();
@@ -389,7 +388,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @throws CallbackEncryptException
      * @throws UnsupportedEncodingException
      */
-    private String encryptByRSA(Map<String, Object> dataMap, AppLicenseDTO appLicense) throws CallbackEncryptException, UnsupportedEncodingException {
+    private String encryptByRSA(Map<String, Object> dataMap, @Nonnull AppLicense appLicense) throws CallbackEncryptException, UnsupportedEncodingException {
         String rsaPublicKey = appLicense.getServerPublicKey();
         // 兼容老版本，使用RSA
         String params = CallbackDataUtils.encryptByRSA(dataMap, rsaPublicKey);
@@ -405,7 +404,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @param config
      * @return
      */
-    private boolean doCallBack(Map<String, Object> dataMap, AppLicenseDTO appLicense, AppCallbackConfigDTO config, DirectiveDTO directiveDTO) throws Exception {
+    private boolean doCallBack(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, AppCallbackConfigDTO config, DirectiveDTO directiveDTO) throws Exception {
         // 1.备份数据
         Map<String, Object> originalDataMap = Maps.newHashMap(dataMap);
 

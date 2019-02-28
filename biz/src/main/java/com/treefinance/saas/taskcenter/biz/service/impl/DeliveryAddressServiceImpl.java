@@ -19,17 +19,17 @@ import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.taskcenter.biz.mq.model.DeliveryAddressMessage;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
 import com.treefinance.saas.taskcenter.biz.service.DeliveryAddressService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
+import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.apache.commons.collections.MapUtils;
@@ -62,7 +62,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Autowired
     private AppCallbackConfigService appCallbackConfigService;
     @Autowired
-    private AppLicenseService appLicenseService;
+    private LicenseManager licenseManager;
 
     @Override
     public void callback(DeliveryAddressMessage message) {
@@ -80,11 +80,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         }
         String appId = taskDTO.getAppId();
         // 3.获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
-        if (appLicense == null) {
-            logger.info("delivery address callback failed : taskId={} appLicense of {} is null, message={}...", taskId, appId, JSON.toJSONString(message));
-            return;
-        }
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
 
         List<AppCallbackConfigDTO> callbackConfigs = getCallbackConfigs(taskDTO);
         if (CollectionUtils.isEmpty(callbackConfigs)) {

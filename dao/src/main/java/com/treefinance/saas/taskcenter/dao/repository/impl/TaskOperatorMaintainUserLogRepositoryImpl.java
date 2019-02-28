@@ -13,7 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository.impl;
 
-import com.treefinance.saas.taskcenter.context.component.AbstractRepository;
 import com.treefinance.saas.taskcenter.dao.entity.TaskOperatorMaintainUserLog;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskOperatorMaintainUserLogMapper;
 import com.treefinance.saas.taskcenter.dao.repository.TaskOperatorMaintainUserLogRepository;

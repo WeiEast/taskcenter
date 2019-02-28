@@ -1,7 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.moxie.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
@@ -28,8 +27,6 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
     protected TaskNextDirectiveService taskNextDirectiveService;
     @Autowired
     protected TaskAttributeService taskAttributeService;
-    @Autowired
-    protected AppLicenseService appLicenseService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -83,11 +80,6 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
             taskNextDirectiveService.insertAndCacheNextDirective(taskId, directiveDTO);
             logger.info("handle moxie directive completed  cost {} ms : directive={}", System.currentTimeMillis() - start, JSON.toJSONString(directiveDTO));
         }
-    }
-
-    @Override
-    protected <T> T ifNull(T value, T defaultValue) {
-        return value == null ? defaultValue : value;
     }
 
     /**

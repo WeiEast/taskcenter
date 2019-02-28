@@ -11,14 +11,24 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.context.component;
+package com.treefinance.saas.taskcenter.interation.manager.domain;
 
-import com.treefinance.b2b.saas.context.adapter.AbstractDomainObjectAdapter;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.io.Serializable;
 
 /**
  * @author Jerry
- * @date 2018/12/5 22:37
+ * @date 2019-02-28 13:15
  */
-public abstract class AbstractFacade extends AbstractDomainObjectAdapter {
+@Getter
+@Setter
+@ToString
+public class CallbackLicense implements Serializable {
 
+    private Integer callBackConfigId;
+
+    private String dataSecretKey;
 }

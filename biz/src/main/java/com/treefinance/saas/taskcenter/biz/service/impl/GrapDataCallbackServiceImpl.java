@@ -18,7 +18,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.DataUtils;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
@@ -26,10 +25,11 @@ import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
 import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
+import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +63,7 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
     @Autowired
     private AppCallbackConfigService appCallbackConfigService;
     @Autowired
-    private AppLicenseService appLicenseService;
+    private LicenseManager licenseManager;
 
     /**
      * 异步爬取数据处理
@@ -86,11 +86,7 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
         }
         String appId = taskDTO.getAppId();
         // 3.获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
-        if (appLicense == null) {
-            logger.info("{} callback failed : taskId={} appLicense of {} is null, message={}...", dataType.name(), taskId, appId, JSON.toJSONString(asycGrapDTO));
-            return;
-        }
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
 
         List<AppCallbackConfigDTO> callbackConfigs = getCallbackConfigs(taskDTO, dataType);
         if (CollectionUtils.isEmpty(callbackConfigs)) {

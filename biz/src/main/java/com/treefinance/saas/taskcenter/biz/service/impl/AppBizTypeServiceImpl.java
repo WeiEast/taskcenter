@@ -23,7 +23,7 @@ import com.treefinance.saas.merchant.facade.result.console.AppBizTypeResult;
 import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
 import com.treefinance.saas.merchant.facade.service.AppBizTypeFacade;
 import com.treefinance.saas.taskcenter.biz.service.AppBizTypeService;
-import com.treefinance.saas.taskcenter.context.component.AbstractService;
+import com.treefinance.saas.taskcenter.biz.service.AbstractService;
 import com.treefinance.saas.taskcenter.dto.AppBizType;
 import com.treefinance.saas.taskcenter.exception.RpcServiceException;
 import org.slf4j.Logger;

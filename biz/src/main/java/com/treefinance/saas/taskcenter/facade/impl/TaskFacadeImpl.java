@@ -6,7 +6,6 @@ import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
 import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
 import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;

@@ -1,6 +1,5 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
-import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskDevice;
 import com.treefinance.saas.taskcenter.dao.repository.TaskDeviceRepository;
 import com.treefinance.saas.taskcenter.facade.request.TaskDeviceRequest;

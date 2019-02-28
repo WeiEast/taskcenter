@@ -13,7 +13,6 @@
 
 package com.treefinance.saas.taskcenter.dao.repository.impl;
 
-import com.treefinance.saas.taskcenter.context.component.AbstractRepository;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLogCriteria;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskCallbackLogMapper;

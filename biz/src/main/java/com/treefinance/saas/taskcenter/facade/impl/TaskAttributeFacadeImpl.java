@@ -2,7 +2,6 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
