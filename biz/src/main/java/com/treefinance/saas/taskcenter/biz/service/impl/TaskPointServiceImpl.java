@@ -87,9 +87,9 @@ public class TaskPointServiceImpl implements TaskPointService {
             taskPoint.setId(uidService.getId());
             taskPoint.setAppId(appId);
             int i = taskPointMapper.insertSelective(taskPoint);
-//            String appIds = diamondConfig.getGfdAppId();
-//            List<String> list = Arrays.asList(appIds.split(","));
-            if (i == 1) {
+            String appIds = diamondConfig.getGfdAppId();
+            List<String> list = Arrays.asList(appIds.split(","));
+            if (i == 1 && list.contains(appId)) {
                 if (bizType == 1 || bizType == 2 || bizType == 3) {
                     logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
                     Map<String, Object> map = new HashMap<>(9);
