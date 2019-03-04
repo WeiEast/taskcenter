@@ -45,6 +45,10 @@ public enum CodeStepEnum {
      */
     OPERATOR_SUCCESS_CONFIRM("10100401",Step.COMPLETE,"success_confirm","点击“导入成功”按钮"),
     /**
+     * 导入失败页
+     */
+    OPERATOR_FAILURE_RETRY("10100501",Step.FAILURE,"failure_retry","点击“重新导入”"),
+    /**
      * 系统操作
      */
     OPERATOR_LOGIN_START("10900101",Step.LOGIN,"start","运营商开始登录"),
@@ -90,6 +94,10 @@ public enum CodeStepEnum {
     EMAIL_COMPLETE_PAGE_EXIT("20100401", Step.COMPLETE, "page_exit", "退出邮箱导入成功页面。点击左上角“<\"按钮"),
     EMAIL_SUCCESS_CONFIRM("20100402", Step.COMPLETE, "success_confirm", "点击“导入成功”按钮"),
     /**
+     * 导入失败页
+     */
+    EMAIL_FAILURE_RETRY("20100501",Step.FAILURE,"failure_retry","点击“重新导入”"),
+    /**
      * 系统操作
      */
     EMAIL_LOGIN_START("20900101",Step.LOGIN,"start","邮箱开始登录"),
@@ -113,7 +121,9 @@ public enum CodeStepEnum {
     ECOMMERCE_PER_PAGE_EXIT("30100105",Step.PRE_LOGIN,"page_exit","退出当前页面。点击左上角“<\"按钮"),
 
     ECOMMERCE_THIRD_LOGIN_EXIT("30100201",Step.LOGIN,"third_login_exit","退出当前第三方登录页面。点击左上角“<\"按钮"),
-
+    /**
+     * 二维码登录页
+     */
     ECOMMERCE_TAOBAO_QRCODE_REFRESH("30100301",Step.LOGIN,"qrcode_refresh","点击重新获得二维码"),
     ECOMMERCE_ONE_KEY("30100302",Step.LOGIN,"onekey_click","点击手机淘宝一键认证"),
     ECOMMERCE_H5_AUTHORIZATION_OPEN("30100303",Step.LOGIN,"h5_authorization_open","H5点击查看个人信息查询授权书页面"),
@@ -121,16 +131,29 @@ public enum CodeStepEnum {
     ECOMMERCE_FAQ("30100305",Step.OTHER,"faq_open","查看FAQ"),
     ECOMMERCE_FEEDBACK("30100306",Step.OTHER,"feedback","意见反馈"),
     ECOMMERCE_LOGIN_CERT_CHECK_CONFIRM("30100307",Step.LOGIN,"cert_check_confirm","支付宝安全验证,点击安全验证对话框的“确定”按钮"),
-
+    /**
+     * 账号密码登录页
+     */
+    ECOMMERCE_TAOBAO_PAGE_LOADED("30100601", Step.LOGIN, "page_loaded", "淘宝授权登录页加载完成"),
+    ECOMMERCE_TAOBAO_USERNAME_INPUT("30100602", Step.LOGIN, "username_input", "点击账号输入框"),
+    ECOMMERCE_TAOBAO_PWD_INPUT("30100603", Step.LOGIN, "password_input", "点击密码输入框"),
+    ECOMMERCE_TAOBAO_SUBMIT("30100604", Step.LOGIN, "submit", "淘宝账号密码页点击登录按钮"),
+    /**
+     * 导入进度页
+     */
     ECOMMERCE_CRAWL_CERT_CHECK_CONFIRM("30100401",Step.CRAWL_DATA,"cert_check_confirm","支付宝安全验证,点击安全验证对话框的“确定”按钮"),
     ECOMMERCE_CRAWL_EXIT("30100402", Step.CRAWL_DATA, "page_exit", "退出当前页面。点击左上角“<\"按钮"),
     ECOMMERCE_CRAWL_EXIT_CONFIRM("30100403", Step.CRAWL_DATA, "exit_confirm", "中断电商导入并退出当前页。退出对话框中，点击“确定退出”按钮"),
     ECOMMERCE_CRAWL_QRCODE_NEXT("30100404", Step.CRAWL_DATA, "qrcode_next_click", "支付宝授权环节点击“已截图，下一步”按钮"),
-
+    /**
+     * 完成页
+     */
     ECOMMERCE_SUCCESS_CONFIRM("30100501",Step.COMPLETE,"success_confirm","点击“导入成功”按钮"),
     ECOMMERCE_COMPLETE_PAGE_EXIT("30100502",Step.COMPLETE,"page_exit","退出当前页面。点击左上角“<\"按钮"),
-
-    ECOMMERCE_TAOBAO_SUBMIT("30100601", Step.LOGIN, "submit", "淘宝账号密码页点击登录按钮"),
+    /**
+     * 导入失败页
+     */
+    ECOMMERCE_FAILURE_RETRY("30100701",Step.FAILURE,"failure_retry","点击“重新导入”"),
     /**
      * 系统操作
      */
@@ -256,6 +279,7 @@ public enum CodeStepEnum {
         private static final String CALLBACK = "callback";
 
         private static final String COMPLETE = "complete";
+        private static final String FAILURE = "failure";
         private static final String OTHER = "other";
     }
 }
