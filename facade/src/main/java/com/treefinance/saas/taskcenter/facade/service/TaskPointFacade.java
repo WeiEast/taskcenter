@@ -10,6 +10,7 @@ import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 public interface TaskPointFacade {
     /**
      * 记录埋点并通知功夫贷
+     * 
      * @param taskPointRequest taskPointRequest
      * @return
      */

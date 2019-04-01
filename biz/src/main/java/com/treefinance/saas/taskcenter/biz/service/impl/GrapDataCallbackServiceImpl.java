@@ -1,17 +1,14 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
@@ -21,18 +18,18 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.DataUtils;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
-import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.exception.RequestFailedException;
+import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +54,8 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
      * logger
      */
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
+    @Autowired
+    protected TaskCallbackLogService taskCallbackLogService;
     @Autowired
     private TaskService taskService;
     @Autowired
@@ -65,9 +63,7 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
     @Autowired
     private AppCallbackConfigService appCallbackConfigService;
     @Autowired
-    private AppLicenseService appLicenseService;
-    @Autowired
-    protected TaskCallbackLogService taskCallbackLogService;
+    private LicenseManager licenseManager;
 
     /**
      * 异步爬取数据处理
@@ -90,11 +86,7 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
         }
         String appId = taskDTO.getAppId();
         // 3.获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
-        if (appLicense == null) {
-            logger.info("{} callback failed : taskId={} appLicense of {} is null, message={}...", dataType.name(), taskId, appId, JSON.toJSONString(asycGrapDTO));
-            return;
-        }
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
 
         List<AppCallbackConfigDTO> callbackConfigs = getCallbackConfigs(taskDTO, dataType);
         if (CollectionUtils.isEmpty(callbackConfigs)) {

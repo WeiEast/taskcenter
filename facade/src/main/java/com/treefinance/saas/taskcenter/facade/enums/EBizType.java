@@ -26,27 +26,27 @@ public enum EBizType {
     /**
      * 邮箱
      */
-    EMAIL("EMAIL", (byte) 1),
+    EMAIL("EMAIL", (byte)1),
     /**
      * 邮箱h5
      */
-    EMAIL_H5("EMAIL_H5", (byte) 1),
+    EMAIL_H5("EMAIL_H5", (byte)1),
     /**
      * 电商
      */
-    ECOMMERCE("ECOMMERCE", (byte) 2),
+    ECOMMERCE("ECOMMERCE", (byte)2),
     /**
      * 运营商
      */
-    OPERATOR("OPERATOR", (byte) 3),
+    OPERATOR("OPERATOR", (byte)3),
     /**
      * 公积金
      */
-    FUND("FUND", (byte) 4),
+    FUND("FUND", (byte)4),
     /**
      * 学历
      */
-    DIPLOMA("DIPLOMA", (byte) 7),
+    DIPLOMA("DIPLOMA", (byte)7),
     /**
      * 汽车信息
      */
@@ -78,14 +78,6 @@ public enum EBizType {
     EBizType(String text, Byte code) {
         this.text = text;
         this.code = code;
-    }
-
-    public Byte getCode() {
-        return code;
-    }
-
-    public String getText() {
-        return text;
     }
 
     public static Byte getCode(String text) {
@@ -124,6 +116,14 @@ public enum EBizType {
             return Stream.of(EBizType.values()).filter(item -> item.getCode().equals(bizType)).findFirst().orElse(null);
         }
         return null;
+    }
+
+    public Byte getCode() {
+        return code;
+    }
+
+    public String getText() {
+        return text;
     }
 
 }

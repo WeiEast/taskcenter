@@ -1,7 +1,6 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
-import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.facade.request.TaskBuryPointLogRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskBuryPointLogRO;
@@ -22,10 +21,8 @@ import java.util.List;
 public class TaskBuryPointLogFacadeImpl extends AbstractFacade implements TaskBuryPointLogFacade {
     private static final Logger logger = LoggerFactory.getLogger(TaskBuryPointLogFacade.class);
 
-
     @Autowired
     private TaskBuryPointLogService taskBuryPointLogService;
-
 
     @Override
     public TaskResult<List<TaskBuryPointLogRO>> queryTaskBuryPointLog(TaskBuryPointLogRequest request) {

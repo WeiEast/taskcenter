@@ -18,16 +18,13 @@ import java.util.Date;
 @Component("taskAliveFacade")
 public class TaskAliveFacadeImpl implements TaskAliveFacade {
 
-
     private static final Logger logger = LoggerFactory.getLogger(TaskAliveFacade.class);
 
     @Autowired
     private TaskAliveService taskAliveService;
 
-
     /**
-     * 更新任务最近活跃时间
-     * 可能存在多个请求同时更新活跃时间,未获得锁的请求可过滤掉
+     * 更新任务最近活跃时间 可能存在多个请求同时更新活跃时间,未获得锁的请求可过滤掉
      *
      * @param taskId
      * @return

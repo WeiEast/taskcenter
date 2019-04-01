@@ -1,8 +1,7 @@
 package com.treefinance.saas.taskcenter.exception;
 
 /**
- * 运行时异常
- * Created by haojiahong on 2017/2/12.
+ * 运行时异常 Created by haojiahong on 2017/2/12.
  */
 
 public class BusinessProcessFailException extends RuntimeException {

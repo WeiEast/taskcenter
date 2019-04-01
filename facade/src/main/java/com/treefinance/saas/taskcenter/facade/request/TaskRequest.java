@@ -11,7 +11,7 @@ import java.util.List;
  * @date:Created in 2018/9/18上午11:13
  */
 @Deprecated
-public class TaskRequest extends PageRequest implements Serializable{
+public class TaskRequest extends PageRequest implements Serializable {
 
     private Long id;
 
@@ -51,11 +51,12 @@ public class TaskRequest extends PageRequest implements Serializable{
      */
     private String orderByClause;
 
-    public TaskRequest(){
+    public TaskRequest() {
 
     }
 
-    public TaskRequest(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime, Byte saasEnv) {
+    public TaskRequest(Long id, String uniqueId, String appId, String accountNo, String webSite, Byte bizType, Byte status, String stepCode, Date createTime, Date lastUpdateTime,
+        Byte saasEnv) {
         this.id = id;
         this.uniqueId = uniqueId;
         this.appId = appId;
@@ -215,25 +216,9 @@ public class TaskRequest extends PageRequest implements Serializable{
 
     @Override
     public String toString() {
-        return "TaskRequest{" +
-                "id=" + id +
-                ", uniqueId='" + uniqueId + '\'' +
-                ", appId='" + appId + '\'' +
-                ", accountNo='" + accountNo + '\'' +
-                ", webSite='" + webSite + '\'' +
-                ", bizType=" + bizType +
-                ", bizTypeList=" + bizTypeList +
-                ", status=" + status +
-                ", stepCode='" + stepCode + '\'' +
-                ", createTime=" + createTime +
-                ", createTimeStart=" + createTimeStart +
-                ", createTimeEnd=" + createTimeEnd +
-                ", lastUpdateTime=" + lastUpdateTime +
-                ", saasEnv=" + saasEnv +
-                ", orderByClause='" + orderByClause + '\'' +
-                ", appIdList=" + appIdList +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                '}';
+        return "TaskRequest{" + "id=" + id + ", uniqueId='" + uniqueId + '\'' + ", appId='" + appId + '\'' + ", accountNo='" + accountNo + '\'' + ", webSite='" + webSite + '\''
+            + ", bizType=" + bizType + ", bizTypeList=" + bizTypeList + ", status=" + status + ", stepCode='" + stepCode + '\'' + ", createTime=" + createTime
+            + ", createTimeStart=" + createTimeStart + ", createTimeEnd=" + createTimeEnd + ", lastUpdateTime=" + lastUpdateTime + ", saasEnv=" + saasEnv + ", orderByClause='"
+            + orderByClause + '\'' + ", appIdList=" + appIdList + ", startDate=" + startDate + ", endDate=" + endDate + '}';
     }
 }

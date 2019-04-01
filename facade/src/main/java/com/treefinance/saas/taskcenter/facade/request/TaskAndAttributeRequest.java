@@ -11,7 +11,7 @@ import java.util.List;
  * @date 18/9/19 20:27
  */
 @Deprecated
-public class TaskAndAttributeRequest extends PageRequest implements Serializable{
+public class TaskAndAttributeRequest extends PageRequest implements Serializable {
 
     private String appId;
 

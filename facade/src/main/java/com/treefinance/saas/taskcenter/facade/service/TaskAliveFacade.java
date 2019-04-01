@@ -10,7 +10,6 @@ import java.util.Date;
  */
 public interface TaskAliveFacade {
 
-
     /**
      * 更新任务最近活跃时间
      *
@@ -23,7 +22,7 @@ public interface TaskAliveFacade {
      * 更新任务最近活跃时间
      *
      * @param taskId 任务id
-     * @param date   时间
+     * @param date 时间
      * @return
      */
     TaskResult<Void> updateTaskActiveTime(Long taskId, Date date);

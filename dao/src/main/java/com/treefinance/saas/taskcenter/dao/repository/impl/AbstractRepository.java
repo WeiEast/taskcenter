@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.context.component;
+package com.treefinance.saas.taskcenter.dao.repository.impl;
 
 import com.treefinance.basicservice.security.crypto.facade.EncryptionIntensityEnum;
 import com.treefinance.basicservice.security.crypto.facade.ISecurityCryptoService;

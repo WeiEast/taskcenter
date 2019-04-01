@@ -1,6 +1,5 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
-import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskDevice;
 import com.treefinance.saas.taskcenter.dao.repository.TaskDeviceRepository;
 import com.treefinance.saas.taskcenter.facade.request.TaskDeviceRequest;
@@ -18,7 +17,6 @@ public class TaskDeviceFacadeImpl extends AbstractFacade implements TaskDeviceFa
 
     @Autowired
     private TaskDeviceRepository taskDeviceRepository;
-
 
     @Override
     public TaskResult<Void> insertSelective(TaskDeviceRequest request) {

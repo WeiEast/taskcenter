@@ -1,17 +1,14 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
@@ -33,13 +30,11 @@ import com.treefinance.saas.merchant.facade.result.grapsever.AppCallbackResult;
 import com.treefinance.saas.merchant.facade.service.AppCallBackBizFacade;
 import com.treefinance.saas.merchant.facade.service.AppCallbackConfigFacade;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
+import com.treefinance.saas.taskcenter.biz.service.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
-import com.treefinance.saas.taskcenter.context.component.AbstractService;
 import com.treefinance.saas.taskcenter.dto.AppCallbackBizDTO;
 import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,15 +51,32 @@ import java.util.stream.Collectors;
  * Created by luoyihua on 2017/5/11.
  */
 @Service
-public class AppCallbackConfigServiceImpl extends AbstractService implements AppCallbackConfigService,
-    InitializingBean, VariableMessageHandler {
+public class AppCallbackConfigServiceImpl extends AbstractService implements AppCallbackConfigService, InitializingBean, VariableMessageHandler {
 
     @Autowired
     private AppCallbackConfigFacade appCallbackConfigFacade;
 
     @Autowired
     private AppCallBackBizFacade appCallBackBizFacade;
-
+    /**
+     * 本地缓存<callbackId,callbackType>
+     */
+    private final LoadingCache<Integer, List<AppCallbackBizDTO>> callbackTypeCache =
+        CacheBuilder.newBuilder().refreshAfterWrite(5, TimeUnit.MINUTES).expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<Integer, List<AppCallbackBizDTO>>() {
+            @Override
+            public List<AppCallbackBizDTO> load(Integer callbackId) throws Exception {
+                GetAppCallBackBizByCallbackIdRequest getAppCallBackBizByCallbackIdRequest = new GetAppCallBackBizByCallbackIdRequest();
+                getAppCallBackBizByCallbackIdRequest.setCallbackId(callbackId);
+                MerchantResult<List<AppCallbackBizResult>> listMerchantResult = appCallBackBizFacade.queryAppCallBackByCallbackId(getAppCallBackBizByCallbackIdRequest);
+                List<AppCallbackBizDTO> list = convert(listMerchantResult.getData(), AppCallbackBizDTO.class);
+                if (!listMerchantResult.isSuccess()) {
+                    logger.info("load local cache of callback-types  false: error message={}", listMerchantResult.getRetMsg());
+                    list = Lists.newArrayList();
+                }
+                logger.info("load local cache of callback-types : callbackId={}, callbackType={}", callbackId, JSON.toJSONString(list));
+                return list;
+            }
+        });
     /**
      * 本地缓存<appId,callbackConfig>
      */
@@ -84,26 +96,6 @@ public class AppCallbackConfigServiceImpl extends AbstractService implements App
                 logger.info("load local cache of callback-configs : appid={}, license={}", appid, JSON.toJSONString(list));
                 // 刷新类型
                 list.forEach(appCallbackConfig -> callbackTypeCache.refresh(appCallbackConfig.getId()));
-                return list;
-            }
-        });
-
-    /**
-     * 本地缓存<callbackId,callbackType>
-     */
-    private final LoadingCache<Integer, List<AppCallbackBizDTO>> callbackTypeCache =
-        CacheBuilder.newBuilder().refreshAfterWrite(5, TimeUnit.MINUTES).expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<Integer, List<AppCallbackBizDTO>>() {
-            @Override
-            public List<AppCallbackBizDTO> load(Integer callbackId) throws Exception {
-                GetAppCallBackBizByCallbackIdRequest getAppCallBackBizByCallbackIdRequest = new GetAppCallBackBizByCallbackIdRequest();
-                getAppCallBackBizByCallbackIdRequest.setCallbackId(callbackId);
-                MerchantResult<List<AppCallbackBizResult>> listMerchantResult = appCallBackBizFacade.queryAppCallBackByCallbackId(getAppCallBackBizByCallbackIdRequest);
-                List<AppCallbackBizDTO> list = convert(listMerchantResult.getData(), AppCallbackBizDTO.class);
-                if (!listMerchantResult.isSuccess()) {
-                    logger.info("load local cache of callback-types  false: error message={}", listMerchantResult.getRetMsg());
-                    list = Lists.newArrayList();
-                }
-                logger.info("load local cache of callback-types : callbackId={}, callbackType={}", callbackId, JSON.toJSONString(list));
                 return list;
             }
         });

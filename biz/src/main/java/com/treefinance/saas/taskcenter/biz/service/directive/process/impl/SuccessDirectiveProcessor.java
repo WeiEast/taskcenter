@@ -5,9 +5,9 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDir
 import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,8 +15,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * 成功指令处理
- * Created by yh-treefinance on 2017/7/6.
+ * 成功指令处理 Created by yh-treefinance on 2017/7/6.
  */
 @Component
 public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
@@ -32,7 +31,7 @@ public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
         taskLogService.insertTaskLog(taskId, "爬数任务执行完成", new Date(), null);
 
         // 2.获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
         // 3.生成数据map
         Map<String, Object> dataMap = generateDataMap(directiveDTO);
         // 4.回调之前预处理
@@ -41,8 +40,8 @@ public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
         // 5.触发回调: 0-无需回调，1-回调成功，-1-回调失败
         int result = callback(dataMap, appLicense, directiveDTO);
         if (result == 0) {
-            //任务成功但是不需要回调(前端回调),仍需记录回调日志,获取dataUrl提供数据下载以及回调统计
-            taskCallbackLogService.insert(null, taskId, (byte) 2, JSON.toJSONString(dataMap), null, 0, 0);
+            // 任务成功但是不需要回调(前端回调),仍需记录回调日志,获取dataUrl提供数据下载以及回调统计
+            taskCallbackLogService.insert(null, taskId, (byte)2, JSON.toJSONString(dataMap), null, 0, 0);
             taskLogService.insertTaskLog(taskId, "回调通知成功", new Date(), null);
 
             taskDTO.setStatus(ETaskStatus.SUCCESS.getStatus());

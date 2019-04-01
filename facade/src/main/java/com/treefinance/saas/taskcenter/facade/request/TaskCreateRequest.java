@@ -18,7 +18,6 @@ public class TaskCreateRequest extends BaseRequest {
     private String source;
     private String extra;
 
-
     public String getAppId() {
         return appId;
     }

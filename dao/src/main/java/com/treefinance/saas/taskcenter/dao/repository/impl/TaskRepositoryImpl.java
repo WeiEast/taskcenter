@@ -1,23 +1,19 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package com.treefinance.saas.taskcenter.dao.repository.impl;
 
 import com.treefinance.saas.taskcenter.context.BizObjectValidator;
-import com.treefinance.saas.taskcenter.context.component.AbstractRepository;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCriteria;
@@ -66,11 +62,6 @@ public class TaskRepositoryImpl extends AbstractRepository implements TaskReposi
         return task;
     }
 
-    private void decryptFields(Task task) {
-        String accountNo = task.getAccountNo();
-        task.setAccountNo(decryptNormal(accountNo));
-    }
-
     @Override
     public List<Long> listTaskIdsByAppIdAndBizTypeAndUniqueId(@Nonnull String appId, @Nonnull Byte bizType, @Nonnull String uniqueId) {
         TaskCriteria taskCriteria = new TaskCriteria();
@@ -92,14 +83,6 @@ public class TaskRepositoryImpl extends AbstractRepository implements TaskReposi
         List<Task> tasks = taskMapper.selectByExample(criteria);
 
         return postHandle(tasks);
-    }
-
-    private List<Task> postHandle(List<Task> tasks) {
-        if (CollectionUtils.isNotEmpty(tasks)) {
-            tasks.forEach(this::decryptFields);
-        }
-
-        return tasks;
     }
 
     @Override
@@ -174,10 +157,6 @@ public class TaskRepositoryImpl extends AbstractRepository implements TaskReposi
         return taskMapper.updateByExampleSelective(task, taskCriteria);
     }
 
-    private void addWithEncryption(Task task, String accountNo) {
-        task.setAccountNo(encryptNormal(accountNo));
-    }
-
     @Override
     public void updateAccountNoById(@Nonnull Long taskId, @Nonnull String accountNo) {
         Task task = new Task();
@@ -225,6 +204,49 @@ public class TaskRepositoryImpl extends AbstractRepository implements TaskReposi
         TaskCriteria taskCriteria = createPagingQueryCriteria(query);
 
         return taskMapper.countByExample(taskCriteria);
+    }
+
+    @Override
+    public List<Task> queryTasks(@Nonnull TaskQuery query) {
+        TaskCriteria taskCriteria = createQueryCriteria(query);
+
+        if (query instanceof TaskPagingQuery) {
+            int limit = ((TaskPagingQuery)query).getLimit();
+            if (limit > 0) {
+                taskCriteria.setLimit(limit);
+
+                int offset = Math.max(((TaskPagingQuery)query).getOffset(), 0);
+                taskCriteria.setOffset(offset);
+
+                return postHandle(taskMapper.selectPaginationByExample(taskCriteria));
+            }
+        }
+
+        return postHandle(taskMapper.selectByExample(taskCriteria));
+    }
+
+    @Override
+    public long countTasks(@Nonnull TaskQuery query) {
+        TaskCriteria taskCriteria = createQueryCriteria(query);
+
+        return taskMapper.countByExample(taskCriteria);
+    }
+
+    private void decryptFields(Task task) {
+        String accountNo = task.getAccountNo();
+        task.setAccountNo(decryptNormal(accountNo));
+    }
+
+    private List<Task> postHandle(List<Task> tasks) {
+        if (CollectionUtils.isNotEmpty(tasks)) {
+            tasks.forEach(this::decryptFields);
+        }
+
+        return tasks;
+    }
+
+    private void addWithEncryption(Task task, String accountNo) {
+        task.setAccountNo(encryptNormal(accountNo));
     }
 
     private TaskCriteria createPagingQueryCriteria(@Nonnull TaskQuery query) {
@@ -299,32 +321,6 @@ public class TaskRepositoryImpl extends AbstractRepository implements TaskReposi
             taskCriteria.setOrderByClause(order);
         }
         return taskCriteria;
-    }
-
-    @Override
-    public List<Task> queryTasks(@Nonnull TaskQuery query) {
-        TaskCriteria taskCriteria = createQueryCriteria(query);
-
-        if (query instanceof TaskPagingQuery) {
-            int limit = ((TaskPagingQuery)query).getLimit();
-            if (limit > 0) {
-                taskCriteria.setLimit(limit);
-
-                int offset = Math.max(((TaskPagingQuery)query).getOffset(), 0);
-                taskCriteria.setOffset(offset);
-
-                return postHandle(taskMapper.selectPaginationByExample(taskCriteria));
-            }
-        }
-
-        return postHandle(taskMapper.selectByExample(taskCriteria));
-    }
-
-    @Override
-    public long countTasks(@Nonnull TaskQuery query) {
-        TaskCriteria taskCriteria = createQueryCriteria(query);
-
-        return taskMapper.countByExample(taskCriteria);
     }
 
     private TaskCriteria createQueryCriteria(@Nonnull TaskQuery query) {

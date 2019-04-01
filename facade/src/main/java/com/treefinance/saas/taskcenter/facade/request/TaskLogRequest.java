@@ -7,29 +7,23 @@ import java.util.List;
  * @author:guoguoyun
  * @date:Created in 2018/9/18下午1:49
  */
-public class TaskLogRequest extends  BaseRequest{
+public class TaskLogRequest extends BaseRequest {
 
     private Long id;
-
 
     private Long taskId;
 
     private List<Long> taskIdList;
 
-
     private String stepCode;
 
-
     private String msg;
-
 
     private Date occurTime;
 
     private String errorMsg;
 
-
     private Date createTime;
-
 
     private Date lastUpdateTime;
 
@@ -107,6 +101,10 @@ public class TaskLogRequest extends  BaseRequest{
         return orderByClause;
     }
 
+    public void setOrderByClause(String orderByClause) {
+        orderByClause = orderByClause;
+    }
+
     public List<Long> getTaskIdList() {
         return taskIdList;
     }
@@ -115,22 +113,9 @@ public class TaskLogRequest extends  BaseRequest{
         this.taskIdList = taskIdList;
     }
 
-    public void setOrderByClause(String orderByClause) {
-        orderByClause = orderByClause;
-    }
-
     @Override
     public String toString() {
-        return "TaskLogRequest{" +
-                "id=" + id +
-                ", taskId=" + taskId +
-                ", stepCode='" + stepCode + '\'' +
-                ", msg='" + msg + '\'' +
-                ", occurTime=" + occurTime +
-                ", errorMsg='" + errorMsg + '\'' +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                ", orderByClause='" + orderByClause + '\'' +
-                '}';
+        return "TaskLogRequest{" + "id=" + id + ", taskId=" + taskId + ", stepCode='" + stepCode + '\'' + ", msg='" + msg + '\'' + ", occurTime=" + occurTime + ", errorMsg='"
+            + errorMsg + '\'' + ", createTime=" + createTime + ", lastUpdateTime=" + lastUpdateTime + ", orderByClause='" + orderByClause + '\'' + '}';
     }
 }

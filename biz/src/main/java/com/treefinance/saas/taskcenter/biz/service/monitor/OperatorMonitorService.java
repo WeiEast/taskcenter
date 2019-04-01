@@ -9,9 +9,9 @@ import com.treefinance.saas.assistant.plugin.TaskOperatorMonitorPlugin;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.treefinance.saas.taskcenter.biz.service.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.context.component.AbstractService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
@@ -74,17 +74,17 @@ public class OperatorMonitorService extends AbstractService {
         if (taskLogMsgs.contains(ETaskStep.TASK_CREATE.getText())) {
             taskStepMap.put(1, new TaskStep(1, EProcessStep.CREATE.getCode(), EProcessStep.CREATE.getName()));
         }
-        //确认手机号
+        // 确认手机号
         List<TaskBuryPointLog> confirmMobileList = taskBuryPointLogService.queryTaskBuryPointLogByCode(taskId, "300502");
         if (CollectionUtils.isNotEmpty(confirmMobileList)) {
             taskStepMap.put(2, new TaskStep(2, EProcessStep.CONFIRM_MOBILE.getCode(), EProcessStep.CONFIRM_MOBILE.getName()));
         }
-        //开始登陆
+        // 开始登陆
         List<TaskBuryPointLog> startLoginList = taskBuryPointLogService.queryTaskBuryPointLogByCode(taskId, "300701");
         if (CollectionUtils.isNotEmpty(startLoginList)) {
             taskStepMap.put(3, new TaskStep(3, EProcessStep.CONFIRM_LOGIN.getCode(), EProcessStep.CONFIRM_LOGIN.getName()));
         }
-        //登录成功
+        // 登录成功
         if (taskLogMsgs.contains(ETaskStep.LOGIN_SUCCESS.getText())) {
             taskStepMap.put(4, new TaskStep(4, EProcessStep.LOGIN.getCode(), EProcessStep.LOGIN.getName()));
         }
@@ -100,7 +100,7 @@ public class OperatorMonitorService extends AbstractService {
         if (taskLogMsgs.contains(ETaskStep.CALLBACK_SUCCESS.getText())) {
             taskStepMap.put(7, new TaskStep(7, EProcessStep.CALLBACK.getCode(), EProcessStep.CALLBACK.getName()));
         }
-        //3.判断任务步骤是否正确或有遗漏
+        // 3.判断任务步骤是否正确或有遗漏
         for (int i = 1; i <= 7; i++) {
             if (!taskStepMap.keySet().contains(i)) {
                 break;

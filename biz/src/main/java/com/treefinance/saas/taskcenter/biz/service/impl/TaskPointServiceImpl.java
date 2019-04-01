@@ -13,6 +13,7 @@ import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
+import com.treefinance.toolkit.util.net.NetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -52,6 +53,21 @@ public class TaskPointServiceImpl implements TaskPointService {
     private DiamondConfig diamondConfig;
     @Autowired
     private UidService uidService;
+
+    @Override
+    public void addTaskPoint(Long taskId, String pointCode) {
+        addTaskPoint(taskId, pointCode, NetUtils.getLocalHost());
+    }
+
+    @Override
+    public void addTaskPoint(Long taskId, String pointCode, String ip) {
+        TaskPointRequest taskPointRequest = new TaskPointRequest();
+        taskPointRequest.setTaskId(taskId);
+        taskPointRequest.setType((byte)1);
+        taskPointRequest.setCode(pointCode);
+        taskPointRequest.setIp(ip);
+        addTaskPoint(taskPointRequest);
+    }
 
     @Override
     public void addTaskPoint(TaskPointRequest taskPointRequest) {
@@ -100,7 +116,7 @@ public class TaskPointServiceImpl implements TaskPointService {
                     map.put("subStep", taskPoint.getSubStep());
                     map.put("msg", taskPoint.getMsg());
                     map.put("ip", taskPoint.getIp());
-                    map.put("appId",appId);
+                    map.put("appId", appId);
                     DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
                     dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
                     map.put("occurTime", dateFormat.format(taskPoint.getOccurTime()));

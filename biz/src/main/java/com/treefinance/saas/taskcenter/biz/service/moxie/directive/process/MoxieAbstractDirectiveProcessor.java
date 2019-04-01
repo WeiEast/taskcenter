@@ -1,7 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.moxie.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
@@ -9,9 +8,9 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.Callbackabl
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
+import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +27,6 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
     protected TaskNextDirectiveService taskNextDirectiveService;
     @Autowired
     protected TaskAttributeService taskAttributeService;
-    @Autowired
-    protected AppLicenseService appLicenseService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -72,9 +69,7 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
         }
         // 3.任务是否是已经完成
         Byte taskStatus = taskDTO.getStatus();
-        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus)
-                || ETaskStatus.SUCCESS.getStatus().equals(taskStatus)
-                || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
+        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus) || ETaskStatus.SUCCESS.getStatus().equals(taskStatus) || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
             logger.info("handle moxie directive error : the task id={} is completed: directive={}", taskId, JSON.toJSONString(directiveDTO));
             return;
         }
@@ -87,13 +82,6 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
         }
     }
 
-
-    @Override
-    protected <T> T ifNull(T value, T defaultValue) {
-        return value == null ? defaultValue : value;
-    }
-
-
     /**
      * 处理指令
      *
@@ -101,6 +89,5 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
      * @param directiveDTO
      */
     protected abstract void doProcess(EMoxieDirective directive, MoxieDirectiveDTO directiveDTO);
-
 
 }

@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Configuration
 public class ScheduleConfig implements SchedulingConfigurer {
 
-
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.setScheduler(scheduleExecutor());
@@ -28,7 +27,7 @@ public class ScheduleConfig implements SchedulingConfigurer {
     @Bean
     public Executor scheduleExecutor() {
 
-        //线程池维护线程的最少数量
+        // 线程池维护线程的最少数量
         int corePoolSize = 10;
         return new ScheduledThreadPoolExecutor(corePoolSize, new GrapServerScheduleThreadFactory());
     }
@@ -40,16 +39,13 @@ public class ScheduleConfig implements SchedulingConfigurer {
 
         GrapServerScheduleThreadFactory() {
             SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() :
-                    Thread.currentThread().getThreadGroup();
+            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
             namePrefix = "grap-server-schedule-thread-pool-";
         }
 
         @Override
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r,
-                    namePrefix + threadNumber.getAndIncrement(),
-                    0);
+            Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
             if (t.isDaemon()) {
                 t.setDaemon(false);
             }
@@ -59,6 +55,5 @@ public class ScheduleConfig implements SchedulingConfigurer {
             return t;
         }
     }
-
 
 }

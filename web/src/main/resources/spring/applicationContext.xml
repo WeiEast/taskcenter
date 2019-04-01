@@ -3,9 +3,8 @@
   xsi:schemaLocation="http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-    <import resource="task-center-diamond.xml"/>
-    <import resource="task-center-dubbo-registry.xml"/>
-    <import resource="classpath*:spring/task-center-jedis.xml"/>
-    <import resource="classpath*:spring/task-center-datasource.xml"/>
+  <import resource="task-center-diamond.xml"/>
+  <import resource="task-center-dubbo-registry.xml"/>
+  <import resource="classpath*:spring/task-center-service.xml"/>
 
 </beans>

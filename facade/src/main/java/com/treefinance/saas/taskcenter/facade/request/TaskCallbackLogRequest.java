@@ -7,7 +7,7 @@ import java.util.List;
  * @author:guoguoyun
  * @date:Created in 2018/9/18下午2:04
  */
-public class TaskCallbackLogRequest extends BaseRequest{
+public class TaskCallbackLogRequest extends BaseRequest {
 
     private Long id;
 
@@ -29,18 +29,13 @@ public class TaskCallbackLogRequest extends BaseRequest{
 
     private Integer httpCode;
 
-
     private String callbackCode;
-
 
     private String callbackMsg;
 
-
     private Byte failureReason;
 
-
     private Date createTime;
-
 
     private Date lastUpdateTime;
 
@@ -166,22 +161,9 @@ public class TaskCallbackLogRequest extends BaseRequest{
 
     @Override
     public String toString() {
-        return "TaskCallbackLogRequest{" +
-                "id=" + id +
-                ", taskId=" + taskId +
-                ", taskIdList=" + taskIdList +
-                ", configId=" + configId +
-                ", type=" + type +
-                ", url='" + url + '\'' +
-                ", requestParam='" + requestParam + '\'' +
-                ", responseData='" + responseData + '\'' +
-                ", consumeTime=" + consumeTime +
-                ", httpCode=" + httpCode +
-                ", callbackCode='" + callbackCode + '\'' +
-                ", callbackMsg='" + callbackMsg + '\'' +
-                ", failureReason=" + failureReason +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                '}';
+        return "TaskCallbackLogRequest{" + "id=" + id + ", taskId=" + taskId + ", taskIdList=" + taskIdList + ", configId=" + configId + ", type=" + type + ", url='" + url + '\''
+            + ", requestParam='" + requestParam + '\'' + ", responseData='" + responseData + '\'' + ", consumeTime=" + consumeTime + ", httpCode=" + httpCode + ", callbackCode='"
+            + callbackCode + '\'' + ", callbackMsg='" + callbackMsg + '\'' + ", failureReason=" + failureReason + ", createTime=" + createTime + ", lastUpdateTime="
+            + lastUpdateTime + '}';
     }
 }

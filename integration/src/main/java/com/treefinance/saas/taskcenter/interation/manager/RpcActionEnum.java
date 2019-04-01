@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.context.component;
+package com.treefinance.saas.taskcenter.interation.manager;
 
 /**
  * RPC action list.
@@ -23,6 +23,14 @@ package com.treefinance.saas.taskcenter.context.component;
  * @date 2018/11/29 17:02
  */
 public enum RpcActionEnum {
+    /**
+     * 查询app的 license信息
+     */
+    QUERY_APP_LICENSE,
+    /**
+     * 查询回调用的license信息
+     */
+    QUERY_CALLBACK_LICENSE,
     /**
      * 查询全部app licenses
      */

@@ -13,10 +13,10 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
+import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieTaskEventNoticeDTO;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,6 @@ public class MoxieBusinessService {
     @Autowired
     private FundMoxieFacade fundMoxieFacade;
 
-
     /**
      * 魔蝎任务采集失败业务处理
      *
@@ -66,14 +65,14 @@ public class MoxieBusinessService {
             return;
         }
         long taskId = taskAttribute.getTaskId();
-        //任务已经完成,不再继续后续处理.(当任务超时时,会发生魔蝎回调接口重试)
+        // 任务已经完成,不再继续后续处理.(当任务超时时,会发生魔蝎回调接口重试)
         boolean flag = isTaskDone(taskId);
         if (flag) {
             return;
         }
-        //1.记录采集失败日志
+        // 1.记录采集失败日志
         taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_FAIL.getText(), new Date(), message);
-        //2.发送任务失败指令
+        // 2.发送任务失败指令
         MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
         directiveDTO.setDirective(EMoxieDirective.TASK_FAIL.getText());
         Map<String, Object> map = Maps.newHashMap();
@@ -84,30 +83,6 @@ public class MoxieBusinessService {
         moxieDirectiveService.process(directiveDTO);
 
     }
-
-
-    /**
-     * 任务是否已经结束(即:任务是否已经为成功,失败或取消)
-     *
-     * @param taskId
-     * @return
-     */
-    private boolean isTaskDone(long taskId) {
-        TaskDTO task = taskService.getById(taskId);
-        if (task == null) {
-            logger.error("taskId={}不存在", taskId);
-            return true;
-        }
-        Byte taskStatus = task.getStatus();
-        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus)
-                || ETaskStatus.SUCCESS.getStatus().equals(taskStatus)
-                || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
-            logger.info("taskId={}任务已经结束,魔蝎后续重试回调不再处理", taskId);
-            return true;
-        }
-        return false;
-    }
-
 
     public void loginSuccess(MoxieTaskEventNoticeDTO eventNoticeDTO) {
         MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
@@ -143,13 +118,13 @@ public class MoxieBusinessService {
         }
         long taskId = taskAttribute.getTaskId();
 
-        //任务已经完成,不再继续后续处理.(当任务超时时,会发生魔蝎回调接口重试)
+        // 任务已经完成,不再继续后续处理.(当任务超时时,会发生魔蝎回调接口重试)
         boolean flag = isTaskDone(taskId);
         if (flag) {
             return;
         }
 
-        //获取魔蝎数据,调用洗数,传递账单数据
+        // 获取魔蝎数据,调用洗数,传递账单数据
         Boolean result = true;
         String message = null;
         String processResult = null;
@@ -160,7 +135,7 @@ public class MoxieBusinessService {
             result = false;
             message = e.getMessage();
         }
-        //3.根据洗数返回结果,发送任务成功或失败指令
+        // 3.根据洗数返回结果,发送任务成功或失败指令
         if (result) {
             MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
             directiveDTO.setMoxieTaskId(moxieTaskId);
@@ -180,12 +155,32 @@ public class MoxieBusinessService {
         }
     }
 
+    /**
+     * 任务是否已经结束(即:任务是否已经为成功,失败或取消)
+     *
+     * @param taskId
+     * @return
+     */
+    private boolean isTaskDone(long taskId) {
+        TaskDTO task = taskService.getById(taskId);
+        if (task == null) {
+            logger.error("taskId={}不存在", taskId);
+            return true;
+        }
+        Byte taskStatus = task.getStatus();
+        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus) || ETaskStatus.SUCCESS.getStatus().equals(taskStatus) || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
+            logger.info("taskId={}任务已经结束,魔蝎后续重试回调不再处理", taskId);
+            return true;
+        }
+        return false;
+    }
+
     private String billAndProcess(Long taskId, String moxieTaskId) throws Exception {
         String moxieResult = null;
         try {
             SaasResult<String> result = fundMoxieFacade.queryFundsEx(moxieTaskId);
             moxieResult = result.getData();
-            //记录抓取日志
+            // 记录抓取日志
             taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_SUCCESS.getText(), new Date(), null);
             taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_COMPLETE.getText(), new Date(), null);
             logger.info("handle moxie business moxieResult,taskId={},moxieTaskId={},result={}", taskId, moxieTaskId, moxieResult);
@@ -196,7 +191,7 @@ public class MoxieBusinessService {
         }
         try {
             String processResult = fundService.fund(taskId, moxieResult);
-            //记录数据保存日志
+            // 记录数据保存日志
             taskLogService.insertTaskLog(taskId, ETaskStep.DATA_SAVE_SUCCESS.getText(), new Date(), null);
             logger.info("handle moxie business processResult,taskId={},moxieTaskId={},result={}", taskId, moxieTaskId, processResult);
             return processResult;
@@ -206,6 +201,5 @@ public class MoxieBusinessService {
             throw new Exception("洗数失败");
         }
     }
-
 
 }

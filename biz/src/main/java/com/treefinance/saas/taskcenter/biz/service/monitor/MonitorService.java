@@ -22,7 +22,6 @@ public class MonitorService {
     @Autowired
     private ThreadPoolTaskExecutor threadPoolExecutor;
 
-
     /**
      * 发送监控消息
      *
@@ -38,7 +37,6 @@ public class MonitorService {
             }
         });
     }
-
 
     /**
      * 发送回调信息监控消息

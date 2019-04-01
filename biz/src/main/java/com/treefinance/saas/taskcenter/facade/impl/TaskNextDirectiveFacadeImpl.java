@@ -1,9 +1,8 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
+import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.facade.request.TaskDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskNextDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskNextDirectiveRO;
@@ -21,10 +20,8 @@ import java.util.List;
 @Component("taskNextDirectiveFacade")
 public class TaskNextDirectiveFacadeImpl extends AbstractFacade implements TaskNextDirectiveFacade {
 
-
     @Autowired
     private TaskNextDirectiveService taskNextDirectiveService;
-
 
     @Override
     public TaskResult<List<TaskNextDirectiveRO>> queryTaskNextDirectiveByTaskId(TaskNextDirectiveRequest request) {
@@ -34,7 +31,6 @@ public class TaskNextDirectiveFacadeImpl extends AbstractFacade implements TaskN
 
         return TaskResult.wrapSuccessfulResult(taskNextDirectiveROList);
     }
-
 
     @Override
     public TaskResult<Long> insert(Long taskId, String directive, String remark) {

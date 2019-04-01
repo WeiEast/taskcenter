@@ -34,5 +34,5 @@ public class TaskUpdateObject implements Serializable {
     private String stepCode;
     private Byte status;
     private Byte saasEnv;
-    
+
 }

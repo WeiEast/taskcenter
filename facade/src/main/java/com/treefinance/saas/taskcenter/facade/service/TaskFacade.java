@@ -83,8 +83,7 @@ public interface TaskFacade {
     TaskResult<TaskRO> getTaskByPrimaryKey(TaskRequest request);
 
     /**
-     * console -- 查询任务列表
-     * /saas/console/tasks
+     * console -- 查询任务列表 /saas/console/tasks
      *
      * @param request
      * @return

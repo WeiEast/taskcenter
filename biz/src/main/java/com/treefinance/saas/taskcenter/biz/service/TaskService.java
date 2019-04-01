@@ -37,6 +37,13 @@ public interface TaskService {
 
     TaskDTO getById(Long taskId);
 
+    /**
+     * 根据任务ID 和额外变量名字取出任务
+     * @param taskId
+     * @return
+     */
+    TaskDTO getTaskandAttribute(Long taskId);
+
     List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskAttrCompositeQuery query);
 
     long countCompositeTasks(@Nonnull TaskAttrCompositeQuery query);

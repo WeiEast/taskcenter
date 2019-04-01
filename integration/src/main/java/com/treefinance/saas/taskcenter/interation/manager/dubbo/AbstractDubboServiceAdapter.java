@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.context.component;
+package com.treefinance.saas.taskcenter.interation.manager.dubbo;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.b2b.saas.context.adapter.AbstractDomainObjectAdapter;
+import com.treefinance.saas.taskcenter.interation.manager.RpcActionEnum;
 import com.treefinance.saas.taskcenter.exception.RpcServiceException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;

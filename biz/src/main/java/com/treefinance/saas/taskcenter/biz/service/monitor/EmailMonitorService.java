@@ -9,9 +9,9 @@ import com.treefinance.saas.assistant.plugin.TaskEmailMonitorPlugin;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.treefinance.saas.taskcenter.biz.service.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.context.component.AbstractService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
@@ -72,7 +72,7 @@ public class EmailMonitorService extends AbstractService {
         if (taskLogMsgs.contains(ETaskStep.LOGIN_SUCCESS.getText()) || taskLogMsgs.contains(ETaskStep.LOGIN_FAIL.getText())) {
             taskStepMap.put(2, new TaskStep(2, EProcessStep.CONFIRM_LOGIN.getCode(), EProcessStep.CONFIRM_LOGIN.getName()));
         }
-        //登录成功
+        // 登录成功
         if (taskLogMsgs.contains(ETaskStep.LOGIN_SUCCESS.getText())) {
             taskStepMap.put(3, new TaskStep(3, EProcessStep.LOGIN.getCode(), EProcessStep.LOGIN.getName()));
 
@@ -90,7 +90,7 @@ public class EmailMonitorService extends AbstractService {
             taskStepMap.put(6, new TaskStep(6, EProcessStep.CALLBACK.getCode(), EProcessStep.CALLBACK.getName()));
         }
 
-        //判断任务步骤是否正确或有遗漏
+        // 判断任务步骤是否正确或有遗漏
         for (int i = 1; i <= 6; i++) {
             if (!taskStepMap.keySet().contains(i)) {
                 break;

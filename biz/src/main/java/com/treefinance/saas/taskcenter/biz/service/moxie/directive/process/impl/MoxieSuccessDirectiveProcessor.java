@@ -4,9 +4,9 @@ import com.treefinance.saas.taskcenter.biz.service.monitor.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.MoxieAbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 /**
- * 成功指令处理
- * Created by yh-treefinance on 2017/7/6.
+ * 成功指令处理 Created by yh-treefinance on 2017/7/6.
  */
 @Component
 public class MoxieSuccessDirectiveProcessor extends MoxieAbstractDirectiveProcessor {
@@ -33,12 +32,12 @@ public class MoxieSuccessDirectiveProcessor extends MoxieAbstractDirectiveProces
         String appId = taskDTO.getAppId();
 
         // 获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
-        //生成数据map
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
+        // 生成数据map
         Map<String, Object> dataMap = generateDataMap(directiveDTO);
         // 回调之前预处理
         precallback(dataMap, appLicense, directiveDTO);
-        //触发回调: 0-无需回调，1-回调成功，-1-回调失败
+        // 触发回调: 0-无需回调，1-回调成功，-1-回调失败
         int result = callback(dataMap, appLicense, directiveDTO);
 
         if (result == 0) {
@@ -52,14 +51,13 @@ public class MoxieSuccessDirectiveProcessor extends MoxieAbstractDirectiveProces
             taskDTO.setStatus(ETaskStatus.FAIL.getStatus());
             directiveDTO.setDirective(EMoxieDirective.CALLBACK_FAIL.getText());
         }
-        //更新任务状态,记录任务成功日志
+        // 更新任务状态,记录任务成功日志
         String stepCode = taskService.updateStatusIfDone(taskId, taskDTO.getStatus());
         taskDTO.setStepCode(stepCode);
 
-        //发送监控消息
+        // 发送监控消息
         monitorService.sendMonitorMessage(taskDTO.getId());
 
     }
-
 
 }

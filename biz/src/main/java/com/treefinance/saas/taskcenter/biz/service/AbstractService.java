@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.context.component;
+package com.treefinance.saas.taskcenter.biz.service;
 
 import com.treefinance.b2b.saas.context.adapter.AbstractDomainObjectAdapter;
 
 /**
  * @author Jerry
- * @date 2018/12/5 22:37
+ * @date 2018/11/23 19:15
  */
-public abstract class AbstractFacade extends AbstractDomainObjectAdapter {
+public abstract class AbstractService extends AbstractDomainObjectAdapter {
 
 }

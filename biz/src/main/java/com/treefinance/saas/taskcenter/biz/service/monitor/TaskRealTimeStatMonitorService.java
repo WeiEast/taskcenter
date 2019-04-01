@@ -7,8 +7,8 @@ import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessagePro
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatLink;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Good Luck Bro , No Bug !
- * 任务实时监控
+ * Good Luck Bro , No Bug ! 任务实时监控
  *
  * @author haojiahong
  * @date 2018/6/19
@@ -30,18 +29,16 @@ import java.util.Map;
 @Service
 public class TaskRealTimeStatMonitorService {
     private static final Logger logger = LoggerFactory.getLogger(TaskRealTimeStatMonitorService.class);
-
+    /**
+     * 需要监控的日志环节
+     */
+    private static List<String> logLinkList = ETaskStatLink.getStepCodeListBySource("task_log");
     @Autowired
     private TaskService taskService;
     @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
     private MonitorMessageProducer monitorMessageProducer;
-
-    /**
-     * 需要监控的日志环节
-     */
-    private static List<String> logLinkList = ETaskStatLink.getStepCodeListBySource("task_log");
 
     public void handleTaskLog(Long taskId, String code, Date dataTime) {
         logger.info("任务实时监控日志环节处理,taskId={},code={},dataTime={}", taskId, code, DateUtils.format(dataTime));
@@ -73,7 +70,7 @@ public class TaskRealTimeStatMonitorService {
         message.setStatCode(taskLinkStatCode);
         message.setStatName(taskLinkStatName);
 
-        //获取任务属性
+        // 获取任务属性
         List<TaskAttribute> attributeList = taskAttributeService.findByTaskId(taskId);
         Map<String, String> attributeMap = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(attributeList)) {

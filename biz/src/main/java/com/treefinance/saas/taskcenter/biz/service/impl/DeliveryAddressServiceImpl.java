@@ -1,17 +1,14 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
@@ -22,20 +19,21 @@ import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.taskcenter.biz.mq.model.DeliveryAddressMessage;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.biz.service.AppLicenseService;
 import com.treefinance.saas.taskcenter.biz.service.DeliveryAddressService;
 import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
-import com.treefinance.saas.taskcenter.dto.AppLicenseDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
+import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
+import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +53,8 @@ import java.util.stream.Collectors;
 @Service
 public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     private static final Logger logger = LoggerFactory.getLogger(DeliveryAddressServiceImpl.class);
-
+    @Autowired
+    protected TaskCallbackLogService taskCallbackLogService;
     @Autowired
     private TaskService taskService;
     @Autowired
@@ -63,9 +62,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Autowired
     private AppCallbackConfigService appCallbackConfigService;
     @Autowired
-    private AppLicenseService appLicenseService;
-    @Autowired
-    protected TaskCallbackLogService taskCallbackLogService;
+    private LicenseManager licenseManager;
 
     @Override
     public void callback(DeliveryAddressMessage message) {
@@ -83,11 +80,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         }
         String appId = taskDTO.getAppId();
         // 3.获取商户密钥
-        AppLicenseDTO appLicense = appLicenseService.getAppLicense(appId);
-        if (appLicense == null) {
-            logger.info("delivery address callback failed : taskId={} appLicense of {} is null, message={}...", taskId, appId, JSON.toJSONString(message));
-            return;
-        }
+        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
 
         List<AppCallbackConfigDTO> callbackConfigs = getCallbackConfigs(taskDTO);
         if (CollectionUtils.isEmpty(callbackConfigs)) {
@@ -106,10 +99,11 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         boolean isSuccess = Integer.valueOf(1).equals(message.getStatus());
         if (isSuccess) {
             dataMap.put("taskStatus", "001");
-            dataMap.put("taskErrorMsg", "");
-            if (dataMap.get("dataUrl") != null) {
-                String dataUrl = dataMap.get("dataUrl").toString();
+            dataMap.put("taskErrorMsg", StringUtils.EMPTY);
+            Object dataUrlObj = dataMap.remove("dataUrl");
+            if (dataUrlObj != null) {
                 try {
+                    String dataUrl = dataUrlObj.toString();
                     String appDataKey = appLicense.getDataSecretKey();
                     // oss 下载数据
                     byte[] result = RemoteDataUtils.download(dataUrl, byte[].class);
@@ -126,9 +120,9 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
                     logger.error("delivery address callback :  download data failed : data={}", JSON.toJSONString(dataMap));
                     dataMap.put("taskErrorMsg", "下载数据失败");
                     dataMap.put("taskStatus", "004");
+                    dataMap.put("dataUrl", dataUrlObj);
                 }
             }
-            dataMap.remove("dataUrl");
         } else {
             dataMap.put("taskStatus", "002");
             dataMap.put("taskErrorMsg", "抓取失败");

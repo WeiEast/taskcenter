@@ -11,7 +11,6 @@ import java.util.Date;
 @Deprecated
 public class TaskAndAttributeRO extends BaseResult {
 
-
     private static final long serialVersionUID = 6310589572453146991L;
 
     private Long id;

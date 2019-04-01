@@ -29,5 +29,4 @@ public interface TaskBuryPointLogFacade {
 
     TaskResult<Void> logTaskOperatorMaintainUser(Long taskId, String appId, String extra);
 
-
 }

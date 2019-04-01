@@ -6,15 +6,12 @@ import java.util.Date;
  * @author:guoguoyun
  * @date:Created in 2018/9/18下午1:58
  */
-public class TaskBuryPointLogRequest extends BaseRequest{
+public class TaskBuryPointLogRequest extends BaseRequest {
     private Long id;
-
 
     private Long taskId;
 
-
     private String appId;
-
 
     private String code;
 
@@ -85,14 +82,7 @@ public class TaskBuryPointLogRequest extends BaseRequest{
 
     @Override
     public String toString() {
-        return "TaskBuryPointLogRequest{" +
-                "id=" + id +
-                ", taskId=" + taskId +
-                ", appId='" + appId + '\'' +
-                ", code='" + code + '\'' +
-                ", createTime=" + createTime +
-                ", lastUpdateTime=" + lastUpdateTime +
-                ", orderByClause='" + orderByClause + '\'' +
-                '}';
+        return "TaskBuryPointLogRequest{" + "id=" + id + ", taskId=" + taskId + ", appId='" + appId + '\'' + ", code='" + code + '\'' + ", createTime=" + createTime
+            + ", lastUpdateTime=" + lastUpdateTime + ", orderByClause='" + orderByClause + '\'' + '}';
     }
 }

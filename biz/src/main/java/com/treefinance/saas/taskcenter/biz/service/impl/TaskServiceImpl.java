@@ -1,17 +1,14 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
@@ -25,7 +22,7 @@ import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
-import com.treefinance.saas.taskcenter.context.component.AbstractService;
+import com.treefinance.saas.taskcenter.biz.service.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
@@ -33,6 +30,7 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
+import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskParams;
@@ -42,6 +40,7 @@ import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +53,7 @@ import javax.annotation.Nullable;
 import javax.validation.ValidationException;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,9 +64,11 @@ import java.util.Map;
 @Service
 public class TaskServiceImpl extends AbstractService implements TaskService {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Byte[] DONE_STATUSES = {ETaskStatus.CANCEL.getStatus(), ETaskStatus.SUCCESS.getStatus(), ETaskStatus.FAIL.getStatus()};
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    // 任务附加属性sourceId
+    private final String sourceId = "sourceId";
     @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
@@ -91,6 +93,22 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         Task task = getTaskById(taskId);
 
         return convert(task, TaskDTO.class);
+    }
+
+    @Override
+    public TaskDTO getTaskandAttribute(Long taskId) {
+
+        String[] strings = new String[] {sourceId};
+        Task task = getTaskById(taskId);
+        List<TaskAttribute> taskAttributeList = taskAttributeService.listTaskAttributesByTaskIdAndInNames(taskId, strings, false);
+        TaskDTO taskDTO = convert(task, TaskDTO.class);
+        Map<String, Object> resultMap = new HashMap();
+        if (!org.springframework.util.ObjectUtils.isEmpty(taskAttributeList)) {
+            resultMap.put(sourceId, taskAttributeList.get(0));
+            taskDTO.setAttributes(resultMap);
+        }
+
+        return taskDTO;
     }
 
     @Override
@@ -132,18 +150,6 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     public boolean isTaskCompleted(Long taskId) {
         Byte status = getTaskStatusById(taskId);
         return isCompleted(status);
-    }
-
-    private boolean isCompleted(Byte status) {
-        if (status != null) {
-            for (Byte item : DONE_STATUSES) {
-                if (item.equals(status)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     @Override
@@ -216,38 +222,11 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         return id;
     }
 
-    private void setAttribute(Long taskId, Map map) {
-        String mobileAttribute = ETaskAttribute.MOBILE.getAttribute();
-        String nameAttribute = ETaskAttribute.NAME.getAttribute();
-        String idCardAttribute = ETaskAttribute.ID_CARD.getAttribute();
-        String mobile = map.get(mobileAttribute) == null ? "" : String.valueOf(map.get(mobileAttribute));
-        if (StringUtils.isNotBlank(mobile)) {
-            boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
-            if (!b) {
-                throw new ValidationException(String.format("the mobile number is illegal! mobile=%s", mobile));
-            }
-
-            taskAttributeService.insert(taskId, mobileAttribute, mobile, true);
-        }
-        String name = map.get(nameAttribute) == null ? "" : String.valueOf(map.get(nameAttribute));
-        if (StringUtils.isNotBlank(name)) {
-            taskAttributeService.insert(taskId, nameAttribute, name, true);
-        }
-        String idCard = map.get(idCardAttribute) == null ? "" : String.valueOf(map.get(idCardAttribute));
-        if (StringUtils.isNotBlank(idCard)) {
-            taskAttributeService.insert(taskId, idCardAttribute, idCard, true);
-        }
-    }
-
     @Override
     public int updateProcessingTaskById(@Nonnull TaskUpdateObject object) {
         TaskParams params = convert(object, TaskParams.class);
 
         return updateProcessingTaskById(params, object.getId());
-    }
-
-    private int updateProcessingTaskById(TaskParams params, Long id) {
-        return taskRepository.updateTaskByIdAndStatusNotIn(params, id, DONE_STATUSES);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -287,14 +266,6 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     public void updateStatusWhenProcessing(@Nonnull Long id, @Nonnull Byte status) {
         TaskParams task = new TaskParams();
         task.setStatus(status);
-
-        updateProcessingTaskById(task, id);
-    }
-
-    private void updateStatusAndStepCodeWhenProcessing(Long id, Byte status, String stepCode) {
-        TaskParams task = new TaskParams();
-        task.setStatus(status);
-        task.setStepCode(stepCode);
 
         updateProcessingTaskById(task, id);
     }
@@ -344,5 +315,60 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
             cancelDirective.setDirective(EDirective.TASK_CANCEL.getText());
             directiveService.process(cancelDirective);
         }
+    }
+
+    private boolean isCompleted(Byte status) {
+        if (status != null) {
+            for (Byte item : DONE_STATUSES) {
+                if (item.equals(status)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void setAttribute(Long taskId, Map map) {
+        String mobileAttribute = ETaskAttribute.MOBILE.getAttribute();
+        String nameAttribute = ETaskAttribute.NAME.getAttribute();
+        String idCardAttribute = ETaskAttribute.ID_CARD.getAttribute();
+        String sourceIdAttribute = ETaskAttribute.SOURCE_ID.getAttribute();
+
+
+        String mobile = map.get(mobileAttribute) == null ? "" : String.valueOf(map.get(mobileAttribute));
+        if (StringUtils.isNotBlank(mobile)) {
+            boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
+            if (!b) {
+                throw new ValidationException(String.format("the mobile number is illegal! mobile=%s", mobile));
+            }
+
+            taskAttributeService.insert(taskId, mobileAttribute, mobile, true);
+        }
+        String name = map.get(nameAttribute) == null ? "" : String.valueOf(map.get(nameAttribute));
+        if (StringUtils.isNotBlank(name)) {
+            taskAttributeService.insert(taskId, nameAttribute, name, true);
+        }
+        String idCard = map.get(idCardAttribute) == null ? "" : String.valueOf(map.get(idCardAttribute));
+        if (StringUtils.isNotBlank(idCard)) {
+            taskAttributeService.insert(taskId, idCardAttribute, idCard, true);
+        }
+
+        String sourceId = map.get(sourceIdAttribute) == null ? "" : String.valueOf(map.get(sourceIdAttribute));
+        if (StringUtils.isNotBlank(sourceId)) {
+            taskAttributeService.insert(taskId, sourceIdAttribute, sourceId, false);
+        }
+    }
+
+    private int updateProcessingTaskById(TaskParams params, Long id) {
+        return taskRepository.updateTaskByIdAndStatusNotIn(params, id, DONE_STATUSES);
+    }
+
+    private void updateStatusAndStepCodeWhenProcessing(Long id, Byte status, String stepCode) {
+        TaskParams task = new TaskParams();
+        task.setStatus(status);
+        task.setStepCode(stepCode);
+
+        updateProcessingTaskById(task, id);
     }
 }

@@ -44,7 +44,7 @@ public class TaskActiveTimeoutThread implements Runnable {
 
     @Override
     public void run() {
-        //保证取消任务只会执行一次
+        // 保证取消任务只会执行一次
         Map<String, Object> lockMap = Maps.newHashMap();
         String lockKey = RedisKeyUtils.genRedisLockKey("task-alive-time-job-task", Constants.SAAS_ENV_VALUE, String.valueOf(taskId));
         try {
@@ -63,7 +63,7 @@ public class TaskActiveTimeoutThread implements Runnable {
             if (startTime.getTime() - lastActiveTime > diff) {
                 logger.info("任务活跃时间超时,取消任务,taskId={}", taskId);
                 taskService.cancelTask(taskId);
-                //删除记录的任务活跃时间
+                // 删除记录的任务活跃时间
                 taskAliveService.deleteTaskAliveTime(taskId);
             }
         } finally {

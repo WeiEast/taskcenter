@@ -2,7 +2,6 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
-import com.treefinance.saas.taskcenter.context.component.AbstractFacade;
 import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskPointFacade;

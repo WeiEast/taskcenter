@@ -47,6 +47,15 @@ public class MoxieTimeoutService {
 
     @Autowired
     private TaskRepository taskRepository;
+    /**
+     * 本地任务缓存
+     */
+    private final LoadingCache<Long, Task> cache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).maximumSize(20000).build(new CacheLoader<Long, Task>() {
+        @Override
+        public Task load(Long taskId) throws Exception {
+            return taskRepository.getTaskById(taskId);
+        }
+    });
     @Autowired
     private AppBizTypeService appBizTypeService;
     @Autowired
@@ -57,16 +66,6 @@ public class MoxieTimeoutService {
     private TaskAttributeService taskAttributeService;
     @Autowired
     private RedisDao redisDao;
-
-    /**
-     * 本地任务缓存
-     */
-    private final LoadingCache<Long, Task> cache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).maximumSize(20000).build(new CacheLoader<Long, Task>() {
-        @Override
-        public Task load(Long taskId) throws Exception {
-            return taskRepository.getTaskById(taskId);
-        }
-    });
 
     /**
      * 记录魔蝎任务创建时间,即开始登录时间.
@@ -146,8 +145,7 @@ public class MoxieTimeoutService {
         // 任务超时: 当前时间-登录时间>超时时间
         Date currentTime = new Date();
         Date timeoutDate = DateUtils.plusSeconds(loginTime, timeout);
-        logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId,
-            DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
+        logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
         if (timeoutDate.before(currentTime)) {
             // 增加日志：任务超时
             String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss") + ") - 登录时间(" + DateFormatUtils.format(loginTime, "yyyy-MM-dd HH:mm:ss")

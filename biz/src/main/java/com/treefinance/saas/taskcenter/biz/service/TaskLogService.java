@@ -43,8 +43,7 @@ public interface TaskLogService {
      */
     String getLastErrorStepCode(Long taskId);
 
-    List<TaskLog> queryTaskLogs(Long id, List<Long> taskIds, String msg, String stepCode, String errorMsg,
-        Date occurTime, String order);
+    List<TaskLog> queryTaskLogs(Long id, List<Long> taskIds, String msg, String stepCode, String errorMsg, Date occurTime, String order);
 
     /**
      *

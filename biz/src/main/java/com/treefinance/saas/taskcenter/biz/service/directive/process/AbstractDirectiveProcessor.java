@@ -1,13 +1,15 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.alibaba.fastjson.JSON;
+import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.biz.service.impl.QRCodeAccountNoLogServiceImpl;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.AccountNoService;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +27,11 @@ public abstract class AbstractDirectiveProcessor extends CallbackableDirectivePr
     @Autowired
     protected TaskService taskService;
     @Autowired
+    protected  TaskAttributeService taskAttributeService;
+    @Autowired
     protected TaskNextDirectiveService taskNextDirectiveService;
     @Autowired
-    private QRCodeAccountNoLogServiceImpl qrCodeAccountNoLogService;
+    private AccountNoService accountNoService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -48,7 +52,8 @@ public abstract class AbstractDirectiveProcessor extends CallbackableDirectivePr
         // 2.初始化任务详细
         TaskDTO taskDTO = directiveDTO.getTask();
         if (taskDTO == null) {
-            taskDTO = taskService.getById(taskId);
+            taskDTO = taskService.getTaskandAttribute(taskId);
+
             if (taskDTO == null) {
                 logger.error("handle directive error : taskId={} is not exists, directive={}", taskId, JSON.toJSONString(directiveDTO));
                 return;
@@ -57,18 +62,15 @@ public abstract class AbstractDirectiveProcessor extends CallbackableDirectivePr
         }
         // 3.任务是否是已经完成
         Byte taskStatus = taskDTO.getStatus();
-        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus)
-                || ETaskStatus.SUCCESS.getStatus().equals(taskStatus)
-                || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
-            logger.info("handle directive error : the task id={} is completed: directive={}", taskId,
-                JSON.toJSONString(directiveDTO));
+        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus) || ETaskStatus.SUCCESS.getStatus().equals(taskStatus) || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
+            logger.info("handle directive error : the task id={} is completed: directive={}", taskId, JSON.toJSONString(directiveDTO));
             return;
         }
         // 4.处理指令
         try {
             this.doProcess(directive, directiveDTO);
         } finally {
-            qrCodeAccountNoLogService.logQRCodeAccountNo(taskId);
+            accountNoService.saveAccountNoIfAbsent(taskId);
             taskNextDirectiveService.insertAndCacheNextDirective(taskId, directiveDTO);
             logger.info("process directive completed  cost {} ms : directive={}", System.currentTimeMillis() - start, JSON.toJSONString(directiveDTO));
         }

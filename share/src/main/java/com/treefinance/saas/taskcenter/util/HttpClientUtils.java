@@ -69,10 +69,10 @@ import java.util.stream.Collectors;
 public class HttpClientUtils {
     // 日志
     private static final Logger logger = LoggerFactory.getLogger(HttpClientUtils.class);
-    // 连接池
-    private static PoolingHttpClientConnectionManager connMgr;
     // 超时时间
     private static final int MAX_TIMEOUT = 3000;
+    // 连接池
+    private static PoolingHttpClientConnectionManager connMgr;
 
     static {
 

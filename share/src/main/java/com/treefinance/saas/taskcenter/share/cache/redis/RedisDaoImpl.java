@@ -1,17 +1,14 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package com.treefinance.saas.taskcenter.share.cache.redis;
@@ -35,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 public class RedisDaoImpl implements RedisDao {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisDaoImpl.class);
-
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -134,10 +130,10 @@ public class RedisDaoImpl implements RedisDao {
             return map;
         } else {
             String oldValueStr = redisTemplate.opsForValue().get(lockKey);
-            //如果其他资源之前获得锁已经超时
+            // 如果其他资源之前获得锁已经超时
             if (StringUtils.isNotBlank(oldValueStr) && Long.parseLong(oldValueStr) < System.currentTimeMillis()) {
                 String getValue = redisTemplate.opsForValue().getAndSet(lockKey, String.valueOf(value));
-                //上一个锁超时后会有很多线程去争夺锁，所以只有拿到oldValue的线程才是获得锁的。
+                // 上一个锁超时后会有很多线程去争夺锁，所以只有拿到oldValue的线程才是获得锁的。
                 if (Long.parseLong(getValue) == Long.parseLong(oldValueStr)) {
                     map.put("isSuccess", true);
                     map.put("expireTimeStr", String.valueOf(value));
@@ -156,8 +152,8 @@ public class RedisDaoImpl implements RedisDao {
         if (MapUtils.isEmpty(lockMap)) {
             return;
         }
-        Boolean locked = (Boolean) lockMap.get("isSuccess");
-        String lockExpiresStr = (String) lockMap.get("expireTimeStr");
+        Boolean locked = (Boolean)lockMap.get("isSuccess");
+        String lockExpiresStr = (String)lockMap.get("expireTimeStr");
         if (locked) {
             String oldValueStr = redisTemplate.opsForValue().get(lockKey);
             if (oldValueStr != null) {
@@ -167,8 +163,7 @@ public class RedisDaoImpl implements RedisDao {
                     redisTemplate.delete(lockKey);
                 } else {
                     // 这个进程的锁超时了，被新的进程锁获得替换了。则不进行任何操作。打印日志，方便后续跟进
-                    logger.error("the lockKey over time.lockKey:{}.expireMsecs:{},over time is",
-                            lockKey, expireMsecs, System.currentTimeMillis() - Long.valueOf(lockExpiresStr));
+                    logger.error("the lockKey over time.lockKey:{}.expireMsecs:{},over time is", lockKey, expireMsecs, System.currentTimeMillis() - Long.valueOf(lockExpiresStr));
                 }
             }
         }
