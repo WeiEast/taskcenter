@@ -355,7 +355,7 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         }
 
         String sourceId = map.get(sourceIdAttribute) == null ? "" : String.valueOf(map.get(sourceIdAttribute));
-        if (StringUtils.isNotBlank(idCard)) {
+        if (StringUtils.isNotBlank(sourceId)) {
             taskAttributeService.insert(taskId, sourceIdAttribute, sourceId, false);
         }
     }
