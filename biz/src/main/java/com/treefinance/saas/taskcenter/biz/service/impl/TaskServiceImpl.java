@@ -30,6 +30,7 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
+import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskParams;
@@ -39,6 +40,7 @@ import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +53,7 @@ import javax.annotation.Nullable;
 import javax.validation.ValidationException;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,6 +66,9 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 
     private static final Byte[] DONE_STATUSES = {ETaskStatus.CANCEL.getStatus(), ETaskStatus.SUCCESS.getStatus(), ETaskStatus.FAIL.getStatus()};
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    // 任务附加属性sourceId
+    private final String sourceId = "sourceId";
     @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
@@ -87,6 +93,22 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         Task task = getTaskById(taskId);
 
         return convert(task, TaskDTO.class);
+    }
+
+    @Override
+    public TaskDTO getTaskandAttribute(Long taskId) {
+
+        String[] strings = new String[] {sourceId};
+        Task task = getTaskById(taskId);
+        List<TaskAttribute> taskAttributeList = taskAttributeService.listTaskAttributesByTaskIdAndInNames(taskId, strings, false);
+        TaskDTO taskDTO = convert(task, TaskDTO.class);
+        Map<String, Object> resultMap = new HashMap();
+        if (!org.springframework.util.ObjectUtils.isEmpty(taskAttributeList)) {
+            resultMap.put(sourceId, taskAttributeList.get(0));
+            taskDTO.setAttributes(resultMap);
+        }
+
+        return taskDTO;
     }
 
     @Override
@@ -311,6 +333,9 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         String mobileAttribute = ETaskAttribute.MOBILE.getAttribute();
         String nameAttribute = ETaskAttribute.NAME.getAttribute();
         String idCardAttribute = ETaskAttribute.ID_CARD.getAttribute();
+        String sourceIdAttribute = ETaskAttribute.SOURCE_ID.getAttribute();
+
+
         String mobile = map.get(mobileAttribute) == null ? "" : String.valueOf(map.get(mobileAttribute));
         if (StringUtils.isNotBlank(mobile)) {
             boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
@@ -327,6 +352,11 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         String idCard = map.get(idCardAttribute) == null ? "" : String.valueOf(map.get(idCardAttribute));
         if (StringUtils.isNotBlank(idCard)) {
             taskAttributeService.insert(taskId, idCardAttribute, idCard, true);
+        }
+
+        String sourceId = map.get(sourceIdAttribute) == null ? "" : String.valueOf(map.get(sourceIdAttribute));
+        if (StringUtils.isNotBlank(idCard)) {
+            taskAttributeService.insert(taskId, sourceIdAttribute, sourceId, false);
         }
     }
 

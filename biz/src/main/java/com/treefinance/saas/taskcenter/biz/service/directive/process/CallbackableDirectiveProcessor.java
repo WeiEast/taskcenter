@@ -192,11 +192,11 @@ public abstract class CallbackableDirectiveProcessor {
      */
     protected Map<String, Object> generateDataMap(DirectiveDTO directiveDTO) {
         TaskDTO task = directiveDTO.getTask();
-        // 1. 初始化回调数据 并填充uniqueId、taskId、taskStatus
+        // 1. 初始化回调数据 并填充uniqueId、taskId、taskStatus、sourceid
         Map<String, Object> dataMap = ifNull(JSON.parseObject(directiveDTO.getRemark()), Maps.newHashMap());
         dataMap.putIfAbsent("uniqueId", task.getUniqueId());
         dataMap.putIfAbsent("taskId", task.getId());
-
+        dataMap.putIfAbsent("sourceId", task.getAttributes().get("sourceId").toString());
         dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
         dataMap.put("taskErrorMsg", "");
         // 此次任务状态：001-抓取成功，002-抓取失败，003-抓取结果为空,004-任务取消
