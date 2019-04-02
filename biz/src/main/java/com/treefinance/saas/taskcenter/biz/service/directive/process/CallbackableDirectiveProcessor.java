@@ -212,7 +212,8 @@ public abstract class CallbackableDirectiveProcessor {
         dataMap.putIfAbsent("uniqueId", task.getUniqueId());
         dataMap.putIfAbsent("taskId", task.getId());
 
-        if (task.getAttributes().containsKey("sourceId")) {
+        Map<String, Object> attributes = task.getAttributes();
+        if (attributes != null && attributes.containsKey("sourceId")) {
             TaskAttribute taskAttribute = (TaskAttribute)task.getAttributes().get("sourceId");
             dataMap.putIfAbsent("sourceId", taskAttribute.getValue().toString());
         }
