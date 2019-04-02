@@ -102,8 +102,8 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         Task task = getTaskById(taskId);
         List<TaskAttribute> taskAttributeList = taskAttributeService.listTaskAttributesByTaskIdAndInNames(taskId, strings, false);
         TaskDTO taskDTO = convert(task, TaskDTO.class);
-        Map<String, Object> resultMap = new HashMap();
         if (!org.springframework.util.ObjectUtils.isEmpty(taskAttributeList)) {
+            Map<String, Object> resultMap = new HashMap(1);
             resultMap.put(sourceId, taskAttributeList.get(0));
             taskDTO.setAttributes(resultMap);
         }
