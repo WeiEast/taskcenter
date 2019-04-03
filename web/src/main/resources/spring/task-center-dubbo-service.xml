@@ -50,7 +50,7 @@
 
   <dubbo:service ref="taskPointFacade"
     interface="com.treefinance.saas.taskcenter.facade.service.TaskPointFacade" version="1.0.0">
-    <dubbo:method name="addTaskPoint" async="true" return="false"/>
+    <!--<dubbo:method name="addTaskPoint" async="true" return="false"/>-->
   </dubbo:service>
 
 </beans>

@@ -20,6 +20,7 @@ import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
@@ -210,7 +211,13 @@ public abstract class CallbackableDirectiveProcessor {
         Map<String, Object> dataMap = ifNull(JSON.parseObject(directiveDTO.getRemark()), Maps.newHashMap());
         dataMap.putIfAbsent("uniqueId", task.getUniqueId());
         dataMap.putIfAbsent("taskId", task.getId());
-        dataMap.putIfAbsent("sourceId", task.getAttributes().get("sourceId").toString());
+
+        Map<String, Object> attributes = task.getAttributes();
+        if (attributes != null && attributes.containsKey("sourceId")) {
+            TaskAttribute taskAttribute = (TaskAttribute)task.getAttributes().get("sourceId");
+            dataMap.putIfAbsent("sourceId", taskAttribute.getValue().toString());
+        }
+
         dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
         dataMap.put("taskErrorMsg", "");
         // 此次任务状态：001-抓取成功，002-抓取失败，003-抓取结果为空,004-任务取消

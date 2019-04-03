@@ -6,13 +6,17 @@ import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
 import com.treefinance.saas.taskcenter.context.config.DiamondConfig;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
+import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
+import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
 import com.treefinance.saas.taskcenter.dao.entity.TaskPoint;
+import com.treefinance.saas.taskcenter.dao.mapper.TaskAttributeMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskPointMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
+import com.treefinance.toolkit.util.Objects;
 import com.treefinance.toolkit.util.net.NetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +47,12 @@ public class TaskPointServiceImpl implements TaskPointService {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskPointService.class);
 
+    private static final String sourceId = "sourceId";
+
     @Autowired
     private TaskPointMapper taskPointMapper;
+    @Autowired
+    private TaskAttributeMapper taskAttributeMapper;
     @Autowired
     private TaskMapper taskMapper;
     @Autowired
@@ -77,12 +85,22 @@ public class TaskPointServiceImpl implements TaskPointService {
             TaskPoint taskPoint = new TaskPoint();
             BeanUtils.copyProperties(taskPointRequest, taskPoint);
             taskPoint.setOccurTime(new Date());
-            String str = redisDao.get("UniqueId_bizType_appId" + taskPointRequest.getTaskId());
+            String str = redisDao.get("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId());
             String appId;
+            String sourceid = "";
             if (str == null) {
+
                 Task task = taskMapper.selectByPrimaryKey(taskPointRequest.getTaskId());
+
+                TaskAttributeCriteria criteria = new TaskAttributeCriteria();
+                criteria.createCriteria().andTaskIdEqualTo(taskPointRequest.getTaskId()).andNameEqualTo(sourceId);
+                List<TaskAttribute> taskAttributes = taskAttributeMapper.selectByExample(criteria);
+                if (!Objects.isEmpty(taskAttributes)) {
+                    sourceid = taskAttributes.get(0).getValue();
+                }
                 String uniqueId = task.getUniqueId();
-                redisDao.setEx("UniqueId_bizType_appId" + taskPointRequest.getTaskId(), task.getUniqueId() + "," + task.getBizType() + "," + task.getAppId(), 10, TimeUnit.MINUTES);
+                redisDao.setEx("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId(), task.getUniqueId() + "," + task.getBizType() + "," + task.getAppId() + "," + sourceid, 10,
+                    TimeUnit.MINUTES);
                 taskPoint.setUniqueId(uniqueId);
                 taskPoint.setBizType(task.getBizType());
                 appId = task.getAppId();
@@ -91,6 +109,7 @@ public class TaskPointServiceImpl implements TaskPointService {
                 taskPoint.setUniqueId(list.get(0));
                 taskPoint.setBizType((Byte.valueOf(list.get(1))));
                 appId = list.get(2);
+                sourceid = list.get(3);
             }
             int bizType = taskPoint.getBizType();
             if (taskPoint.getType() == 1) {
@@ -117,6 +136,7 @@ public class TaskPointServiceImpl implements TaskPointService {
                     map.put("msg", taskPoint.getMsg());
                     map.put("ip", taskPoint.getIp());
                     map.put("appId", appId);
+                    map.put("sourceId", sourceid);
                     DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
                     dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
                     map.put("occurTime", dateFormat.format(taskPoint.getOccurTime()));
