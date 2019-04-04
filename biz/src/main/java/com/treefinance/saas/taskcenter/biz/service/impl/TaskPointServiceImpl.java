@@ -18,6 +18,7 @@ import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.toolkit.util.Objects;
 import com.treefinance.toolkit.util.net.NetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -109,7 +110,9 @@ public class TaskPointServiceImpl implements TaskPointService {
                 taskPoint.setUniqueId(list.get(0));
                 taskPoint.setBizType((Byte.valueOf(list.get(1))));
                 appId = list.get(2);
-                sourceid = list.get(3);
+                if(StringUtils.isNotEmpty(sourceid)) {
+                    sourceid = list.get(3);
+                }
             }
             int bizType = taskPoint.getBizType();
             if (taskPoint.getType() == 1) {
