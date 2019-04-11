@@ -3,6 +3,10 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.treefinance.commonservice.uid.UidService;
+import com.treefinance.saas.merchant.facade.request.console.MerchantFunctionRequest;
+import com.treefinance.saas.merchant.facade.result.console.MerchantFunctionResult;
+import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
+import com.treefinance.saas.merchant.facade.service.MerchantFunctionFacade;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
 import com.treefinance.saas.taskcenter.context.config.DiamondConfig;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
@@ -59,9 +63,10 @@ public class TaskPointServiceImpl implements TaskPointService {
     @Autowired
     private RedisDao redisDao;
     @Autowired
-    private DiamondConfig diamondConfig;
-    @Autowired
     private UidService uidService;
+
+    @Autowired
+    private MerchantFunctionFacade merchantFunctionFacade;
 
     @Override
     public void addTaskPoint(Long taskId, String pointCode) {
@@ -124,39 +129,56 @@ public class TaskPointServiceImpl implements TaskPointService {
             taskPoint.setId(uidService.getId());
             taskPoint.setAppId(appId);
             int i = taskPointMapper.insertSelective(taskPoint);
-            String appIds = diamondConfig.getGfdAppId();
-            List<String> list = Arrays.asList(appIds.split(","));
-            if (i == 1 && list.contains(appId)) {
+            MerchantFunctionRequest request = new MerchantFunctionRequest();
+            request.setAppId(appId);
+            MerchantResult<MerchantFunctionResult> merchantResult = merchantFunctionFacade.getMerchantFunctionByAppId(request);
+            if (!merchantResult.isSuccess()) {
+                logger.error("根据appId获取商户是否通知埋点信息失败,appId={},errorMsg={}", appId, merchantResult.getRetMsg());
+            } else {
+                success(taskPoint, appId, bizType, i, merchantResult, sourceid);
+            }
+        } catch (Exception e) {
+            logger.error("埋点通知商户异常，taskId={}", taskPointRequest.getTaskId(), e);
+        }
+    }
+
+    private void success(TaskPoint taskPoint, String appId, int bizType, int i,
+        MerchantResult<MerchantFunctionResult> merchantResult, String sourceId) {
+        MerchantFunctionResult merchantFunctionResult = merchantResult.getData();
+        if (merchantFunctionResult == null) {
+            logger.warn("根据appId没有获取商户是否通知埋点信息，appId={}", appId);
+        } else {
+            if (i == 1 && merchantFunctionResult.getSync() == 1) {
                 if (bizType == 1 || bizType == 2 || bizType == 3) {
                     logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
-                    Map<String, Object> map = new HashMap<>(9);
-                    map.put("taskId", taskPoint.getTaskId());
-                    map.put("uniqueId", taskPoint.getUniqueId());
-                    map.put("type", taskPoint.getType());
-                    map.put("code", taskPoint.getCode());
-                    map.put("step", taskPoint.getStep());
-                    map.put("subStep", taskPoint.getSubStep());
-                    map.put("msg", taskPoint.getMsg());
-                    map.put("ip", taskPoint.getIp());
-                    map.put("appId", appId);
-                    map.put("sourceId", sourceid);
-                    DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
-                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    map.put("occurTime", dateFormat.format(taskPoint.getOccurTime()));
-                    String result = HttpClientUtils.doPost(diamondConfig.getHttpUrl(), map);
+                    Map<String, Object> map = getStringObjectMap(taskPoint, appId, sourceId);
+                    String result = HttpClientUtils.doPost(merchantFunctionResult.getSyncUrl(), map);
                     if (result == null) {
-                        logger.error("埋点调用功夫贷返回结果为空，taskId={}", taskPoint.getTaskId());
+                        logger.error("埋点通知商户返回结果为空，taskId={},appId={}", taskPoint.getTaskId(), appId);
                     } else {
-                        JSONObject jsonObject = JSON.parseObject(result);
-                        if ((int)jsonObject.get("code") != 0) {
-                            logger.error("埋点调用功夫贷返回错误，taskId={}，errorMsg", taskPoint.getTaskId(), jsonObject.get("errorMsg"));
-                        }
+                        logger.warn("埋点通知商户返回结果，taskId={}，result={}", taskPoint.getTaskId(), result);
                     }
                 }
             }
-        } catch (Exception e) {
-            logger.error("埋点调用功夫贷异常，taskId={}", taskPointRequest.getTaskId(), e);
         }
+    }
+
+    private Map<String, Object> getStringObjectMap(TaskPoint taskPoint, String appId, String sourceId) {
+        Map<String, Object> map = new HashMap<>(9);
+        map.put("taskId", taskPoint.getTaskId());
+        map.put("uniqueId", taskPoint.getUniqueId());
+        map.put("type", taskPoint.getType());
+        map.put("code", taskPoint.getCode());
+        map.put("step", taskPoint.getStep());
+        map.put("subStep", taskPoint.getSubStep());
+        map.put("msg", taskPoint.getMsg());
+        map.put("ip", taskPoint.getIp());
+        map.put("appId", appId);
+        map.put("sourceId", sourceid);
+        DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        map.put("occurTime", dateFormat.format(taskPoint.getOccurTime()));
+        return map;
     }
 
 }
