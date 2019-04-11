@@ -137,14 +137,14 @@ public class TaskPointServiceImpl implements TaskPointService {
             if (!merchantResult.isSuccess()) {
                 logger.error("根据appId获取商户是否通知埋点信息失败,appId={},errorMsg={}", appId, merchantResult.getRetMsg());
             } else {
-                success(taskPoint, appId, bizType, i, merchantResult);
+                success(taskPoint, appId, bizType, i, merchantResult,sourceid);
             }
         } catch (Exception e) {
             logger.error("埋点通知商户异常，taskId={}", taskPointRequest.getTaskId(), e);
         }
     }
 
-    private void success(TaskPoint taskPoint, String appId, int bizType, int i, MerchantResult<MerchantFunctionResult> merchantResult) {
+    private void success(TaskPoint taskPoint, String appId, int bizType, int i, MerchantResult<MerchantFunctionResult> merchantResult,String sourceid) {
         MerchantFunctionResult merchantFunctionResult = merchantResult.getData();
         if (merchantFunctionResult == null) {
             logger.warn("根据appId没有获取商户是否通知埋点信息，appId={}", appId);
@@ -152,7 +152,7 @@ public class TaskPointServiceImpl implements TaskPointService {
             if (i == 1 && merchantFunctionResult.getSync() == 1) {
                 if (bizType == 1 || bizType == 2 || bizType == 3) {
                     logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
-                    Map<String, Object> map = getStringObjectMap(taskPoint, appId);
+                    Map<String, Object> map = getStringObjectMap(taskPoint, appId,sourceid);
                     String result = HttpClientUtils.doPost(merchantFunctionResult.getSyncUrl(), map);
                     if (result == null) {
                         logger.error("埋点通知商户返回结果为空，taskId={},appId={}", taskPoint.getTaskId(), appId);
@@ -164,7 +164,7 @@ public class TaskPointServiceImpl implements TaskPointService {
         }
     }
 
-    private Map<String, Object> getStringObjectMap(TaskPoint taskPoint, String appId) {
+    private Map<String, Object> getStringObjectMap(TaskPoint taskPoint, String appId,String sourceid) {
         Map<String, Object> map = new HashMap<>(9);
         map.put("taskId", taskPoint.getTaskId());
         map.put("uniqueId", taskPoint.getUniqueId());
