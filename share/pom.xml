@@ -5,7 +5,7 @@
   <parent>
     <artifactId>taskcenter</artifactId>
     <groupId>com.treefinance.saas</groupId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>2.1.6-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -14,15 +14,26 @@
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-aop</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>dubbo</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.netty</groupId>
+          <artifactId>netty</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.101tec</groupId>
+      <artifactId>zkclient</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zookeeper</groupId>
+      <artifactId>zookeeper</artifactId>
     </dependency>
 
     <dependency>
@@ -45,6 +56,30 @@
       <artifactId>b2b-saas-context</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.treefinance.commonservice</groupId>
+      <artifactId>guid-service-facade</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.treefinance.basicservice.security</groupId>
+      <artifactId>security-crypto-facade</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.treefinance.saas.processor.thirdparty</groupId>
+      <artifactId>processor-thirdparty-facade</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.treefinance.saas</groupId>
+      <artifactId>merchant-center-facade</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.treefinance.saas</groupId>
+      <artifactId>grap-server-facade</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.datatrees.spider</groupId>
+      <artifactId>spider-share-api</artifactId>
+    </dependency>
   </dependencies>
 
 </project>
