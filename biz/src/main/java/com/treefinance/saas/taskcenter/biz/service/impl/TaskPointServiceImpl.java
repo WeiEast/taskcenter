@@ -1,14 +1,11 @@
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.merchant.facade.request.console.MerchantFunctionRequest;
 import com.treefinance.saas.merchant.facade.result.console.MerchantFunctionResult;
 import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
 import com.treefinance.saas.merchant.facade.service.MerchantFunctionFacade;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
-import com.treefinance.saas.taskcenter.context.config.DiamondConfig;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttributeCriteria;
@@ -174,7 +171,7 @@ public class TaskPointServiceImpl implements TaskPointService {
         map.put("msg", taskPoint.getMsg());
         map.put("ip", taskPoint.getIp());
         map.put("appId", appId);
-        map.put("sourceId", sourceid);
+        map.put("sourceId", sourceId);
         DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         map.put("occurTime", dateFormat.format(taskPoint.getOccurTime()));
