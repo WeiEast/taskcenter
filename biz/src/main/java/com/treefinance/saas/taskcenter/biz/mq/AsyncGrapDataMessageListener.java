@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.biz.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
-import com.treefinance.saas.taskcenter.biz.service.impl.TaskLogServiceImpl;
+import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
@@ -20,7 +20,7 @@ public class AsyncGrapDataMessageListener extends AbstractRocketMqMessageListene
     @Autowired
     protected GrapDataCallbackService grapDataCallbackService;
     @Autowired
-    private TaskLogServiceImpl taskLogService;
+    private TaskLogService taskLogService;
 
     @Override
     public ConsumeSetting getConsumeSetting() {

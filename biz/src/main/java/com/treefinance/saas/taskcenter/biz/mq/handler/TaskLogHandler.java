@@ -2,8 +2,8 @@ package com.treefinance.saas.taskcenter.biz.mq.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.mq.model.TaskLogMessage;
-import com.treefinance.saas.taskcenter.biz.service.impl.TaskLogServiceImpl;
-import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
+import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +19,9 @@ public class TaskLogHandler {
     private static final Logger logger = LoggerFactory.getLogger(TaskLogHandler.class);
 
     @Autowired
-    private TaskLogServiceImpl taskLogService;
+    private TaskLogService taskLogService;
     @Autowired
-    private TaskServiceImpl taskService;
+    private TaskService taskService;
 
     public void handle(String message) {
         TaskLogMessage taskLogMessage = JSON.parseObject(message, TaskLogMessage.class);
