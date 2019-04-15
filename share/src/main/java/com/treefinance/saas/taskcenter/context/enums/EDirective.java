@@ -40,8 +40,8 @@ public enum EDirective {
      */
     TASK_CANCEL("task_cancel", (byte)3);
 
-    private Byte code;
-    private String text;
+    private final Byte code;
+    private final String text;
 
     EDirective(String text, Byte code) {
         this.code = code;
@@ -86,15 +86,8 @@ public enum EDirective {
         return code;
     }
 
-    public void setCode(Byte code) {
-        this.code = code;
-    }
-
     public String getText() {
         return text;
     }
 
-    public void setText(String text) {
-        this.text = text;
-    }
 }

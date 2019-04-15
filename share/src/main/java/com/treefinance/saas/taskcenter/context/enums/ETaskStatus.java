@@ -23,8 +23,8 @@ public enum ETaskStatus {
      */
     FAIL((byte)3, "失败");
 
-    private Byte status;
-    private String name;
+    private final Byte status;
+    private final String name;
 
     ETaskStatus(Byte status, String name) {
         this.status = status;

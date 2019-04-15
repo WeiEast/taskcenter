@@ -3,15 +3,20 @@ package com.treefinance.saas.taskcenter.context.enums.moxie;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Created by haojiahong on 2017/9/15.
+ * @author haojiahong
+ * @date 2017/9/15.
  */
 public enum EMoxieDirective {
 
-    LOGIN_SUCCESS("login_success", (byte)1), LOGIN_FAIL("login_fail", (byte)1), TASK_SUCCESS("task_success", (byte)2), TASK_FAIL("task_fail", (byte)2),
-    TASK_CANCEL("task_cancel", (byte)2), CALLBACK_FAIL("callback_fail", (byte)2);
+    LOGIN_SUCCESS("login_success", (byte)1),
+    LOGIN_FAIL("login_fail", (byte)1),
+    TASK_SUCCESS("task_success", (byte)2),
+    TASK_FAIL("task_fail", (byte)2),
+    TASK_CANCEL("task_cancel", (byte)2),
+    CALLBACK_FAIL("callback_fail", (byte)2);
 
-    private String text;
-    private Byte stepCode;
+    private final String text;
+    private final Byte stepCode;
 
     EMoxieDirective(String text, Byte stepCode) {
         this.text = text;
@@ -33,15 +38,8 @@ public enum EMoxieDirective {
         return text;
     }
 
-    public void setText(String text) {
-        this.text = text;
-    }
-
     public Byte getStepCode() {
         return stepCode;
     }
 
-    public void setStepCode(Byte stepCode) {
-        this.stepCode = stepCode;
-    }
 }
