@@ -14,7 +14,6 @@
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.DataUtils;
 import com.treefinance.saas.taskcenter.biz.service.AppCallbackConfigService;
@@ -24,12 +23,12 @@ import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
+import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,6 @@ import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 爬取数据回调Service Created by yh-treefinance on 2017/12/25.
@@ -88,7 +86,7 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
         // 3.获取商户密钥
         AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
 
-        List<AppCallbackConfigDTO> callbackConfigs = getCallbackConfigs(taskDTO, dataType);
+        List<CallbackConfigBO> callbackConfigs = getCallbackConfigs(taskDTO, dataType);
         if (CollectionUtils.isEmpty(callbackConfigs)) {
             logger.info("{} callback failed :taskId={}, callbackConfigs of {} is null, message={}...", dataType.name(), taskId, appId, JSON.toJSONString(asycGrapDTO));
             return;
@@ -121,7 +119,7 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
         }
         // 5.回调 aes加密
         String key = appLicense.getServerPublicKey();
-        for (AppCallbackConfigDTO configDTO : callbackConfigs) {
+        for (CallbackConfigBO configDTO : callbackConfigs) {
             // 任务成功但是成功不通知
             if (isSuccess && !Byte.valueOf("1").equals(configDTO.getIsNotifySuccess())) {
                 logger.info("{} callback : 任务成功，但是成功不通知...taskId={}, config={}", dataType.name(), taskId, JSON.toJSONString(configDTO));
@@ -136,7 +134,7 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
             String result = "";
             Map<String, Object> paramMap = Maps.newHashMap();
             String callbackUrl = configDTO.getUrl();
-            Long startTime = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
             try {
                 String params = DataUtils.encryptBeanAsBase64StringByRsa(dataMap, key);
                 params = URLEncoder.encode(params, "utf-8");
@@ -170,15 +168,13 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
      * @return
      */
     @Override
-    public List<AppCallbackConfigDTO> getCallbackConfigs(TaskDTO taskDTO, EDataType dataType) {
+    public List<CallbackConfigBO> getCallbackConfigs(TaskDTO taskDTO, EDataType dataType) {
         String appId = taskDTO.getAppId();
         Byte bizType = taskDTO.getBizType();
-        List<AppCallbackConfigDTO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, bizType, dataType);
+        List<CallbackConfigBO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, bizType, dataType);
         logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", taskDTO.getId(), JSON.toJSONString(configList));
-        if (CollectionUtils.isEmpty(configList)) {
-            return Lists.newArrayList();
-        }
-        return configList.stream().filter(config -> config != null && dataType.getType().equals(config.getDataType())).collect(Collectors.toList());
+
+        return configList;
     }
 
 }

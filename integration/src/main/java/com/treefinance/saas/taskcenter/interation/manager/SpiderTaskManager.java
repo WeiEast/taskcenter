@@ -11,28 +11,39 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
-
-import com.treefinance.saas.taskcenter.context.enums.EDataType;
-import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
+package com.treefinance.saas.taskcenter.interation.manager;
 
 import javax.annotation.Nonnull;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jerry
- * @date 2018/11/21 12:16
+ * @date 2019-02-28 20:58
  */
-public interface AppCallbackConfigService {
+public interface SpiderTaskManager {
 
     /**
-     * 获取指定业务类型的回调配置： 如果有配置该业务类型，则使用该业务类型；没有则使用全局配置
-     *
-     * @param appId 商户ID
-     * @param bizType 业务类型
-     * @param dataType 数据类型
-     * @return 回调配置列表
+     * 获取任务的 AccountNo
+     * 
+     * @param taskId 任务ID
      */
-    List<CallbackConfigBO> queryConfigsByAppIdAndBizType(String appId, @Nonnull Byte bizType, @Nonnull EDataType dataType);
+    String getAccountNo(@Nonnull Long taskId);
+
+    /**
+     * 取消任务
+     * 
+     * @param taskId 网关任务id
+     * @param extra 附加信息,目前null
+     */
+    void cancel(@Nonnull Long taskId, Map<String, String> extra);
+
+    /**
+     * 取消任务
+     * 
+     * @param taskId 网关任务id
+     * @param extra 附加信息,目前null
+     */
+    void cancelQuietly(@Nonnull Long taskId, Map<String, String> extra);
+
 }

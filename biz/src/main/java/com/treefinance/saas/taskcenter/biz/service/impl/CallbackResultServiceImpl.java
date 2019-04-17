@@ -18,8 +18,8 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.biz.service.CallbackResultService;
 import com.treefinance.saas.taskcenter.context.Constants;
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.share.mq.MessageProducer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ public class CallbackResultServiceImpl implements CallbackResultService {
     private MessageProducer messageProducer;
 
     @Override
-    public void handleResult(TaskDTO task, String result, AppCallbackConfigDTO config, int httpCode) {
+    public void handleResult(TaskDTO task, String result, CallbackConfigBO config, int httpCode) {
         Map<String, Object> messageMap = Maps.newHashMap();
         try {
             messageMap.put("taskId", task.getId());

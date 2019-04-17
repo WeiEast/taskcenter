@@ -26,7 +26,6 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
-import com.treefinance.saas.taskcenter.dto.AppBizType;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisKeyUtils;
 import com.treefinance.toolkit.util.DateUtils;
@@ -39,7 +38,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -59,7 +57,7 @@ public class TaskTimeServiceImpl implements TaskTimeService {
      */
     private final LoadingCache<Long, Task> cache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).maximumSize(20000).build(new CacheLoader<Long, Task>() {
         @Override
-        public Task load(Long taskId) throws Exception {
+        public Task load(Long taskId) {
             return taskRepository.getTaskById(taskId);
         }
     });
@@ -109,18 +107,14 @@ public class TaskTimeServiceImpl implements TaskTimeService {
         Task task = null;
         try {
             task = cache.get(taskId);
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             logger.error("获取设置的任务抓取超时时长时,未查询到任务信息taskId={}", taskId);
         }
         if (task == null) {
             return null;
         }
-        AppBizType bizType = appBizTypeService.getAppBizType(task.getBizType());
-        if (bizType == null || bizType.getTimeout() == null) {
-            logger.error("获取设置的任务抓取超时时长时,未查询到任务相关的bizType信息,taskId={}", taskId);
-            return null;
-        }
-        return bizType.getTimeout();
+
+        return appBizTypeService.getBizTimeout(task.getBizType());
     }
 
     @Override

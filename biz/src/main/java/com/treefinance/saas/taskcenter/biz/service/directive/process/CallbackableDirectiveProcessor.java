@@ -22,7 +22,6 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
@@ -31,6 +30,7 @@ import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
+import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackLicense;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
@@ -142,7 +142,7 @@ public abstract class CallbackableDirectiveProcessor {
         Long taskId = directiveDTO.getTaskId();
 
         // 4.查询回调配置
-        List<AppCallbackConfigDTO> configList = getCallbackConfigs(taskDTO);
+        List<CallbackConfigBO> configList = getCallbackConfigs(taskDTO);
         if (CollectionUtils.isEmpty(configList)) {
             logger.info("callback exit: callback-config is empty, directive={}", JSON.toJSONString(directiveDTO));
             monitorService.sendTaskCallbackMsgMonitorMessage(taskId, null, null, false);
@@ -164,7 +164,7 @@ public abstract class CallbackableDirectiveProcessor {
         taskPointService.addTaskPoint(taskPointRequest);
         // 6.执行回调，支持一个任务回调多方
         List<Boolean> callbackFlags = Lists.newArrayList();
-        for (AppCallbackConfigDTO config : configList) {
+        for (CallbackConfigBO config : configList) {
             Boolean callbackSuccess;
             try {
                 taskPointService.addTaskPoint(taskId, "900401");
@@ -215,7 +215,7 @@ public abstract class CallbackableDirectiveProcessor {
         Map<String, Object> attributes = task.getAttributes();
         if (attributes != null && attributes.containsKey("sourceId")) {
             TaskAttribute taskAttribute = (TaskAttribute)task.getAttributes().get("sourceId");
-            dataMap.putIfAbsent("sourceId", taskAttribute.getValue().toString());
+            dataMap.putIfAbsent("sourceId", taskAttribute.getValue());
         }
 
         dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
@@ -247,10 +247,10 @@ public abstract class CallbackableDirectiveProcessor {
      * @param dataMap
      * @param appLicense
      * @param config
-     * @return
      * @throws Exception
      */
-    protected void initDataMap(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, AppCallbackConfigDTO config, DirectiveDTO directiveDTO) throws Exception {
+    private void initDataMap(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, CallbackConfigBO config,
+        DirectiveDTO directiveDTO) throws Exception {
         // 如果是数据传输，则需先下载数据
         Byte notifyModel = config.getNotifyModel();
         if (SystemUtils.isDataNotifyModel(notifyModel)) {
@@ -305,7 +305,7 @@ public abstract class CallbackableDirectiveProcessor {
      *
      * @return <code>defaultValue</code> if given <code>value</code> was null.
      */
-    protected <T> T ifNull(T value, T defaultValue) {
+    private <T> T ifNull(T value, T defaultValue) {
         return value == null ? defaultValue : value;
     }
 
@@ -325,7 +325,7 @@ public abstract class CallbackableDirectiveProcessor {
      *
      * @return
      */
-    private List<AppCallbackConfigDTO> getCallbackConfigs(TaskDTO taskDTO) {
+    private List<CallbackConfigBO> getCallbackConfigs(TaskDTO taskDTO) {
         return grapDataCallbackService.getCallbackConfigs(taskDTO, EDataType.MAIN_STREAM);
     }
 
@@ -336,7 +336,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @param directiveDTO
      * @return
      */
-    private boolean needCallback(AppCallbackConfigDTO config, DirectiveDTO directiveDTO) {
+    private boolean needCallback(CallbackConfigBO config, DirectiveDTO directiveDTO) {
         if (config == null) {
             return false;
         }
@@ -369,7 +369,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @return
      * @throws Exception
      */
-    private String encryptParams(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, AppCallbackConfigDTO config) throws Exception {
+    private String encryptParams(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, CallbackConfigBO config) throws Exception {
         byte version = config.getVersion();
         if (version > 0) {
             // 默认使用AES方式
@@ -425,7 +425,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @param config
      * @return
      */
-    private boolean doCallBack(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, AppCallbackConfigDTO config, DirectiveDTO directiveDTO) throws Exception {
+    private boolean doCallBack(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, CallbackConfigBO config, DirectiveDTO directiveDTO) throws Exception {
         // 1.备份数据
         Map<String, Object> originalDataMap = Maps.newHashMap(dataMap);
 
@@ -443,7 +443,7 @@ public abstract class CallbackableDirectiveProcessor {
         logger.info("回调执行：taskId={},dataMap={}, params={}", directiveDTO.getTaskId(), JSON.toJSONString(dataMap), JSON.toJSONString(paramMap));
         String result = "";
         int httpCode = 200;
-        Long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         try {
             if (SystemUtils.isDataNotifyModel(config.getNotifyModel())) {
                 result = HttpClientUtils.doPostWithTimeoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);

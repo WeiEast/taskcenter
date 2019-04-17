@@ -11,21 +11,28 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
+package com.treefinance.saas.taskcenter.interation.manager.domain;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.io.Serializable;
 
 /**
  * @author Jerry
- * @date 2018/11/21 12:14
+ * @date 2019-04-17 17:07
  */
-public interface AppBizTypeService {
+@Getter
+@Setter
+@ToString
+public class MerchantFunctionBO implements Serializable {
 
-    /**
-     * 获取指定业务类型的超时时长
-     *
-     * @param bizType 业务类型
-     * @return 超时时长，单位：秒(Seconds)
-     */
-    Integer getBizTimeout(@Nonnull Byte bizType);
+    private String appId;
+
+    private String appName;
+
+    private Integer sync;
+
+    private String syncUrl;
 }

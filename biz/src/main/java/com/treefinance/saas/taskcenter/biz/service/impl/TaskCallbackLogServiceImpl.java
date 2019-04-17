@@ -19,7 +19,7 @@ import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +72,7 @@ public class TaskCallbackLogServiceImpl implements TaskCallbackLogService {
     }
 
     @Override
-    public void insert(AppCallbackConfigDTO config, Long taskId, Byte type, String params, String result, long consumeTime, int httpCode) {
+    public void insert(CallbackConfigBO config, Long taskId, Byte type, String params, String result, long consumeTime, int httpCode) {
         Long configId = 0L;
         String url = null;
         if (config != null) {

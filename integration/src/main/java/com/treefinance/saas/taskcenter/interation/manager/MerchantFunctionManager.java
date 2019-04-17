@@ -11,21 +11,17 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
+package com.treefinance.saas.taskcenter.interation.manager;
+
+import com.treefinance.saas.taskcenter.interation.manager.domain.MerchantFunctionBO;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author Jerry
- * @date 2018/11/21 12:14
+ * @date 2019-04-17 17:00
  */
-public interface AppBizTypeService {
+public interface MerchantFunctionManager {
 
-    /**
-     * 获取指定业务类型的超时时长
-     *
-     * @param bizType 业务类型
-     * @return 超时时长，单位：秒(Seconds)
-     */
-    Integer getBizTimeout(@Nonnull Byte bizType);
+    MerchantFunctionBO getMerchantFunctionByAppId(@Nonnull String appId);
 }

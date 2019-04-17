@@ -17,7 +17,6 @@ import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
-import com.treefinance.saas.taskcenter.dto.AppBizType;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
@@ -122,7 +121,7 @@ public class MoxieTimeoutService {
     }
 
     public void handleTaskTimeout(Long taskId) {
-        Task task = null;
+        Task task;
         try {
             task = cache.get(taskId);
         } catch (ExecutionException e) {
@@ -136,14 +135,13 @@ public class MoxieTimeoutService {
             logger.info("handleTaskTimeout error : the task is completed: {}", JSON.toJSONString(task));
             return;
         }
-        Date loginTime = getLoginTime(taskId);
-        AppBizType bizType = appBizTypeService.getAppBizType(task.getBizType());
-        if (bizType == null || bizType.getTimeout() == null) {
+        Integer timeout = appBizTypeService.getBizTimeout(task.getBizType());
+        if(timeout == null){
             return;
         }
-        Integer timeout = bizType.getTimeout();
         // 任务超时: 当前时间-登录时间>超时时间
         Date currentTime = new Date();
+        Date loginTime = getLoginTime(taskId);
         Date timeoutDate = DateUtils.plusSeconds(loginTime, timeout);
         logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
         if (timeoutDate.before(currentTime)) {

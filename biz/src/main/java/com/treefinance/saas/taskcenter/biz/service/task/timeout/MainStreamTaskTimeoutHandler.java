@@ -1,6 +1,5 @@
 package com.treefinance.saas.taskcenter.biz.service.task.timeout;
 
-import com.datatrees.spider.share.api.SpiderTaskApi;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
@@ -9,6 +8,7 @@ import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.interation.manager.SpiderTaskManager;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class MainStreamTaskTimeoutHandler implements TaskTimeoutHandler {
     @Autowired
     private TaskLogService taskLogService;
     @Autowired
-    private SpiderTaskApi spiderTaskApi;
+    private SpiderTaskManager spiderTaskManager;
 
     @Override
     public void handleTaskTimeout(TaskDTO task, Integer timeout, Date loginTime) {
@@ -46,13 +46,9 @@ public class MainStreamTaskTimeoutHandler implements TaskTimeoutHandler {
         taskLogService.log(task.getId(), TaskStatusMsgEnum.TIMEOUT_MSG, errorMessage);
 
         // 通知爬数取消任务
-        try {
-            Map<String, String> extMap = Maps.newHashMap();
-            extMap.put("reason", "timeout");
-            this.spiderTaskApi.cancel(taskId, extMap);
-        } catch (Exception e) {
-            logger.error("crawlerService.cancel(" + taskId + ") failed", e);
-        }
+        Map<String, String> extMap = Maps.newHashMap();
+        extMap.put("reason", "timeout");
+        spiderTaskManager.cancelQuietly(taskId, extMap);
         // 超时处理：任务更新为失败
         DirectiveDTO directiveDTO = new DirectiveDTO();
         directiveDTO.setTaskId(task.getId());

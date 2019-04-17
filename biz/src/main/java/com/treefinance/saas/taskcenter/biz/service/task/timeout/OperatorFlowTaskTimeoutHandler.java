@@ -5,10 +5,10 @@ import com.treefinance.saas.taskcenter.biz.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -44,7 +44,7 @@ public class OperatorFlowTaskTimeoutHandler implements TaskTimeoutHandler {
         Date currentTime = new Date();
         logger.info("运营商流量：isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
         // 2.判断此商户是否配置了运营商流量数据的回调
-        List<AppCallbackConfigDTO> callbackConfigs = grapDataCallbackService.getCallbackConfigs(task, EDataType.OPERATOR_FLOW);
+        List<CallbackConfigBO> callbackConfigs = grapDataCallbackService.getCallbackConfigs(task, EDataType.OPERATOR_FLOW);
         if (CollectionUtils.isEmpty(callbackConfigs)) {
             logger.info("handle operator flow task timeout, merchant don't have callback configs: taskId={},timeout={},loginTime={}", taskId, timeout,
                 DateFormatUtils.format(loginTime, "yyyyMMdd HH:mm:ss"));

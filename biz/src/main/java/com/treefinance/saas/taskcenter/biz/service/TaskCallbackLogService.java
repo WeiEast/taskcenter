@@ -15,7 +15,7 @@ package com.treefinance.saas.taskcenter.biz.service;
 
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
+import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,5 +38,5 @@ public interface TaskCallbackLogService {
 
     List<TaskCallbackLog> queryTaskCallbackLogs(@Nonnull TaskCallbackLogQuery query);
 
-    void insert(AppCallbackConfigDTO config, Long taskId, Byte type, String params, String result, long consumeTime, int httpCode);
+    void insert(CallbackConfigBO config, Long taskId, Byte type, String params, String result, long consumeTime, int httpCode);
 }

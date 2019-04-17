@@ -11,9 +11,8 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
+package com.treefinance.saas.taskcenter.interation.manager;
 
-import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 
 import javax.annotation.Nonnull;
@@ -22,17 +21,11 @@ import java.util.List;
 
 /**
  * @author Jerry
- * @date 2018/11/21 12:16
+ * @date 2018/12/11 01:19
  */
-public interface AppCallbackConfigService {
+public interface CallbackConfigManager {
 
-    /**
-     * 获取指定业务类型的回调配置： 如果有配置该业务类型，则使用该业务类型；没有则使用全局配置
-     *
-     * @param appId 商户ID
-     * @param bizType 业务类型
-     * @param dataType 数据类型
-     * @return 回调配置列表
-     */
-    List<CallbackConfigBO> queryConfigsByAppIdAndBizType(String appId, @Nonnull Byte bizType, @Nonnull EDataType dataType);
+    List<CallbackConfigBO> queryCallbackConfigsByAppId(@Nonnull String appId);
+
+    List<CallbackConfigBO> getAllCallbackConfigs();
 }

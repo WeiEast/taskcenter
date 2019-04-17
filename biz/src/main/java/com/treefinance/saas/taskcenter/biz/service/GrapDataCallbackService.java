@@ -14,9 +14,9 @@
 package com.treefinance.saas.taskcenter.biz.service;
 
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 
 import java.util.List;
 
@@ -28,5 +28,5 @@ public interface GrapDataCallbackService {
 
     void handleAyscData(AsycGrapDTO asycGrapDTO);
 
-    List<AppCallbackConfigDTO> getCallbackConfigs(TaskDTO taskDTO, EDataType dataType);
+    List<CallbackConfigBO> getCallbackConfigs(TaskDTO taskDTO, EDataType dataType);
 }

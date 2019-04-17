@@ -1,10 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.treefinance.commonservice.uid.UidService;
-import com.treefinance.saas.merchant.facade.request.console.MerchantFunctionRequest;
-import com.treefinance.saas.merchant.facade.result.console.MerchantFunctionResult;
-import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
-import com.treefinance.saas.merchant.facade.service.MerchantFunctionFacade;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
@@ -15,10 +11,13 @@ import com.treefinance.saas.taskcenter.dao.mapper.TaskMapper;
 import com.treefinance.saas.taskcenter.dao.mapper.TaskPointMapper;
 import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
+import com.treefinance.saas.taskcenter.interation.manager.MerchantFunctionManager;
+import com.treefinance.saas.taskcenter.interation.manager.domain.MerchantFunctionBO;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.toolkit.util.Objects;
 import com.treefinance.toolkit.util.net.NetUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +49,7 @@ public class TaskPointServiceImpl implements TaskPointService {
     private static final Logger logger = LoggerFactory.getLogger(TaskPointService.class);
 
     private static final String sourceId = "sourceId";
+    private static final int[] NOTIFY_BIZ_TYPE = {1, 2, 3};
 
     @Autowired
     private TaskPointMapper taskPointMapper;
@@ -63,7 +63,7 @@ public class TaskPointServiceImpl implements TaskPointService {
     private UidService uidService;
 
     @Autowired
-    private MerchantFunctionFacade merchantFunctionFacade;
+    private MerchantFunctionManager merchantFunctionManager;
 
     @Override
     public void addTaskPoint(Long taskId, String pointCode) {
@@ -102,8 +102,8 @@ public class TaskPointServiceImpl implements TaskPointService {
                     sourceid = taskAttributes.get(0).getValue();
                 }
                 String uniqueId = task.getUniqueId();
-                redisDao.setEx("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId(), task.getUniqueId() + "," + task.getBizType() + "," + task.getAppId() + "," + sourceid, 10,
-                    TimeUnit.MINUTES);
+                redisDao.setEx("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId(),
+                    task.getUniqueId() + "," + task.getBizType() + "," + task.getAppId() + "," + sourceid, 10, TimeUnit.MINUTES);
                 taskPoint.setUniqueId(uniqueId);
                 taskPoint.setBizType(task.getBizType());
                 appId = task.getAppId();
@@ -112,7 +112,7 @@ public class TaskPointServiceImpl implements TaskPointService {
                 taskPoint.setUniqueId(list.get(0));
                 taskPoint.setBizType((Byte.valueOf(list.get(1))));
                 appId = list.get(2);
-                if(StringUtils.isNotEmpty(sourceid)) {
+                if (StringUtils.isNotEmpty(sourceid)) {
                     sourceid = list.get(3);
                 }
             }
@@ -126,36 +126,32 @@ public class TaskPointServiceImpl implements TaskPointService {
             taskPoint.setId(uidService.getId());
             taskPoint.setAppId(appId);
             int i = taskPointMapper.insertSelective(taskPoint);
-            MerchantFunctionRequest request = new MerchantFunctionRequest();
-            request.setAppId(appId);
-            MerchantResult<MerchantFunctionResult> merchantResult = merchantFunctionFacade.getMerchantFunctionByAppId(request);
-            if (!merchantResult.isSuccess()) {
-                logger.error("根据appId获取商户是否通知埋点信息失败,appId={},errorMsg={}", appId, merchantResult.getRetMsg());
-            } else {
-                success(taskPoint, appId, bizType, i, merchantResult, sourceid);
+
+            if (i > 0 && supportNotifyBizType(bizType)) {
+                MerchantFunctionBO function = null;
+                try {
+                    function = merchantFunctionManager.getMerchantFunctionByAppId(appId);
+                } catch (Exception e) {
+                    logger.error("根据appId获取商户埋点信息同步配置失败!", e);
+                }
+                if (function != null) {
+                    notifyMerchant(function, taskPoint, appId, sourceid);
+                }
             }
         } catch (Exception e) {
             logger.error("埋点通知商户异常，taskId={}", taskPointRequest.getTaskId(), e);
         }
     }
 
-    private void success(TaskPoint taskPoint, String appId, int bizType, int i,
-        MerchantResult<MerchantFunctionResult> merchantResult, String sourceId) {
-        MerchantFunctionResult merchantFunctionResult = merchantResult.getData();
-        if (merchantFunctionResult == null) {
-            logger.warn("根据appId没有获取商户是否通知埋点信息，appId={}", appId);
-        } else {
-            if (i == 1 && merchantFunctionResult.getSync() == 1) {
-                if (bizType == 1 || bizType == 2 || bizType == 3) {
-                    logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
-                    Map<String, Object> map = getStringObjectMap(taskPoint, appId, sourceId);
-                    String result = HttpClientUtils.doPost(merchantFunctionResult.getSyncUrl(), map);
-                    if (result == null) {
-                        logger.error("埋点通知商户返回结果为空，taskId={},appId={}", taskPoint.getTaskId(), appId);
-                    } else {
-                        logger.warn("埋点通知商户返回结果，taskId={}，result={}", taskPoint.getTaskId(), result);
-                    }
-                }
+    private void notifyMerchant(MerchantFunctionBO merchantFunction, TaskPoint taskPoint, String appId, String sourceId) {
+        if (merchantFunction.getSync() == 1) {
+            logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
+            Map<String, Object> map = getStringObjectMap(taskPoint, appId, sourceId);
+            String result = HttpClientUtils.doPost(merchantFunction.getSyncUrl(), map);
+            if (result == null) {
+                logger.error("埋点通知商户返回结果为空，taskId={},appId={}", taskPoint.getTaskId(), appId);
+            } else {
+                logger.warn("埋点通知商户返回结果，taskId={}，result={}", taskPoint.getTaskId(), result);
             }
         }
     }
@@ -176,6 +172,17 @@ public class TaskPointServiceImpl implements TaskPointService {
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         map.put("occurTime", dateFormat.format(taskPoint.getOccurTime()));
         return map;
+    }
+
+    private boolean supportNotifyBizType(int bizType) {
+        if (ArrayUtils.isNotEmpty(NOTIFY_BIZ_TYPE)) {
+            for (int type : NOTIFY_BIZ_TYPE) {
+                if (type == bizType) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

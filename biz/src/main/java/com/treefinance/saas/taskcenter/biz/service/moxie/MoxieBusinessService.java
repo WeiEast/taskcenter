@@ -2,9 +2,6 @@ package com.treefinance.saas.taskcenter.biz.service.moxie;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.grapserver.facade.service.FundMoxieFacade;
-import com.treefinance.saas.knife.result.SaasResult;
-import com.treefinance.saas.processor.thirdparty.facade.fund.FundService;
 import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
@@ -17,6 +14,8 @@ import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieTaskEventNoticeDTO;
+import com.treefinance.saas.taskcenter.interation.manager.FundManager;
+import com.treefinance.saas.taskcenter.interation.manager.FundMoxieManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +40,11 @@ public class MoxieBusinessService {
     @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
-    private FundService fundService;
+    private FundManager fundManager;
     @Autowired
     private TaskServiceImpl taskService;
     @Autowired
-    private FundMoxieFacade fundMoxieFacade;
+    private FundMoxieManager fundMoxieManager;
 
     /**
      * 魔蝎任务采集失败业务处理
@@ -125,7 +124,7 @@ public class MoxieBusinessService {
         }
 
         // 获取魔蝎数据,调用洗数,传递账单数据
-        Boolean result = true;
+        boolean result = true;
         String message = null;
         String processResult = null;
         try {
@@ -176,10 +175,9 @@ public class MoxieBusinessService {
     }
 
     private String billAndProcess(Long taskId, String moxieTaskId) throws Exception {
-        String moxieResult = null;
+        String moxieResult;
         try {
-            SaasResult<String> result = fundMoxieFacade.queryFundsEx(moxieTaskId);
-            moxieResult = result.getData();
+            moxieResult = fundMoxieManager.queryFundsEx(moxieTaskId);
             // 记录抓取日志
             taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_SUCCESS.getText(), new Date(), null);
             taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_COMPLETE.getText(), new Date(), null);
@@ -190,7 +188,7 @@ public class MoxieBusinessService {
             throw new Exception("获取公积金信息失败");
         }
         try {
-            String processResult = fundService.fund(taskId, moxieResult);
+            String processResult = fundManager.fund(taskId, moxieResult);
             // 记录数据保存日志
             taskLogService.insertTaskLog(taskId, ETaskStep.DATA_SAVE_SUCCESS.getText(), new Date(), null);
             logger.info("handle moxie business processResult,taskId={},moxieTaskId={},result={}", taskId, moxieTaskId, processResult);

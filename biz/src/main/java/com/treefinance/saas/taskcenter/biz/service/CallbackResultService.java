@@ -13,8 +13,8 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.dto.AppCallbackConfigDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 
 /**
  * @author Jerry
@@ -22,5 +22,5 @@ import com.treefinance.saas.taskcenter.dto.TaskDTO;
  */
 public interface CallbackResultService {
 
-    void handleResult(TaskDTO task, String result, AppCallbackConfigDTO config, int httpCode);
+    void handleResult(TaskDTO task, String result, CallbackConfigBO config, int httpCode);
 }

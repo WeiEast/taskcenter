@@ -13,84 +13,36 @@
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.treefinance.saas.merchant.facade.request.common.BaseRequest;
-import com.treefinance.saas.merchant.facade.request.grapserver.GetAppBizTypeRequest;
-import com.treefinance.saas.merchant.facade.result.console.AppBizTypeResult;
-import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
-import com.treefinance.saas.merchant.facade.service.AppBizTypeFacade;
-import com.treefinance.saas.taskcenter.biz.service.AppBizTypeService;
 import com.treefinance.saas.taskcenter.biz.service.AbstractService;
-import com.treefinance.saas.taskcenter.dto.AppBizType;
-import com.treefinance.saas.taskcenter.exception.RpcServiceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
+import com.treefinance.saas.taskcenter.biz.service.AppBizTypeService;
+import com.treefinance.saas.taskcenter.interation.manager.BizTypeManager;
+import com.treefinance.saas.taskcenter.interation.manager.domain.BizTypeInfoBO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 /**
  * Created by yh-treefinance on 2017/8/2.
  */
 @Service
-public class AppBizTypeServiceImpl extends AbstractService implements AppBizTypeService, InitializingBean {
-    /**
-     * logger
-     */
-    private static final Logger logger = LoggerFactory.getLogger(AppBizTypeServiceImpl.class);
+public class AppBizTypeServiceImpl extends AbstractService implements AppBizTypeService {
 
     @Resource
-    private AppBizTypeFacade appBizTypeFacade;
+    private BizTypeManager bizTypeManager;
 
-    /**
-     * 本地缓存
-     */
-    private final LoadingCache<Byte, AppBizType> cache =
-        CacheBuilder.newBuilder().refreshAfterWrite(5, TimeUnit.MINUTES).expireAfterWrite(5, TimeUnit.MINUTES).build(new CacheLoader<Byte, AppBizType>() {
-            @Override
-            public AppBizType load(Byte bizType) throws Exception {
-                GetAppBizTypeRequest getAppBizTypeRequest = new GetAppBizTypeRequest();
-                getAppBizTypeRequest.setBizType(bizType);
-                MerchantResult<List<AppBizTypeResult>> merchantResult = appBizTypeFacade.queryAppBizTypeByBizType(getAppBizTypeRequest);
-                if (merchantResult.isSuccess()) {
-                    List<AppBizType> list = convert(merchantResult.getData(), AppBizType.class);
-                    logger.info("load biz-type list into local cache from remote service. bizType={},data={}", bizType, JSON.toJSONString(list));
-                    return list.get(0);
-                } else {
-                    throw new RpcServiceException("Failed querying biz-type list! bizType: " + bizType + ", errorMsg:" + " " + merchantResult.getRetMsg());
-                }
+    @Override
+    public Integer getBizTimeout(@Nonnull Byte bizType) {
+        BizTypeInfoBO info = bizTypeManager.getBizTypeInfoByBizType(bizType);
+        if (info != null) {
+            Integer timeout = info.getTimeout();
+            if (timeout != null) {
+                return timeout;
             }
-        });
-
-    @Override
-    public AppBizType getAppBizType(@Nonnull Byte bizType) {
-        return cache.getUnchecked(bizType);
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        BaseRequest getAppBizTypeRequest = new BaseRequest();
-
-        MerchantResult<List<AppBizTypeResult>> merchantResult = appBizTypeFacade.queryAllAppBizType(getAppBizTypeRequest);
-        if (merchantResult.isSuccess()) {
-            List<AppBizTypeResult> results = merchantResult.getData();
-
-            List<AppBizType> list = convert(results, AppBizType.class);
-
-            this.cache.putAll(list.stream().collect(Collectors.toMap(AppBizType::getBizType, appBizType -> appBizType)));
-
-            logger.info("加载业务类型数据：list={}", list);
-        } else {
-            logger.warn("Error invoking app's BizType load service! >>> {}", merchantResult.getRetMsg());
         }
+
+        logger.warn("未获取到当前导入任务类型的超时设置，bizType信息丢失！bizType={}", bizType);
+        return null;
     }
+
 }
