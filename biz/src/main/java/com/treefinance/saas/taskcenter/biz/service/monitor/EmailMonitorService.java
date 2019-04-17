@@ -6,10 +6,10 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskEmailMonitorMessage;
 import com.treefinance.saas.assistant.model.TaskStep;
 import com.treefinance.saas.assistant.plugin.TaskEmailMonitorPlugin;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.AbstractService;
+import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
@@ -49,7 +49,7 @@ public class EmailMonitorService extends AbstractService {
         TaskEmailMonitorMessage message = convert(taskDTO, TaskEmailMonitorMessage.class);
         message.setSaasEnv(String.valueOf(taskDTO.getSaasEnv()));
         // 1.获取任务属性
-        List<TaskAttribute> attributeList = taskAttributeService.findByTaskId(taskId);
+        List<TaskAttribute> attributeList = taskAttributeService.listAttributesByTaskId(taskId);
         Map<String, String> attributeMap = Maps.newHashMap();
         attributeMap.put("email", taskDTO.getWebSite());
         if (CollectionUtils.isNotEmpty(attributeList)) {

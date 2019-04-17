@@ -1,17 +1,20 @@
 /*
  * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
- * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
+package com.treefinance.saas.taskcenter.service;
 
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
@@ -38,7 +41,7 @@ public interface TaskAttributeService {
      * @param decrypt 是否要解密，true:是，false:否
      * @return {@link TaskAttribute}
      */
-    TaskAttribute findByName(Long taskId, String name, boolean decrypt);
+    TaskAttribute queryAttributeByTaskIdAndName(Long taskId, String name, boolean decrypt);
 
     /**
      * 通过属性名和属性值查询taskId
@@ -48,11 +51,25 @@ public interface TaskAttributeService {
      * @param encrypt
      * @return
      */
-    TaskAttribute findByNameAndValue(String name, String value, boolean encrypt);
+    TaskAttribute queryAttributeByNameAndValue(String name, String value, boolean encrypt);
+
+    Map<String, String> getAttributeMapByTaskId(@Nonnull Long taskId, boolean decrypt);
 
     Map<String, String> getAttributeMapByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull String[] names, boolean decrypt);
 
-    List<TaskAttribute> listTaskAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull String[] names, boolean decrypt);
+    /**
+     * 根据taskId查询所有属性
+     *
+     * @param taskId 任务ID
+     * @return a list of task's attributes
+     */
+    List<TaskAttribute> listAttributesByTaskId(Long taskId);
+
+    List<TaskAttribute> listAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull String[] names, boolean decrypt);
+
+    List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name);
+
+    List<TaskAttribute> queryAttributes(@Nonnull TaskAttributeQuery query);
 
     /**
      * 保存属性
@@ -92,14 +109,6 @@ public interface TaskAttributeService {
     }
 
     /**
-     * 根据taskId查询所有属性
-     *
-     * @param taskId 任务ID
-     * @return a list of task's attributes
-     */
-    List<TaskAttribute> findByTaskId(Long taskId);
-
-    /**
      * 根据任务id和name删除属性
      *
      * @param taskId 任务ID
@@ -107,7 +116,19 @@ public interface TaskAttributeService {
      */
     void deleteByTaskIdAndName(Long taskId, String name);
 
-    List<TaskAttribute> listTaskAttributesByNameAndInTaskIds(@Nonnull String name, @Nonnull List<Long> taskIds);
+    /**
+     * 查询登录时间
+     *
+     * @param taskId 任务ID
+     * @return 登录时间
+     */
+    Date queryLoginTime(@Nonnull Long taskId);
 
-    List<TaskAttribute> queryTaskAttributes(@Nonnull TaskAttributeQuery query);
+    /**
+     * 保存登录时间
+     *
+     * @param taskId 任务ID
+     * @param date 登录时间
+     */
+    void saveLoginTime(@Nonnull Long taskId, @Nonnull Date date);
 }

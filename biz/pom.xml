@@ -22,19 +22,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.treefinance.saas</groupId>
-            <artifactId>assistant-variable-notify</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.treefinance.saas</groupId>
-            <artifactId>assistant-httpinvoker</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.treefinance.saas</groupId>
-            <artifactId>assistant-monitor</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.dangdang</groupId>
             <artifactId>elastic-job-lite-core</artifactId>
         </dependency>

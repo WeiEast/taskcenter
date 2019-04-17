@@ -1,6 +1,6 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
+import com.treefinance.saas.taskcenter.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.facade.request.TaskBuryPointLogRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskBuryPointLogRO;

@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
+package com.treefinance.saas.taskcenter.service;
 
-import com.treefinance.b2b.saas.context.adapter.AbstractDomainObjectAdapter;
+import com.treefinance.saas.taskcenter.dao.entity.TaskSupport;
+
+import java.util.List;
 
 /**
  * @author Jerry
- * @date 2018/11/23 19:15
+ * @date 2018/11/21 01:07
  */
-public abstract class AbstractService extends AbstractDomainObjectAdapter {
+public interface TaskSupportService {
 
+    List<TaskSupport> getSupportedList(String supportType, Integer id, String name);
 }

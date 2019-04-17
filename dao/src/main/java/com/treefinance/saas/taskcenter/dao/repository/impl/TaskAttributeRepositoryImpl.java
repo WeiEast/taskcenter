@@ -45,8 +45,20 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     private TaskAttributeUpdateMapper taskAttributeUpdateMapper;
 
     @Override
+    public Map<String, String> getAttributeMapByTaskId(@Nonnull Long taskId, boolean decrypt) {
+        List<TaskAttribute> attributes = this.listAttributesByTaskId(taskId);
+
+        return toMap(attributes, decrypt);
+    }
+
+    @Override
     public Map<String, String> getAttributeMapByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt) {
-        List<TaskAttribute> attributes = listTaskAttributesByTaskIdAndInNames(taskId, names);
+        List<TaskAttribute> attributes = listAttributesByTaskIdAndInNames(taskId, names);
+
+        return toMap(attributes, decrypt);
+    }
+
+    private Map<String, String> toMap(List<TaskAttribute> attributes, boolean decrypt) {
         if (CollectionUtils.isNotEmpty(attributes)) {
             if (decrypt) {
                 return attributes.stream().collect(Collectors.toMap(TaskAttribute::getName, attribute -> decryptNormal(attribute.getValue()), (a, b) -> b));
@@ -59,9 +71,9 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     }
 
     @Override
-    public TaskAttribute getTaskAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name, boolean decrypt) {
-        TaskAttribute attribute = getTaskAttributeByTaskIdAndName(taskId, name);
-        if (attribute != null && decrypt) {
+    public TaskAttribute queryAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name, boolean decrypt) {
+        TaskAttribute attribute = queryAttributeByTaskIdAndName(taskId, name);
+        if (decrypt && attribute != null) {
             attribute.setValue(decryptNormal(attribute.getValue()));
         }
 
@@ -69,20 +81,20 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     }
 
     @Override
-    public TaskAttribute getTaskAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name) {
-        List<TaskAttribute> attributes = listTaskAttributesByTaskIdAndName(taskId, name);
+    public TaskAttribute queryAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name) {
+        List<TaskAttribute> attributes = listAttributesByTaskIdAndName(taskId, name);
         return CollectionUtils.isEmpty(attributes) ? null : attributes.get(0);
     }
 
     @Override
-    public TaskAttribute getTaskAttributeByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt) {
-        List<TaskAttribute> attributes = listTaskAttributesByNameAndValue(name, value, encrypt);
+    public TaskAttribute queryAttributeByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt) {
+        List<TaskAttribute> attributes = listAttributesByNameAndValue(name, value, encrypt);
 
         return CollectionUtils.isEmpty(attributes) ? null : attributes.get(0);
     }
 
     @Override
-    public List<TaskAttribute> listTaskAttributesByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt) {
+    public List<TaskAttribute> listAttributesByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt) {
         String val = encryptNormal(value, encrypt);
         TaskAttributeCriteria criteria = new TaskAttributeCriteria();
         criteria.createCriteria().andNameEqualTo(name).andValueEqualTo(val);
@@ -90,32 +102,32 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     }
 
     @Override
-    public List<TaskAttribute> listTaskAttributesByTaskId(@Nonnull Long taskId) {
+    public List<TaskAttribute> listAttributesByTaskId(@Nonnull Long taskId) {
         TaskAttributeCriteria criteria = new TaskAttributeCriteria();
         criteria.createCriteria().andTaskIdEqualTo(taskId);
         return taskAttributeMapper.selectByExample(criteria);
     }
 
     @Override
-    public List<TaskAttribute> listTaskAttributesByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name) {
+    public List<TaskAttribute> listAttributesByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name) {
         TaskAttributeCriteria criteria = new TaskAttributeCriteria();
         criteria.createCriteria().andTaskIdEqualTo(taskId).andNameEqualTo(name);
         return taskAttributeMapper.selectByExample(criteria);
     }
 
     @Override
-    public List<TaskAttribute> listTaskAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names) {
+    public List<TaskAttribute> listAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names) {
         TaskAttributeCriteria criteria = new TaskAttributeCriteria();
         criteria.createCriteria().andTaskIdEqualTo(taskId).andNameIn(names);
         return taskAttributeMapper.selectByExample(criteria);
     }
 
     @Override
-    public List<TaskAttribute> listTaskAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt) {
-        List<TaskAttribute> attributes = listTaskAttributesByTaskIdAndInNames(taskId, names);
-        if (CollectionUtils.isNotEmpty(attributes)) {
+    public List<TaskAttribute> listAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt) {
+        List<TaskAttribute> attributes = listAttributesByTaskIdAndInNames(taskId, names);
+        if (decrypt && CollectionUtils.isNotEmpty(attributes)) {
             for (TaskAttribute attribute : attributes) {
-                attribute.setValue(decryptNormal(attribute.getValue(), decrypt));
+                attribute.setValue(decryptNormal(attribute.getValue()));
             }
         }
 
@@ -123,15 +135,15 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     }
 
     @Override
-    public List<TaskAttribute> listTaskAttributesByNameAndInTaskIds(@Nonnull String name, @Nonnull List<Long> taskIds) {
+    public List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name) {
         TaskAttributeCriteria taskAttributeCriteria = new TaskAttributeCriteria();
-        taskAttributeCriteria.createCriteria().andNameEqualTo(name).andTaskIdIn(taskIds);
+        taskAttributeCriteria.createCriteria().andTaskIdIn(taskIds).andNameEqualTo(name);
 
         return taskAttributeMapper.selectByExample(taskAttributeCriteria);
     }
 
     @Override
-    public List<TaskAttribute> queryTaskAttributes(@Nonnull TaskAttributeQuery query) {
+    public List<TaskAttribute> queryAttributes(@Nonnull TaskAttributeQuery query) {
         TaskAttributeCriteria taskAttributeCriteria = new TaskAttributeCriteria();
         TaskAttributeCriteria.Criteria criteria = taskAttributeCriteria.createCriteria();
         Long id = query.getId();
@@ -156,7 +168,7 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     }
 
     @Override
-    public Long insertTagAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt) {
+    public Long insertAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt) {
         TaskAttribute attribute = new TaskAttribute();
         attribute.setId(generateUniqueId());
         attribute.setTaskId(taskId);
@@ -167,7 +179,7 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     }
 
     @Override
-    public void insertOrUpdateTagAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt) {
+    public void insertOrUpdateAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt) {
         TaskAttribute taskAttribute = new TaskAttribute();
         taskAttribute.setId(generateUniqueId());
         taskAttribute.setTaskId(taskId);
@@ -177,7 +189,7 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
     }
 
     @Override
-    public int deleteByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name) {
+    public int deleteAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name) {
         TaskAttributeCriteria taskAttributeCriteria = new TaskAttributeCriteria();
         taskAttributeCriteria.createCriteria().andTaskIdEqualTo(taskId).andNameEqualTo(name);
         return taskAttributeMapper.deleteByExample(taskAttributeCriteria);

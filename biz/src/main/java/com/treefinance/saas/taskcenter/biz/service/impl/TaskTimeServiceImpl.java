@@ -16,20 +16,14 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.treefinance.saas.taskcenter.biz.service.AppBizTypeService;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.AppBizTypeService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskTimeService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
 import com.treefinance.saas.taskcenter.biz.service.thread.TaskActiveTimeoutThread;
 import com.treefinance.saas.taskcenter.biz.service.thread.TaskCrawlerTimeoutThread;
-import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
-import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
-import com.treefinance.saas.taskcenter.share.cache.redis.RedisKeyUtils;
-import com.treefinance.toolkit.util.DateUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +60,6 @@ public class TaskTimeServiceImpl implements TaskTimeService {
     @Autowired
     private List<TaskTimeoutHandler> taskTimeoutHandlers;
     @Autowired
-    private RedisDao redisDao;
-    @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
     private ThreadPoolTaskExecutor threadPoolExecutor;
@@ -77,29 +69,13 @@ public class TaskTimeServiceImpl implements TaskTimeService {
         if (taskId == null || date == null) {
             return;
         }
-        taskAttributeService.insertOrUpdate(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), date);
 
-        String key = RedisKeyUtils.genTaskLoginTimeKey(taskId);
-        redisDao.setEx(key, String.valueOf(date.getTime()), 1, TimeUnit.HOURS);
-        logger.info("记录任务登录时间:taskId={},key={},value={}", taskId, key, DateUtils.format(date));
+        taskAttributeService.saveLoginTime(taskId, date);
     }
 
     @Override
     public Date getLoginTime(Long taskId) {
-        String key = RedisKeyUtils.genTaskLoginTimeKey(taskId);
-        String dateTime = redisDao.get(key);
-        if (StringUtils.isNotBlank(dateTime)) {
-            return new Date(Long.valueOf(dateTime));
-        } else {
-            TaskAttribute taskAttribute = taskAttributeService.findByName(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), false);
-            if (taskAttribute == null) {
-                logger.info("获取登录时间时,未查询到任务登录时间,任务未登录.taskId={}", taskId);
-                return null;
-            }
-            Date date = DateUtils.parse(taskAttribute.getValue());
-            this.updateLoginTime(taskId, date);
-            return date;
-        }
+        return taskAttributeService.queryLoginTime(taskId);
     }
 
     @Override

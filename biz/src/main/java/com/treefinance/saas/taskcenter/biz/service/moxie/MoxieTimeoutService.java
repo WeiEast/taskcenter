@@ -5,8 +5,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.biz.service.AppBizTypeService;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.AppBizTypeService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
@@ -98,7 +98,7 @@ public class MoxieTimeoutService {
         if (StringUtils.isNotBlank(value)) {
             return DateUtils.parse(value);
         } else {
-            TaskAttribute taskAttribute = taskAttributeService.findByName(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), false);
+            TaskAttribute taskAttribute = taskAttributeService.queryAttributeByTaskIdAndName(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), false);
             if (taskAttribute == null) {
                 logger.info("公积金登录超时,taskId={}登录时间记录key={}已失效,需检查魔蝎登录状态回调接口是否异常", taskId, key);
                 return null;

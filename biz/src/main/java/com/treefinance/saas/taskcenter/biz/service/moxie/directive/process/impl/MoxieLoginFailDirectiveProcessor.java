@@ -25,7 +25,7 @@ public class MoxieLoginFailDirectiveProcessor extends MoxieAbstractDirectiveProc
     @Transactional
     protected void doProcess(EMoxieDirective directive, MoxieDirectiveDTO directiveDTO) {
         TaskDTO taskDTO = directiveDTO.getTask();
-        TaskAttribute taskAttribute = taskAttributeService.findByName(taskDTO.getId(), ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), false);
+        TaskAttribute taskAttribute = taskAttributeService.queryAttributeByTaskIdAndName(taskDTO.getId(), ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), false);
         String moxieTaskId = "";
         if (taskAttribute != null) {
             moxieTaskId = taskAttribute.getValue();

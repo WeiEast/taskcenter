@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.service.moxie.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackableDirectiveProcessor;
@@ -51,7 +51,7 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
         Long taskId = directiveDTO.getTaskId();
         if (taskId == null) {
             String moxieTaskId = directiveDTO.getMoxieTaskId();
-            TaskAttribute taskAttribute = taskAttributeService.findByNameAndValue(ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), moxieTaskId, false);
+            TaskAttribute taskAttribute = taskAttributeService.queryAttributeByNameAndValue(ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), moxieTaskId, false);
             if (taskAttribute == null) {
                 logger.error("handle moxie directive error : moxieTaskId={} doesn't have taskId matched in task_attribute", moxieTaskId);
                 return;

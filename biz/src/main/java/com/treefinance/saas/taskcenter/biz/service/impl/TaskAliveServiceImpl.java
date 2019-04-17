@@ -15,7 +15,7 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskAliveService;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
@@ -79,7 +79,7 @@ public class TaskAliveServiceImpl implements TaskAliveService {
         if (StringUtils.isNotBlank(lastActiveTimeStr)) {
             return lastActiveTimeStr;
         } else {
-            TaskAttribute taskAttribute = taskAttributeService.findByName(taskId, ETaskAttribute.ALIVE_TIME.getAttribute(), false);
+            TaskAttribute taskAttribute = taskAttributeService.queryAttributeByTaskIdAndName(taskId, ETaskAttribute.ALIVE_TIME.getAttribute(), false);
             if (taskAttribute != null) {
                 Date date = DateUtils.parse(taskAttribute.getValue());
                 this.updateTaskActiveTime(taskId, date);

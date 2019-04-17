@@ -6,10 +6,10 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskOperatorMonitorMessage;
 import com.treefinance.saas.assistant.model.TaskStep;
 import com.treefinance.saas.assistant.plugin.TaskOperatorMonitorPlugin;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.biz.service.TaskBuryPointLogService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.AbstractService;
+import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
@@ -57,7 +57,7 @@ public class OperatorMonitorService extends AbstractService {
         message.setTaskId(taskDTO.getId());
         message.setSaasEnv(String.valueOf(taskDTO.getSaasEnv()));
         // 1.获取任务属性
-        List<TaskAttribute> attributeList = taskAttributeService.findByTaskId(taskId);
+        List<TaskAttribute> attributeList = taskAttributeService.listAttributesByTaskId(taskId);
         Map<String, String> attributeMap = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(attributeList)) {
             attributeList.forEach(taskAttribute -> attributeMap.put(taskAttribute.getName(), taskAttribute.getValue()));

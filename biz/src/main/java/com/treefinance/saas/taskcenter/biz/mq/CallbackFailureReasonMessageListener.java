@@ -1,23 +1,19 @@
 package com.treefinance.saas.taskcenter.biz.mq;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskCallbackFailureReasonMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
 import com.treefinance.saas.taskcenter.dto.CallbackFailureReasonDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -73,11 +69,7 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
         taskCallbackFailureReasonMessage.setTaskId(taskDTO.getId());
         taskCallbackFailureReasonMessage.setDataTime(taskDTO.getCreateTime());
         taskCallbackFailureReasonMessage.setFailureReason(failureReason);
-        List<TaskAttribute> attributeList = taskAttributeService.findByTaskId(taskId);
-        Map<String, String> attributeMap = Maps.newHashMap();
-        if (CollectionUtils.isNotEmpty(attributeList)) {
-            attributeList.forEach(taskAttribute -> attributeMap.put(taskAttribute.getName(), taskAttribute.getValue()));
-        }
+        Map<String, String> attributeMap = taskAttributeService.getAttributeMapByTaskId(taskId, false);
         taskCallbackFailureReasonMessage.setTaskAttributes(attributeMap);
         monitorMessageProducer.send(taskCallbackFailureReasonMessage);
         logger.info("send task callback failure reason to saas-monitor,message={}", JSON.toJSONString(taskCallbackFailureReasonMessage));

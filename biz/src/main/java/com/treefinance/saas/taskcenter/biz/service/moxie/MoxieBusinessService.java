@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.biz.service.moxie;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
@@ -58,7 +58,7 @@ public class MoxieBusinessService {
             logger.error("handle moxie business error: moxieTaskId={} is null", moxieTaskId);
             return;
         }
-        TaskAttribute taskAttribute = taskAttributeService.findByNameAndValue(ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), moxieTaskId, false);
+        TaskAttribute taskAttribute = taskAttributeService.queryAttributeByNameAndValue(ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), moxieTaskId, false);
         if (taskAttribute == null) {
             logger.error("handle moxie business error: moxieTaskId={} doesn't have taskId matched in task_attribute", moxieTaskId);
             return;
@@ -110,7 +110,7 @@ public class MoxieBusinessService {
             logger.error("handle moxie business error: moxieTaskId={} is null", moxieTaskId);
             return;
         }
-        TaskAttribute taskAttribute = taskAttributeService.findByNameAndValue(ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), moxieTaskId, false);
+        TaskAttribute taskAttribute = taskAttributeService.queryAttributeByNameAndValue(ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), moxieTaskId, false);
         if (taskAttribute == null) {
             logger.error("handle moxie business error: moxieTaskId={} doesn't have taskId matched in task_attribute", moxieTaskId);
             return;

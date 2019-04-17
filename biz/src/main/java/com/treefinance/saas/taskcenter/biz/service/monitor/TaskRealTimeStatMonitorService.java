@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskRealTimeMonitorMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatLink;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
@@ -71,7 +71,7 @@ public class TaskRealTimeStatMonitorService {
         message.setStatName(taskLinkStatName);
 
         // 获取任务属性
-        List<TaskAttribute> attributeList = taskAttributeService.findByTaskId(taskId);
+        List<TaskAttribute> attributeList = taskAttributeService.listAttributesByTaskId(taskId);
         Map<String, String> attributeMap = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(attributeList)) {
             attributeList.forEach(taskAttribute -> attributeMap.put(taskAttribute.getName(), taskAttribute.getValue()));
