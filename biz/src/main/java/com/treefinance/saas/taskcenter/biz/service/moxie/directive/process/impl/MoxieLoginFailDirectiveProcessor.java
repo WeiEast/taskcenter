@@ -3,8 +3,8 @@ package com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.MoxieAbstractDirectiveProcessor;
-import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
-import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;

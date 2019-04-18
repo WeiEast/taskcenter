@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.biz.service.monitor;
 
 import com.treefinance.saas.assistant.model.TaskMonitorMessage;
 import com.treefinance.saas.assistant.plugin.TaskMonitorPlugin;
-import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;

@@ -14,6 +14,7 @@
         <module>share</module>
         <module>service</module>
         <module>integration</module>
+        <module>common</module>
     </modules>
 
     <name>taskcenter</name>

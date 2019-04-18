@@ -16,7 +16,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service.monitor;
 
-import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;

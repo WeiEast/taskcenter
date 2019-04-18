@@ -19,7 +19,7 @@ package com.treefinance.saas.taskcenter.biz.schedule.detector;
 import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.taskcenter.biz.schedule.handler.TaskTimeoutHandler;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.TaskLifecycleService;

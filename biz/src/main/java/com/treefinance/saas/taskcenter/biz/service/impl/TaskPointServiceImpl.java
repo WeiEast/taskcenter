@@ -2,7 +2,7 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.treefinance.commonservice.uid.UidService;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
-import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskPoint;

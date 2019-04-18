@@ -6,7 +6,7 @@ import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessagePro
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
 import com.treefinance.saas.taskcenter.biz.mq.model.CallbackFailureReasonMessage;
-import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;

@@ -13,6 +13,8 @@
 
 package com.treefinance.saas.taskcenter.biz.service.monitor;
 
+import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
+
 import java.util.Date;
 
 /**
@@ -25,7 +27,7 @@ public interface TaskRealTimeStatMonitor {
      * 发送任务实时监控消息
      *
      * @param taskId 任务ID
-     * @param code {@link com.treefinance.saas.taskcenter.context.enums.ETaskStep#getText()}
+     * @param code {@link ETaskStep#getText()}
      * @param dataTime 数据时间
      */
     void sendMessage(Long taskId, String code, Date dataTime);

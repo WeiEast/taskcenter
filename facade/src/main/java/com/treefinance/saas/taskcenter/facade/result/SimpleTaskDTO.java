@@ -13,7 +13,7 @@
 
 package com.treefinance.saas.taskcenter.facade.result;
 
-import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

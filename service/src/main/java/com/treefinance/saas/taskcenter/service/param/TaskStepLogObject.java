@@ -16,6 +16,7 @@
 
 package com.treefinance.saas.taskcenter.service.param;
 
+import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -35,7 +36,7 @@ import java.util.Date;
 public class TaskStepLogObject implements Serializable {
 
     /**
-     * @see com.treefinance.saas.taskcenter.context.enums.ETaskStep#getText()
+     * @see ETaskStep#getText()
      */
     private String stepMsg;
     private String errorMsg;

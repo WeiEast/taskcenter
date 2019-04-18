@@ -6,7 +6,7 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.impl.BaseDi
 import com.treefinance.saas.taskcenter.biz.service.directive.process.impl.CancelDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.impl.FailureDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.impl.SuccessDirectiveProcessor;
-import com.treefinance.saas.taskcenter.context.enums.EDirective;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
