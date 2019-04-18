@@ -22,8 +22,8 @@ import java.util.Map;
  * @date 2018/3/19
  */
 @Service
-public class TaskCallbackMsgMonitorService {
-    private static final Logger logger = LoggerFactory.getLogger(TaskCallbackMsgMonitorService.class);
+public class TaskCallbackMsgMonitor {
+    private static final Logger logger = LoggerFactory.getLogger(TaskCallbackMsgMonitor.class);
 
     @Autowired
     private TaskService taskService;

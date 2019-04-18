@@ -14,7 +14,7 @@
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.monitor.TaskRealTimeStatMonitorService;
+import com.treefinance.saas.taskcenter.biz.service.monitor.TaskRealTimeStatMonitor;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
@@ -47,11 +47,11 @@ public class TaskLogServiceImpl implements TaskLogService {
     private static final Logger logger = LoggerFactory.getLogger(TaskLogServiceImpl.class);
 
     @Autowired
-    private TaskRealTimeStatMonitorService taskRealTimeStatMonitorService;
-    @Autowired
     private TaskLogRepository taskLogRepository;
     @Autowired
     private TaskLifecycleService taskLifecycleService;
+    @Autowired
+    private TaskRealTimeStatMonitor taskRealTimeStatMonitor;
 
     @Override
     public TaskLog queryLastErrorLog(@Nullable Long taskId) {
@@ -107,7 +107,7 @@ public class TaskLogServiceImpl implements TaskLogService {
 
         taskLifecycleService.updateAliveTime(taskId);
 
-        taskRealTimeStatMonitorService.handleTaskLog(taskId, msg, taskLog.getCreateTime());
+        taskRealTimeStatMonitor.sendMessage(taskId, msg, taskLog.getCreateTime());
         logger.info("记录任务日志: {}", taskLog);
         return taskLog.getId();
     }

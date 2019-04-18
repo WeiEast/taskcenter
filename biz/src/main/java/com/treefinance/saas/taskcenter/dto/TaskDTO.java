@@ -13,6 +13,8 @@
 
 package com.treefinance.saas.taskcenter.dto;
 
+import com.alibaba.fastjson.JSON;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
@@ -130,5 +132,10 @@ public class TaskDTO implements Serializable {
 
     public void setSaasEnv(Byte saasEnv) {
         this.saasEnv = saasEnv;
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 }

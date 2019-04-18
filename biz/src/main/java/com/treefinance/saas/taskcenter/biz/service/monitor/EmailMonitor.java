@@ -1,6 +1,5 @@
 package com.treefinance.saas.taskcenter.biz.service.monitor;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskEmailMonitorMessage;
@@ -12,10 +11,12 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +27,8 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2018/1/31.
  */
 @Service
-public class EmailMonitorService extends AbstractService {
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+public class EmailMonitor extends AbstractBusinessMonitor<TaskEmailMonitorMessage> {
 
     @Autowired
     private TaskEmailMonitorPlugin taskEmailMonitorPlugin;
@@ -35,20 +37,20 @@ public class EmailMonitorService extends AbstractService {
     @Autowired
     private TaskLogService taskLogService;
 
-    /**
-     * 发送消息
-     *
-     * @param taskDTO
-     */
-    public void sendMessage(TaskDTO taskDTO) {
-        long start = System.currentTimeMillis();
-        Long taskId = taskDTO.getId();
-        TaskEmailMonitorMessage message = convert(taskDTO, TaskEmailMonitorMessage.class);
-        message.setSaasEnv(String.valueOf(taskDTO.getSaasEnv()));
+    @Override
+    public boolean support(EBizType bizType) {
+        return EBizType.EMAIL.equals(bizType) || EBizType.EMAIL_H5.equals(bizType);
+    }
+
+    @Override
+    protected TaskEmailMonitorMessage buildMonitorMessage(TaskDTO task) {
+        Long taskId = task.getId();
+        TaskEmailMonitorMessage message = convert(task, TaskEmailMonitorMessage.class);
+        message.setSaasEnv(String.valueOf(task.getSaasEnv()));
         // 1.获取任务属性
         List<TaskAttribute> attributeList = taskAttributeService.listAttributesByTaskId(taskId);
         Map<String, String> attributeMap = Maps.newHashMap();
-        attributeMap.put("email", taskDTO.getWebSite());
+        attributeMap.put("email", task.getWebSite());
         if (CollectionUtils.isNotEmpty(attributeList)) {
             attributeList.forEach(taskAttribute -> attributeMap.put(taskAttribute.getName(), taskAttribute.getValue()));
         }
@@ -96,8 +98,11 @@ public class EmailMonitorService extends AbstractService {
         }
         message.setTaskSteps(taskSteps);
 
-        // 4.发送消息
+        return message;
+    }
+
+    @Override
+    protected void doSending(TaskEmailMonitorMessage message) {
         taskEmailMonitorPlugin.sendMessage(message);
-        logger.info("send task email message to saas-monitor cost{}ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
     }
 }

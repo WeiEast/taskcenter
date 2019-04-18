@@ -27,7 +27,7 @@ import java.util.Map;
  * @date 2018/6/19
  */
 @Service
-public class TaskRealTimeStatMonitorService {
+public class TaskRealTimeStatMonitorService implements TaskRealTimeStatMonitor{
     private static final Logger logger = LoggerFactory.getLogger(TaskRealTimeStatMonitorService.class);
     /**
      * 需要监控的日志环节
@@ -40,7 +40,8 @@ public class TaskRealTimeStatMonitorService {
     @Autowired
     private MonitorMessageProducer monitorMessageProducer;
 
-    public void handleTaskLog(Long taskId, String code, Date dataTime) {
+    @Override
+    public void sendMessage(Long taskId, String code, Date dataTime) {
         logger.info("任务实时监控日志环节处理,taskId={},code={},dataTime={}", taskId, code, DateUtils.format(dataTime));
         if (!logLinkList.contains(code)) {
             return;

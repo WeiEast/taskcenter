@@ -6,19 +6,21 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskEcommeceMonitorMessage;
 import com.treefinance.saas.assistant.model.TaskStep;
 import com.treefinance.saas.assistant.plugin.TaskEcommerceMonitorPlugin;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskBuryPointLogService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,7 +31,8 @@ import java.util.stream.Collectors;
  * Created by yh-treefinance on 2018/1/31.
  */
 @Service
-public class EcommerceMonitorService extends AbstractService {
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+public class EcommerceMonitor extends AbstractBusinessMonitor<TaskEcommeceMonitorMessage> {
 
     @Autowired
     private TaskEcommerceMonitorPlugin taskEcommerceMonitorPlugin;
@@ -40,16 +43,16 @@ public class EcommerceMonitorService extends AbstractService {
     @Autowired
     private TaskLogService taskLogService;
 
-    /**
-     * 发送消息
-     *
-     * @param taskDTO
-     */
-    public void sendMessage(TaskDTO taskDTO) {
-        long start = System.currentTimeMillis();
-        Long taskId = taskDTO.getId();
-        TaskEcommeceMonitorMessage message = convert(taskDTO, TaskEcommeceMonitorMessage.class);
-        message.setSaasEnv(String.valueOf(taskDTO.getSaasEnv()));
+    @Override
+    public boolean support(EBizType bizType) {
+        return EBizType.ECOMMERCE.equals(bizType);
+    }
+
+    @Override
+    protected TaskEcommeceMonitorMessage buildMonitorMessage(TaskDTO task) {
+        Long taskId = task.getId();
+        TaskEcommeceMonitorMessage message = convert(task, TaskEcommeceMonitorMessage.class);
+        message.setSaasEnv(String.valueOf(task.getSaasEnv()));
         // 1.获取任务属性
         List<TaskAttribute> attributeList = taskAttributeService.listAttributesByTaskId(taskId);
         Map<String, String> attributeMap = Maps.newHashMap();
@@ -87,7 +90,7 @@ public class EcommerceMonitorService extends AbstractService {
             }
         } else {
             // 其他来源
-            logger.info("send task ecommerce message to saas-monitor,存在未知任务来源sourceType={},task={}", sourceType, JSON.toJSONString(taskDTO));
+            logger.info("send task ecommerce message to saas-monitor,存在未知任务来源sourceType={},task={}", sourceType, JSON.toJSONString(task));
         }
 
         // 确认登录
@@ -125,8 +128,13 @@ public class EcommerceMonitorService extends AbstractService {
             taskSteps.add(taskStepMap.get(i));
         }
         message.setTaskSteps(taskSteps);
-        // 4.发送消息
-        taskEcommerceMonitorPlugin.sendMessage(message);
-        logger.info("send task ecommerce message to saas-monitor cost{}ms , message={}", System.currentTimeMillis() - start, JSON.toJSONString(message));
+
+        return message;
     }
+
+    @Override
+    protected void doSending(TaskEcommeceMonitorMessage message) {
+        taskEcommerceMonitorPlugin.sendMessage(message);
+    }
+
 }
