@@ -5,6 +5,7 @@ import com.treefinance.saas.merchant.facade.request.console.MerchantFunctionRequ
 import com.treefinance.saas.merchant.facade.result.console.MerchantFunctionResult;
 import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
 import com.treefinance.saas.merchant.facade.service.MerchantFunctionFacade;
+import com.treefinance.saas.taskcenter.biz.domain.TaskPointInner;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
@@ -19,6 +20,7 @@ import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.toolkit.util.Objects;
 import com.treefinance.toolkit.util.net.NetUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ public class TaskPointServiceImpl implements TaskPointService {
     private static final Logger logger = LoggerFactory.getLogger(TaskPointService.class);
 
     private static final String sourceId = "sourceId";
+    private static final int[] NOTIFY_BIZ_TYPE = {1, 2, 3};
 
     @Autowired
     private TaskPointMapper taskPointMapper;
@@ -86,34 +88,39 @@ public class TaskPointServiceImpl implements TaskPointService {
             Preconditions.notNull("request", taskPointRequest);
             Preconditions.notBlank("request.code", taskPointRequest.getCode());
             TaskPoint taskPoint = new TaskPoint();
+
             BeanUtils.copyProperties(taskPointRequest, taskPoint);
             taskPoint.setOccurTime(new Date());
-            String str = redisDao.get("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId());
+            TaskPointInner str = (TaskPointInner)redisDao.getObject("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId());
             String appId;
             String sourceid = "";
-            if (str == null) {
-
+            if (Objects.isEmpty(str)) {
+                TaskPointInner taskPointInner = new TaskPointInner();
                 Task task = taskMapper.selectByPrimaryKey(taskPointRequest.getTaskId());
-
                 TaskAttributeCriteria criteria = new TaskAttributeCriteria();
                 criteria.createCriteria().andTaskIdEqualTo(taskPointRequest.getTaskId()).andNameEqualTo(sourceId);
                 List<TaskAttribute> taskAttributes = taskAttributeMapper.selectByExample(criteria);
                 if (!Objects.isEmpty(taskAttributes)) {
                     sourceid = taskAttributes.get(0).getValue();
                 }
+                taskPointInner.setAppId(task.getAppId());
+                taskPointInner.setUniqueId(task.getUniqueId());
+                taskPointInner.setBizType(task.getBizType());
+                taskPointInner.setSourceId(sourceid);
+
                 String uniqueId = task.getUniqueId();
-                redisDao.setEx("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId(), task.getUniqueId() + "," + task.getBizType() + "," + task.getAppId() + "," + sourceid, 10,
-                    TimeUnit.MINUTES);
+                redisDao.setObject("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId(), taskPointInner, (long)10, TimeUnit.MINUTES);
+
                 taskPoint.setUniqueId(uniqueId);
+
                 taskPoint.setBizType(task.getBizType());
                 appId = task.getAppId();
             } else {
-                List<String> list = Arrays.asList(str.split(","));
-                taskPoint.setUniqueId(list.get(0));
-                taskPoint.setBizType((Byte.valueOf(list.get(1))));
-                appId = list.get(2);
-                if(StringUtils.isNotEmpty(sourceid)) {
-                    sourceid = list.get(3);
+                taskPoint.setUniqueId(str.getUniqueId());
+                taskPoint.setBizType(str.getBizType());
+                appId = str.getAppId();
+                if (StringUtils.isNotEmpty(str.getSourceId())) {
+                    sourceid = str.getSourceId();
                 }
             }
             int bizType = taskPoint.getBizType();
@@ -126,35 +133,33 @@ public class TaskPointServiceImpl implements TaskPointService {
             taskPoint.setId(uidService.getId());
             taskPoint.setAppId(appId);
             int i = taskPointMapper.insertSelective(taskPoint);
-            MerchantFunctionRequest request = new MerchantFunctionRequest();
-            request.setAppId(appId);
-            MerchantResult<MerchantFunctionResult> merchantResult = merchantFunctionFacade.getMerchantFunctionByAppId(request);
-            if (!merchantResult.isSuccess()) {
-                logger.error("根据appId获取商户是否通知埋点信息失败,appId={},errorMsg={}", appId, merchantResult.getRetMsg());
-            } else {
-                success(taskPoint, appId, bizType, i, merchantResult, sourceid);
+            if (i > 0 && supportNotifyBizType(bizType)) {
+                MerchantFunctionRequest request = new MerchantFunctionRequest();
+                request.setAppId(appId);
+                MerchantResult<MerchantFunctionResult> merchantResult = merchantFunctionFacade.getMerchantFunctionByAppId(request);
+                if (!merchantResult.isSuccess()) {
+                    logger.error("根据appId获取商户是否通知埋点信息失败,appId={},errorMsg={}", appId, merchantResult.getRetMsg());
+                } else {
+                    success(taskPoint, appId, sourceid, merchantResult.getData());
+                }
             }
         } catch (Exception e) {
             logger.error("埋点通知商户异常，taskId={}", taskPointRequest.getTaskId(), e);
         }
     }
 
-    private void success(TaskPoint taskPoint, String appId, int bizType, int i,
-        MerchantResult<MerchantFunctionResult> merchantResult, String sourceId) {
-        MerchantFunctionResult merchantFunctionResult = merchantResult.getData();
+    private void success(TaskPoint taskPoint, String appId, String sourceId, MerchantFunctionResult merchantFunctionResult) {
         if (merchantFunctionResult == null) {
             logger.warn("根据appId没有获取商户是否通知埋点信息，appId={}", appId);
         } else {
-            if (i == 1 && merchantFunctionResult.getSync() == 1) {
-                if (bizType == 1 || bizType == 2 || bizType == 3) {
-                    logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
-                    Map<String, Object> map = getStringObjectMap(taskPoint, appId, sourceId);
-                    String result = HttpClientUtils.doPost(merchantFunctionResult.getSyncUrl(), map);
-                    if (result == null) {
-                        logger.error("埋点通知商户返回结果为空，taskId={},appId={}", taskPoint.getTaskId(), appId);
-                    } else {
-                        logger.warn("埋点通知商户返回结果，taskId={}，result={}", taskPoint.getTaskId(), result);
-                    }
+            if (merchantFunctionResult.getSync() == 1) {
+                logger.info("开始封装参数，taskId={}", taskPoint.getTaskId());
+                Map<String, Object> map = getStringObjectMap(taskPoint, appId, sourceId);
+                String result = HttpClientUtils.doPost(merchantFunctionResult.getSyncUrl(), map);
+                if (result == null) {
+                    logger.error("埋点通知商户返回结果为空，taskId={},appId={}", taskPoint.getTaskId(), appId);
+                } else {
+                    logger.warn("埋点通知商户返回结果，taskId={}，result={}", taskPoint.getTaskId(), result);
                 }
             }
         }
@@ -178,4 +183,14 @@ public class TaskPointServiceImpl implements TaskPointService {
         return map;
     }
 
+    private boolean supportNotifyBizType(int bizType) {
+        if (ArrayUtils.isNotEmpty(NOTIFY_BIZ_TYPE)) {
+            for (int type : NOTIFY_BIZ_TYPE) {
+                if (type == bizType) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
