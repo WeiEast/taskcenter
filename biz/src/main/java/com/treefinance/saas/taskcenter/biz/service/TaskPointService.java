@@ -27,7 +27,7 @@ public interface TaskPointService {
 
     /**
      * 添加埋点
-     * 
+     *
      * @param taskPointRequest 埋点参数
      */
     void addTaskPoint(TaskPointRequest taskPointRequest);
