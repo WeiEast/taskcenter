@@ -27,5 +27,9 @@ import java.util.Map;
 @Setter
 @ToString(callSuper = true)
 public class AttributedTaskInfo extends TaskInfo {
+
+    /**
+     * 任务附加属性集合
+     */
     private Map<String, String> attributes;
 }

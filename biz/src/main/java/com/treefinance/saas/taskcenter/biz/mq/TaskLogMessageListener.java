@@ -1,32 +1,28 @@
 package com.treefinance.saas.taskcenter.biz.mq;
 
-import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
-import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
-import com.alibaba.rocketmq.common.message.MessageExt;
-import com.treefinance.saas.taskcenter.biz.mq.handler.TaskLogHandler;
+import com.alibaba.fastjson.JSON;
+import com.treefinance.saas.taskcenter.biz.mq.model.TaskLogMessage;
+import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.config.MqConfig;
-import com.treefinance.saas.taskcenter.share.mq.BizMqMessageListener;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
-import static com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+import java.util.Date;
 
 /**
  * Created by luoyihua on 2017/4/26.
  */
 @Service
-public class TaskLogMessageListener implements BizMqMessageListener {
-    private static final Logger logger = LoggerFactory.getLogger(TaskLogMessageListener.class);
+public class TaskLogMessageListener extends AbstractRocketMqMessageListener {
 
     @Autowired
     private MqConfig mqConfig;
     @Autowired
-    private TaskLogHandler taskLogHandler;
+    private TaskLogService taskLogService;
+    @Autowired
+    private TaskService taskService;
 
     @Override
     public ConsumeSetting getConsumeSetting() {
@@ -39,21 +35,18 @@ public class TaskLogMessageListener implements BizMqMessageListener {
     }
 
     @Override
-    public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
-        MessageExt msg = list.get(0);
-        String message = new String(msg.getBody());
-        try {
-            logger.info("消费TaskLog消息数据==>{}", message);
-            taskLogHandler.handle(message);
-        } catch (Throwable cause) {
-            if (msg.getReconsumeTimes() > 0) {
-                logger.error(String.format("丢弃该消息,因为重试一次之后, 消费TaskLog数据消息仍然出错.body=%s", message), cause);
-                return CONSUME_SUCCESS;
-            } else {
-                logger.error(String.format("消费TaskLog数据消息时出错,即将再重试一次body=%s", message), cause);
-                return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+    protected void handleMessage(String msgBody) {
+        logger.info("消费TaskLog消息数据==>{}", msgBody);
+        TaskLogMessage taskLogMessage = JSON.parseObject(msgBody, TaskLogMessage.class);
+        if (taskLogMessage != null) {
+            Long taskId = taskLogMessage.getTaskId();
+            if (taskService.isTaskCompleted(taskId)) {
+                logger.info("任务已完成，不再更新日志：message={}", taskLogMessage);
+                return;
             }
+            Date processTime = new Date(taskLogMessage.getTimestamp());
+            taskLogService.insertTaskLog(taskId, taskLogMessage.getMsg(), processTime, taskLogMessage.getErrorDetail());
+            logger.info("日志保存成功：message={}", taskLogMessage);
         }
-        return CONSUME_SUCCESS;
     }
 }

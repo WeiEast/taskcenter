@@ -8,7 +8,6 @@ import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import java.util.Date;
 
@@ -36,18 +35,16 @@ public class AsyncGrabDataMessageListener extends AbstractRocketMqMessageListene
     }
 
     @Override
-    protected void handleMessage(String json) {
-        Assert.notNull(json, "message body can't be null");
-        // json --> 消息
-        AsyncGrabMessage asyncGrabMessage = JSON.parseObject(json, AsyncGrabMessage.class);
+    protected void handleMessage(String msgBody) {
+        AsyncGrabMessage asyncGrabMessage = JSON.parseObject(msgBody, AsyncGrabMessage.class);
         if (asyncGrabMessage == null) {
-            logger.info("异步数据回调处理,接收到的消息数据为空,message={}", json);
+            logger.info("异步数据回调处理,接收到的消息数据为空,message={}", msgBody);
             return;
         }
         Long taskId = asyncGrabMessage.getTaskId();
         EDataType dataType = EDataType.typeOf(asyncGrabMessage.getDataType().byteValue());
         if (dataType == null || taskId == null) {
-            logger.info("异步数据回调处理,接收到的消息数据有误,message={}", json);
+            logger.info("异步数据回调处理,接收到的消息数据有误,message={}", msgBody);
             return;
         }
         taskLogService.insertTaskLog(taskId, dataType.getName() + "爬取完成", new Date(), "");
