@@ -3,8 +3,8 @@ package com.treefinance.saas.taskcenter.biz.domain;
 import java.io.Serializable;
 
 /**
- * @author:guoguoyun
- * @date:Created in 2019/4/18下午12:59
+ * @author guoguoyun
+ * @date  2019/4/18下午12:59
  */
 public class TaskPointInner implements Serializable{
     private String uniqueId;
