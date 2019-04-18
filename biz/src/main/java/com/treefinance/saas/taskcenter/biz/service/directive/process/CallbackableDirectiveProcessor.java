@@ -7,8 +7,8 @@ import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.biz.service.CallbackResultService;
-import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
+import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
+import com.treefinance.saas.taskcenter.biz.callback.AsyncGrabDataHandler;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
@@ -71,9 +71,9 @@ public abstract class CallbackableDirectiveProcessor {
     @Autowired
     protected TaskAttributeService taskAttributeService;
     @Autowired
-    protected CallbackResultService callbackResultService;
+    protected CallbackResultMonitor callbackResultMonitor;
     @Autowired
-    protected GrapDataCallbackService grapDataCallbackService;
+    protected AsyncGrabDataHandler asyncGrabDataHandler;
     @Autowired
     protected MonitorService monitorService;
     @Autowired
@@ -460,7 +460,7 @@ public abstract class CallbackableDirectiveProcessor {
             // 处理返回结果
             handleRequestResult(directiveDTO, result);
             // 回调处理
-            callbackResultService.handleResult(directiveDTO.getTask(), result, config, httpCode);
+            callbackResultMonitor.sendMessage(directiveDTO.getTask(), result, config, httpCode);
         }
         return true;
     }

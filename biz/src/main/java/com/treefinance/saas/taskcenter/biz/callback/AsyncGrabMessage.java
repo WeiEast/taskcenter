@@ -11,14 +11,17 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.dto;
+package com.treefinance.saas.taskcenter.biz.callback;
 
 import java.io.Serializable;
 
 /**
- * 异步数据数据抓取 Created by yh-treefinance on 2017/12/19.
+ * 异步数据数据抓取
+ * 
+ * @author yh-treefinance
+ * @date 2017/12/19.
  */
-public class AsycGrapDTO implements Serializable {
+public class AsyncGrabMessage implements Serializable {
     // 任务ID
     private Long taskId;
     // 用户ID

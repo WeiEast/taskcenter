@@ -1,11 +1,11 @@
 package com.treefinance.saas.taskcenter.biz.schedule.handler;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
+import com.treefinance.saas.taskcenter.biz.callback.AsyncGrabDataHandler;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
-import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
+import com.treefinance.saas.taskcenter.biz.callback.AsyncGrabMessage;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
@@ -32,7 +32,7 @@ public class OperatorFlowTaskTimeoutHandler implements TaskTimeoutHandler {
     @Autowired
     private AppCallbackConfigService appCallbackConfigService;
     @Autowired
-    private GrapDataCallbackService grapDataCallbackService;
+    private AsyncGrabDataHandler asyncGrabDataHandler;
     @Autowired
     private TaskCallbackLogService taskCallbackLogService;
 
@@ -67,13 +67,13 @@ public class OperatorFlowTaskTimeoutHandler implements TaskTimeoutHandler {
             return;
         }
         // 4.构建数据,发起超时回调
-        AsycGrapDTO asycGrapDTO = new AsycGrapDTO();
-        asycGrapDTO.setTaskId(taskId);
-        asycGrapDTO.setUniqueId(task.getUniqueId());
-        asycGrapDTO.setStatus(0);
-        asycGrapDTO.setErrorMsg("任务超时");
-        asycGrapDTO.setDataType(EDataType.OPERATOR_FLOW.getType().intValue());
-        asycGrapDTO.setTimestamp(System.currentTimeMillis());
-        grapDataCallbackService.handleAyscData(asycGrapDTO);
+        AsyncGrabMessage asyncGrabMessage = new AsyncGrabMessage();
+        asyncGrabMessage.setTaskId(taskId);
+        asyncGrabMessage.setUniqueId(task.getUniqueId());
+        asyncGrabMessage.setStatus(0);
+        asyncGrabMessage.setErrorMsg("任务超时");
+        asyncGrabMessage.setDataType(EDataType.OPERATOR_FLOW.getType().intValue());
+        asyncGrabMessage.setTimestamp(System.currentTimeMillis());
+        asyncGrabDataHandler.handle(asyncGrabMessage);
     }
 }

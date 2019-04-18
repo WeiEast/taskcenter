@@ -11,16 +11,19 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
-
-import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
+package com.treefinance.saas.taskcenter.biz.callback;
 
 /**
  * @author Jerry
  * @date 2018/11/22 01:11
  */
-public interface GrapDataCallbackService {
+public interface AsyncGrabDataHandler {
 
-    void handleAyscData(AsycGrapDTO asycGrapDTO);
+    /**
+     * 异步爬取数据处理
+     * 
+     * @param message 数据处理消息
+     */
+    void handle(AsyncGrabMessage message);
 
 }

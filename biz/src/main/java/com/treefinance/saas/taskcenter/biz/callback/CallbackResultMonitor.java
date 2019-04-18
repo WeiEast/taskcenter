@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
+package com.treefinance.saas.taskcenter.biz.callback;
 
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
@@ -20,7 +20,15 @@ import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigB
  * @author Jerry
  * @date 2018/11/21 15:28
  */
-public interface CallbackResultService {
+public interface CallbackResultMonitor {
 
-    void handleResult(TaskDTO task, String result, CallbackConfigBO config, int httpCode);
+    /**
+     * send callback result to crawler-monitor
+     * 
+     * @param task 任务
+     * @param result 结果
+     * @param config 回调配置
+     * @param httpCode 回调状态码
+     */
+    void sendMessage(TaskDTO task, String result, CallbackConfigBO config, int httpCode);
 }

@@ -11,24 +11,22 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service.impl;
+package com.treefinance.saas.taskcenter.biz.callback;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.DataUtils;
-import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
-import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
-import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
+import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
+import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +42,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 爬取数据回调Service Created by yh-treefinance on 2017/12/25.
+ * 爬取数据回调Service
+ * 
+ * @author yh-treefinance
+ * @date 2017/12/25.
  */
 @Service
-public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
+public class AsyncGrabDataHandlerImpl implements AsyncGrabDataHandler {
     /**
      * logger
      */
@@ -63,23 +64,21 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
     @Autowired
     private LicenseManager licenseManager;
 
-    /**
-     * 异步爬取数据处理
-     */
     @Override
-    public void handleAyscData(AsycGrapDTO asycGrapDTO) {
-        Assert.notNull(asycGrapDTO, "taskId can't be null : json=" + JSON.toJSONString(asycGrapDTO));
-        Assert.notNull(asycGrapDTO.getTaskId(), "taskId can't be null : json=" + JSON.toJSONString(asycGrapDTO));
-        Assert.notNull(asycGrapDTO.getDataType(), "dataType can't be null : json=" + JSON.toJSONString(asycGrapDTO));
+    public void handle(AsyncGrabMessage message) {
+        Assert.notNull(message, "taskId can't be null : json=" + JSON.toJSONString(message));
+        Assert.notNull(message.getTaskId(), "taskId can't be null : json=" + JSON.toJSONString(message));
+        Assert.notNull(message.getDataType(), "dataType can't be null : json=" + JSON.toJSONString(message));
 
-        EDataType dataType = EDataType.typeOf(asycGrapDTO.getDataType().byteValue());
-        Assert.notNull(dataType, "dataType is illegal : json=" + JSON.toJSONString(asycGrapDTO));
+        EDataType dataType = EDataType.typeOf(message.getDataType().byteValue());
+        Assert.notNull(dataType, "dataType is illegal : json=" + JSON.toJSONString(message));
 
-        Long taskId = asycGrapDTO.getTaskId();
+        Long taskId = message.getTaskId();
         // 1.获取任务
         TaskDTO taskDTO = taskService.getById(taskId);
         if (taskDTO == null) {
-            logger.info("{} callback failed : task {} not exists, message={}...", dataType.name(), taskId, JSON.toJSONString(asycGrapDTO));
+            logger.info("{} callback failed : task {} not exists, message={}...", dataType.name(), taskId, JSON.toJSONString(
+                message));
             return;
         }
         String appId = taskDTO.getAppId();
@@ -89,7 +88,8 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
         List<CallbackConfigBO> callbackConfigs =  appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, taskDTO.getBizType(), dataType);
         logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", taskDTO.getId(), JSON.toJSONString(callbackConfigs));
         if (CollectionUtils.isEmpty(callbackConfigs)) {
-            logger.info("{} callback failed :taskId={}, callbackConfigs of {} is null, message={}...", dataType.name(), taskId, appId, JSON.toJSONString(asycGrapDTO));
+            logger.info("{} callback failed :taskId={}, callbackConfigs of {} is null, message={}...", dataType.name(), taskId, appId, JSON.toJSONString(
+                message));
             return;
         }
         Map<String, Object> dataMap = Maps.newHashMap();
@@ -98,16 +98,16 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
         dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
         dataMap.put("taskErrorMsg", "");
         dataMap.put("uniqueId", taskDTO.getUniqueId());
-        dataMap.put("dataUrl", asycGrapDTO.getDataUrl());
-        dataMap.put("dataType", asycGrapDTO.getDataType());
-        dataMap.put("dataSize", asycGrapDTO.getDataSize());
-        dataMap.put("expiredTime", asycGrapDTO.getExpiredTime());
-        dataMap.put("timestamp", asycGrapDTO.getTimestamp());
+        dataMap.put("dataUrl", message.getDataUrl());
+        dataMap.put("dataType", message.getDataType());
+        dataMap.put("dataSize", message.getDataSize());
+        dataMap.put("expiredTime", message.getExpiredTime());
+        dataMap.put("timestamp", message.getTimestamp());
 
         // 4.爬取成功，下载数据
-        boolean isSuccess = Integer.valueOf(1).equals(asycGrapDTO.getStatus());
+        boolean isSuccess = Integer.valueOf(1).equals(message.getStatus());
         if (isSuccess) {
-            if (StringUtils.isEmpty(asycGrapDTO.getDataUrl())) {
+            if (StringUtils.isEmpty(message.getDataUrl())) {
                 dataMap.put("taskStatus", EGrapStatus.RESULT_EMPTY.getCode());
                 dataMap.put("taskErrorMsg", EGrapStatus.RESULT_EMPTY.getName());
             }

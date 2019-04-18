@@ -6,15 +6,14 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskEmailMonitorMessage;
 import com.treefinance.saas.assistant.model.TaskStep;
 import com.treefinance.saas.assistant.plugin.TaskEmailMonitorPlugin;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.service.TaskBuryPointLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,8 +32,6 @@ public class EmailMonitorService extends AbstractService {
     private TaskEmailMonitorPlugin taskEmailMonitorPlugin;
     @Autowired
     private TaskAttributeService taskAttributeService;
-    @Autowired
-    private TaskBuryPointLogService taskBuryPointLogService;
     @Autowired
     private TaskLogService taskLogService;
 
