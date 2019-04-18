@@ -18,6 +18,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
 import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
 import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
+import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
@@ -39,8 +40,10 @@ import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
 import com.treefinance.saas.taskcenter.service.impl.AbstractService;
+import com.treefinance.saas.taskcenter.service.param.TaskStepLogObject;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +82,8 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     private TaskRepository taskRepository;
     @Autowired
     private TaskLifecycleService taskLifecycleService;
+    @Autowired
+    private MonitorService monitorService;
 
     @Override
     public List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskAttrCompositeQuery query) {
@@ -319,6 +324,28 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
             // 删除记录的任务活跃时间
             taskLifecycleService.deleteAliveTime(taskId);
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void completeTaskAndMonitoring(@Nonnull Long taskId, @Nonnull List<TaskStepLogObject> logList) {
+        if (CollectionUtils.isEmpty(logList)) {
+            return;
+        }
+
+        for (TaskStepLogObject log : logList) {
+            String stepMsg = log.getStepMsg();
+            if (ETaskStep.TASK_SUCCESS.getText().equals(stepMsg)) {
+                // 任务成功
+                updateStatusWhenProcessing(taskId, ETaskStatus.SUCCESS.getStatus());
+            } else if (ETaskStep.TASK_FAIL.getText().equals(stepMsg)) {
+                // 任务失败
+                updateStatusWhenProcessing(taskId, ETaskStatus.FAIL.getStatus());
+            }
+
+            taskLogService.insertTaskLog(taskId, stepMsg, log.getOccurTime(), log.getErrorMsg());
+        }
+        monitorService.sendMonitorMessage(taskId);
     }
 
     private boolean isCompleted(Byte status) {

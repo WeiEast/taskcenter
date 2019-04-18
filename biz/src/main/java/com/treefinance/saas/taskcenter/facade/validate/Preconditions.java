@@ -15,7 +15,12 @@ package com.treefinance.saas.taskcenter.facade.validate;
 
 import com.treefinance.saas.taskcenter.exception.IllegalParameterException;
 import com.treefinance.toolkit.util.Assert;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Jerry
@@ -75,6 +80,28 @@ public final class Preconditions {
      */
     public static void notEmpty(final String name, final String text) {
         if (StringUtils.isEmpty(text)) {
+            throw new IllegalParameterException("参数[" + name + "]不能为空！");
+        }
+    }
+
+    /**
+     * check if {@code collection} is not null or not empty.
+     *
+     * @see Assert#notEmpty(String, String)
+     */
+    public static void notEmpty(final String name, final Collection<?> collection) {
+        if (CollectionUtils.isEmpty(collection)) {
+            throw new IllegalParameterException("参数[" + name + "]不能为空！");
+        }
+    }
+
+    /**
+     * check if {@code map} is not null or not empty.
+     *
+     * @see Assert#notEmpty(String, String)
+     */
+    public static void notEmpty(final String name, final Map<?,?> map) {
+        if (MapUtils.isEmpty(map)) {
             throw new IllegalParameterException("参数[" + name + "]不能为空！");
         }
     }

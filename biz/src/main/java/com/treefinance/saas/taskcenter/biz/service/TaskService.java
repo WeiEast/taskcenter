@@ -22,6 +22,7 @@ import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.param.TaskStepLogObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -210,4 +211,6 @@ public interface TaskService {
      * @param taskId 任务id
      */
     void cancelTask(@Nonnull Long taskId);
+
+    void completeTaskAndMonitoring(@Nonnull Long taskId, @Nonnull List<TaskStepLogObject> logList);
 }

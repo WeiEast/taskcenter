@@ -11,19 +11,25 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
+package com.treefinance.saas.taskcenter.facade.request;
 
-import com.treefinance.saas.taskcenter.dto.CarInfoCollectTaskLogDTO;
-import org.springframework.transaction.annotation.Transactional;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.util.List;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author Jerry
- * @date 2018/11/21 15:34
+ * @date 2019-03-07 15:54
  */
-public interface CarInfoService {
+@Getter
+@Setter
+@ToString
+public class TaskStepLogRequest implements Serializable {
+    private String stepMsg;
+    private String errorMsg;
+    private Date occurTime;
 
-    @Transactional(rollbackFor = Exception.class)
-    void updateCollectTaskStatusAndTaskLogAndSendMonitor(Long taskId, List<CarInfoCollectTaskLogDTO> logList);
 }
