@@ -31,4 +31,6 @@ public interface BizTypeManager {
     BizTypeInfoBO getBizTypeInfoByBizType(@Nonnull Byte bizType);
 
     List<BizTypeInfoBO> listBizTypes();
+
+    Integer getBizTimeout(@Nonnull Byte bizType);
 }

@@ -13,13 +13,13 @@
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.TaskAliveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.TaskRealTimeStatMonitorService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dao.repository.TaskLogRepository;
+import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -47,11 +47,11 @@ public class TaskLogServiceImpl implements TaskLogService {
     private static final Logger logger = LoggerFactory.getLogger(TaskLogServiceImpl.class);
 
     @Autowired
-    private TaskAliveService taskAliveService;
-    @Autowired
     private TaskRealTimeStatMonitorService taskRealTimeStatMonitorService;
     @Autowired
     private TaskLogRepository taskLogRepository;
+    @Autowired
+    private TaskLifecycleService taskLifecycleService;
 
     @Override
     public TaskLog queryLastErrorLog(@Nullable Long taskId) {
@@ -105,7 +105,7 @@ public class TaskLogServiceImpl implements TaskLogService {
         String stepCode = ETaskStep.getStepCodeByText(msg);
         TaskLog taskLog = taskLogRepository.insertTaskLog(taskId, msg, stepCode, processTime, errorMsg);
 
-        taskAliveService.updateTaskActiveTime(taskId);
+        taskLifecycleService.updateAliveTime(taskId);
 
         taskRealTimeStatMonitorService.handleTaskLog(taskId, msg, taskLog.getCreateTime());
         logger.info("记录任务日志: {}", taskLog);

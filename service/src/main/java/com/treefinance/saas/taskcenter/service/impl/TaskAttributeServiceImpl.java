@@ -107,7 +107,7 @@ public class TaskAttributeServiceImpl implements TaskAttributeService {
     }
 
     @Override
-    public void deleteByTaskIdAndName(Long taskId, String name) {
+    public void deleteAttributeByTaskIdAndName(Long taskId, String name) {
         taskAttributeRepository.deleteAttributeByTaskIdAndName(taskId, name);
     }
 

@@ -2,14 +2,15 @@ package com.treefinance.saas.taskcenter.biz.service.thread;
 
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.Constants;
-import com.treefinance.saas.taskcenter.biz.service.TaskTimeService;
 import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
 import com.treefinance.saas.taskcenter.context.SpringUtils;
-import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
+import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisKeyUtils;
 import org.apache.commons.collections.MapUtils;
@@ -33,13 +34,15 @@ public class TaskCrawlerTimeoutThread extends AbstractService implements Runnabl
 
     private Long taskId;
     private List<TaskTimeoutHandler> taskTimeoutHandlers;
-    private TaskTimeService taskTimeService;
     private TaskRepository taskRepository;
+    private TaskAttributeService taskAttributeService;
+    private TaskLifecycleService taskLifecycleService;
     private RedisDao redisDao;
 
     public TaskCrawlerTimeoutThread(Long taskId, List<TaskTimeoutHandler> taskTimeoutHandlers) {
-        this.taskTimeService = SpringUtils.getBean(TaskTimeService.class);
         this.taskRepository = SpringUtils.getBean(TaskRepository.class);
+        this.taskAttributeService = SpringUtils.getBean(TaskAttributeService.class);
+        this.taskLifecycleService = SpringUtils.getBean(TaskLifecycleService.class);
         this.redisDao = SpringUtils.getBean(RedisDao.class);
         this.taskId = taskId;
         this.taskTimeoutHandlers = taskTimeoutHandlers;
@@ -59,12 +62,12 @@ public class TaskCrawlerTimeoutThread extends AbstractService implements Runnabl
             if (!ETaskStatus.RUNNING.getStatus().equals(task.getStatus())) {
                 return;
             }
-            TaskDTO taskDTO = convert(task, TaskDTO.class);
-            Date loginTime = taskTimeService.getLoginTime(taskDTO.getId());
+            TaskDTO taskDTO = convertStrict(task, TaskDTO.class);
+            Date loginTime = taskAttributeService.queryLoginTime(taskDTO.getId());
             if (loginTime == null) {
                 return;
             }
-            Integer timeout = taskTimeService.getCrawlerTimeoutSeconds(taskDTO.getId());
+            Integer timeout = taskLifecycleService.getTimeoutInSeconds(taskDTO.getId());
             taskTimeoutHandlers.forEach(handler -> {
                 try {
                     handler.handleTaskTimeout(taskDTO, timeout, loginTime);

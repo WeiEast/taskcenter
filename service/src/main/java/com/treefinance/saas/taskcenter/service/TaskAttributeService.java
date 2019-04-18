@@ -114,7 +114,7 @@ public interface TaskAttributeService {
      * @param taskId 任务ID
      * @param name 属性名
      */
-    void deleteByTaskIdAndName(Long taskId, String name);
+    void deleteAttributeByTaskIdAndName(Long taskId, String name);
 
     /**
      * 查询登录时间

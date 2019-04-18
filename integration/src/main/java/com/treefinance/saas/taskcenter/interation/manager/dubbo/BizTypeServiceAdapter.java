@@ -44,7 +44,6 @@ public class BizTypeServiceAdapter extends AbstractMerchantServiceAdapter implem
         this.appBizTypeFacade = appBizTypeFacade;
     }
 
-
     @Override
     public BizTypeInfoBO getBizTypeInfoByBizType(@Nonnull Byte bizType) {
         GetAppBizTypeRequest request = new GetAppBizTypeRequest();
@@ -78,6 +77,17 @@ public class BizTypeServiceAdapter extends AbstractMerchantServiceAdapter implem
         validateResponse(result, RpcActionEnum.QUERY_BIZ_TYPE_LIST);
 
         return convert(result.getData(), BizTypeInfoBO.class);
+    }
+
+    @Override
+    public Integer getBizTimeout(@Nonnull Byte bizType) {
+        BizTypeInfoBO info = getBizTypeInfoByBizType(bizType);
+        Integer timeout = info.getTimeout();
+        if (timeout == null) {
+            logger.warn("未获取到当前导入任务类型的超时设置，bizType信息丢失！bizType={}", bizType);
+        }
+
+        return timeout;
     }
 
 }

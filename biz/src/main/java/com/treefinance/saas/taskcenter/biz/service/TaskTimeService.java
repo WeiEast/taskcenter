@@ -22,30 +22,6 @@ import java.util.Date;
 public interface TaskTimeService {
 
     /**
-     * 更新登录时间
-     *
-     * @param taskId
-     * @param date
-     */
-    void updateLoginTime(Long taskId, Date date);
-
-    /**
-     * 获取登录时间
-     *
-     * @param taskId
-     * @return
-     */
-    Date getLoginTime(Long taskId);
-
-    /**
-     * 获取设置的任务抓取超时时长
-     *
-     * @param taskId
-     * @return
-     */
-    Integer getCrawlerTimeoutSeconds(Long taskId);
-
-    /**
      * 处理任务抓取超时
      *
      * @param taskId

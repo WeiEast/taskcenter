@@ -3,6 +3,7 @@ package com.treefinance.saas.taskcenter.facade.impl;
 import com.treefinance.saas.taskcenter.biz.service.TaskTimeService;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskTimeFacade;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,16 +18,21 @@ public class TaskTimeFacadeImpl implements TaskTimeFacade {
 
     @Autowired
     private TaskTimeService taskTimeService;
+    @Autowired
+    private TaskAttributeService taskAttributeService;
 
     @Override
     public TaskResult<Void> updateLoginTime(Long taskId, Date date) {
-        taskTimeService.updateLoginTime(taskId, date);
+        if (taskId != null && date != null) {
+            taskAttributeService.saveLoginTime(taskId, date);
+        }
+
         return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override
     public TaskResult<Date> getLoginTime(Long taskId) {
-        Date loginTime = taskTimeService.getLoginTime(taskId);
+        Date loginTime = taskAttributeService.queryLoginTime(taskId);
         return TaskResult.wrapSuccessfulResult(loginTime);
     }
 

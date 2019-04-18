@@ -2,10 +2,10 @@ package com.treefinance.saas.taskcenter.biz.service.thread;
 
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.Constants;
-import com.treefinance.saas.taskcenter.biz.service.TaskAliveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.SpringUtils;
 import com.treefinance.saas.taskcenter.context.config.DiamondConfig;
+import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisKeyUtils;
 import org.apache.commons.collections.MapUtils;
@@ -26,7 +26,7 @@ public class TaskActiveTimeoutThread implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskActiveTimeoutThread.class);
 
-    private TaskAliveService taskAliveService;
+    private TaskLifecycleService taskLifecycleService;
     private TaskService taskService;
     private DiamondConfig diamondConfig;
     private RedisDao redisDao;
@@ -34,7 +34,7 @@ public class TaskActiveTimeoutThread implements Runnable {
     private Date startTime;
 
     public TaskActiveTimeoutThread(Long taskId, Date startTime) {
-        this.taskAliveService = SpringUtils.getBean(TaskAliveService.class);
+        this.taskLifecycleService = SpringUtils.getBean(TaskLifecycleService.class);
         this.taskService = SpringUtils.getBean(TaskService.class);
         this.diamondConfig = SpringUtils.getBean(DiamondConfig.class);
         this.redisDao = SpringUtils.getBean(RedisDao.class);
@@ -52,7 +52,7 @@ public class TaskActiveTimeoutThread implements Runnable {
             if (MapUtils.isEmpty(lockMap)) {
                 return;
             }
-            String valueStr = taskAliveService.getTaskAliveTime(taskId);
+            String valueStr = taskLifecycleService.queryAliveTime(taskId);
             if (StringUtils.isBlank(valueStr)) {
                 logger.info("任务已经被取消了taskId={}", taskId);
                 return;
@@ -64,7 +64,7 @@ public class TaskActiveTimeoutThread implements Runnable {
                 logger.info("任务活跃时间超时,取消任务,taskId={}", taskId);
                 taskService.cancelTask(taskId);
                 // 删除记录的任务活跃时间
-                taskAliveService.deleteTaskAliveTime(taskId);
+                taskLifecycleService.deleteAliveTime(taskId);
             }
         } finally {
             redisDao.releaseLock(lockKey, lockMap, 3 * 60 * 1000L);

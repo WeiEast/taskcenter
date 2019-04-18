@@ -5,8 +5,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.service.AppBizTypeService;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
@@ -18,6 +16,8 @@ import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.interation.manager.BizTypeManager;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
 import com.treefinance.toolkit.util.DateUtils;
@@ -56,7 +56,7 @@ public class MoxieTimeoutService {
         }
     });
     @Autowired
-    private AppBizTypeService appBizTypeService;
+    private BizTypeManager bizTypeManager;
     @Autowired
     private TaskLogService taskLogService;
     @Autowired
@@ -135,7 +135,7 @@ public class MoxieTimeoutService {
             logger.info("handleTaskTimeout error : the task is completed: {}", JSON.toJSONString(task));
             return;
         }
-        Integer timeout = appBizTypeService.getBizTimeout(task.getBizType());
+        Integer timeout = bizTypeManager.getBizTimeout(task.getBizType());
         if(timeout == null){
             return;
         }
