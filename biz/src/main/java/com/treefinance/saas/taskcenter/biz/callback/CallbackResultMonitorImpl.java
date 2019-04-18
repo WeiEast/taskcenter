@@ -20,8 +20,8 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.context.Constants;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.saas.taskcenter.share.mq.MessageProducer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ public class CallbackResultMonitorImpl implements CallbackResultMonitor {
     private MessageProducer messageProducer;
 
     @Override
-    public void sendMessage(TaskDTO task, String result, CallbackConfigBO config, int httpCode) {
+    public void sendMessage(TaskInfo task, String result, CallbackConfigBO config, int httpCode) {
         Map<String, Object> messageMap = Maps.newHashMap();
         try {
             messageMap.put("taskId", task.getId());

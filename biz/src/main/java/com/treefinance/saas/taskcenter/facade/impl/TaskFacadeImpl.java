@@ -2,9 +2,9 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
-import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
-import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
+import com.treefinance.saas.taskcenter.service.domain.TaskUpdateResult;
+import com.treefinance.saas.taskcenter.service.param.TaskCreateObject;
+import com.treefinance.saas.taskcenter.service.param.TaskUpdateObject;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;

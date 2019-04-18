@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskCallbackMsgMonitorMessage;
 import com.treefinance.saas.assistant.plugin.TaskCallbackMsgMonitorPlugin;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,19 +39,19 @@ public class TaskCallbackMsgMonitor {
      * @param isCallback
      */
     public void sendMessage(Long taskId, Integer httpCode, String result, Boolean isCallback) {
-        TaskDTO taskDTO = taskService.getById(taskId);
-        if (taskDTO == null) {
+        TaskInfo task = taskService.getTaskInfoById(taskId);
+        if (task == null) {
             return;
         }
         TaskCallbackMsgMonitorMessage message = new TaskCallbackMsgMonitorMessage();
         message.setTaskId(taskId);
-        message.setAccountNo(taskDTO.getAccountNo());
-        message.setAppId(taskDTO.getAppId());
-        message.setBizType(taskDTO.getBizType());
-        message.setCompleteTime(taskDTO.getLastUpdateTime());
-        message.setWebSite(taskDTO.getWebSite());
-        message.setUniqueId(taskDTO.getUniqueId());
-        message.setSaasEnv(String.valueOf(taskDTO.getSaasEnv()));
+        message.setAccountNo(task.getAccountNo());
+        message.setAppId(task.getAppId());
+        message.setBizType(task.getBizType());
+        message.setCompleteTime(task.getLastUpdateTime());
+        message.setWebSite(task.getWebSite());
+        message.setUniqueId(task.getUniqueId());
+        message.setSaasEnv(String.valueOf(task.getSaasEnv()));
         // 有回调
         if (isCallback) {
             Map<String, Object> attributeMap = Maps.newHashMap();

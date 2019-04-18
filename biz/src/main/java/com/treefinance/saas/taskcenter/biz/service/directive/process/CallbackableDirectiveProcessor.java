@@ -17,10 +17,8 @@ import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
@@ -32,6 +30,7 @@ import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackLicense
 import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
@@ -119,7 +118,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @return
      */
     protected int callback(DirectiveDTO directiveDTO) {
-        TaskDTO taskDTO = directiveDTO.getTask();
+        AttributedTaskInfo taskDTO = directiveDTO.getTask();
         String appId = taskDTO.getAppId();
         // 1.获取商户密钥
         AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
@@ -138,7 +137,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @return 0-无需回调，1-回调成功，-1-回调失败
      */
     protected int callback(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveDTO directiveDTO) {
-        TaskDTO taskDTO = directiveDTO.getTask();
+        AttributedTaskInfo taskDTO = directiveDTO.getTask();
         Long taskId = directiveDTO.getTaskId();
 
         // 4.查询回调配置
@@ -209,16 +208,19 @@ public abstract class CallbackableDirectiveProcessor {
      * @return
      */
     protected Map<String, Object> generateDataMap(DirectiveDTO directiveDTO) {
-        TaskDTO task = directiveDTO.getTask();
+        AttributedTaskInfo task = directiveDTO.getTask();
         // 1. 初始化回调数据 并填充uniqueId、taskId、taskStatus、sourceid
         Map<String, Object> dataMap = ifNull(JSON.parseObject(directiveDTO.getRemark()), Maps.newHashMap());
         dataMap.putIfAbsent("uniqueId", task.getUniqueId());
         dataMap.putIfAbsent("taskId", task.getId());
 
-        Map<String, Object> attributes = task.getAttributes();
-        if (attributes != null && attributes.containsKey("sourceId")) {
-            TaskAttribute taskAttribute = (TaskAttribute)task.getAttributes().get("sourceId");
-            dataMap.putIfAbsent("sourceId", taskAttribute.getValue());
+        Map<String, String> attributes = task.getAttributes();
+        if (attributes != null) {
+            String attrName = ETaskAttribute.SOURCE_ID.getAttribute();
+            String sourceId = attributes.get(attrName);
+            if (sourceId != null) {
+                dataMap.putIfAbsent(attrName, sourceId);
+            }
         }
 
         dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());

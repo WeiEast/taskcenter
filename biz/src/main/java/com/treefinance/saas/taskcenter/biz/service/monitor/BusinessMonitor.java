@@ -13,8 +13,8 @@
 
 package com.treefinance.saas.taskcenter.biz.service.monitor;
 
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 
 /**
  * @author Jerry
@@ -35,5 +35,5 @@ public interface BusinessMonitor {
      *
      * @param task 任务
      */
-    void sendMessage(TaskDTO task);
+    void sendMessage(TaskInfo task);
 }

@@ -6,8 +6,8 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDir
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,9 +24,9 @@ public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
 
     @Override
     protected void doProcess(EDirective directive, DirectiveDTO directiveDTO) {
-        TaskDTO taskDTO = directiveDTO.getTask();
-        Long taskId = taskDTO.getId();
-        String appId = taskDTO.getAppId();
+        AttributedTaskInfo task = directiveDTO.getTask();
+        Long taskId = task.getId();
+        String appId = task.getAppId();
         // 1.记录任务日志
         taskLogService.insertTaskLog(taskId, "爬数任务执行完成", new Date(), null);
 
@@ -44,21 +44,21 @@ public class SuccessDirectiveProcessor extends AbstractDirectiveProcessor {
             taskCallbackLogService.insert(null, taskId, (byte)2, JSON.toJSONString(dataMap), null, 0, 0);
             taskLogService.insertTaskLog(taskId, "回调通知成功", new Date(), null);
 
-            taskDTO.setStatus(ETaskStatus.SUCCESS.getStatus());
+            task.setStatus(ETaskStatus.SUCCESS.getStatus());
         } else if (result == 1) {
-            taskDTO.setStatus(ETaskStatus.SUCCESS.getStatus());
+            task.setStatus(ETaskStatus.SUCCESS.getStatus());
         } else {
             // 指令发生变更 ： task_success -> callback_fail
             taskNextDirectiveService.insert(taskId, directiveDTO.getDirective());
 
-            taskDTO.setStatus(ETaskStatus.FAIL.getStatus());
+            task.setStatus(ETaskStatus.FAIL.getStatus());
             directiveDTO.setDirective(EDirective.CALLBACK_FAIL.getText());
         }
         // 6.更新任务状态
-        String stepCode = taskService.updateStatusIfDone(taskId, taskDTO.getStatus());
-        taskDTO.setStepCode(stepCode);
+        String stepCode = taskService.updateStatusIfDone(taskId, task.getStatus());
+        task.setStepCode(stepCode);
         // 7.发送监控消息
-        monitorService.sendMonitorMessage(taskDTO.getId());
+        monitorService.sendMonitorMessage(task.getId());
     }
 
 }

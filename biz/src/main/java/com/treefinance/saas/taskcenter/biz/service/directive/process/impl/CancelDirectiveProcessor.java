@@ -6,8 +6,8 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDir
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.interation.manager.SpiderTaskManager;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,15 +28,15 @@ public class CancelDirectiveProcessor extends AbstractDirectiveProcessor {
 
     @Override
     protected void doProcess(EDirective directive, DirectiveDTO directiveDTO) {
-        TaskDTO taskDTO = directiveDTO.getTask();
-        taskDTO.setStatus(ETaskStatus.CANCEL.getStatus());
+        AttributedTaskInfo task = directiveDTO.getTask();
+        task.setStatus(ETaskStatus.CANCEL.getStatus());
         // 取消任务
-        taskService.updateStatusIfDone(taskDTO.getId(), ETaskStatus.CANCEL.getStatus());
+        taskService.updateStatusIfDone(task.getId(), ETaskStatus.CANCEL.getStatus());
         Map<String, String> extMap = Maps.newHashMap();
         extMap.put("reason", "user");
-        spiderTaskManager.cancelQuietly(taskDTO.getId(), extMap);
+        spiderTaskManager.cancelQuietly(task.getId(), extMap);
 
-        monitorService.sendMonitorMessage(taskDTO.getId());
+        monitorService.sendMonitorMessage(task.getId());
 
         // 异步触发触发回调
         asyncExecutor.runAsync(directiveDTO, this::callback);

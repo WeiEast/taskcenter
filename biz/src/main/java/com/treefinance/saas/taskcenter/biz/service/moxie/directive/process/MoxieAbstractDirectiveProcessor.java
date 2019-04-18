@@ -1,7 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.moxie.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackableDirectiveProcessor;
@@ -9,8 +8,9 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,17 +58,16 @@ public abstract class MoxieAbstractDirectiveProcessor extends CallbackableDirect
             }
             taskId = taskAttribute.getTaskId();
         }
-        TaskDTO taskDTO = directiveDTO.getTask();
-        if (taskDTO == null) {
-            taskDTO = taskService.getById(taskId);
-            if (taskDTO == null) {
-                logger.error("handle moxie directive error : taskId={} is not exists, directive={}", taskId, JSON.toJSONString(directiveDTO));
-                return;
+        AttributedTaskInfo task = directiveDTO.getTask();
+        if (task == null) {
+            task = taskService.getAttributedTaskInfo(taskId, ETaskAttribute.SOURCE_ID.getAttribute());
+            if (task == null) {
+                throw new IllegalStateException("Task not found! - taskId: " + taskId);
             }
-            directiveDTO.setTask(taskDTO);
+            directiveDTO.setTask(task);
         }
         // 3.任务是否是已经完成
-        Byte taskStatus = taskDTO.getStatus();
+        Byte taskStatus = task.getStatus();
         if (ETaskStatus.CANCEL.getStatus().equals(taskStatus) || ETaskStatus.SUCCESS.getStatus().equals(taskStatus) || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
             logger.info("handle moxie directive error : the task id={} is completed: directive={}", taskId, JSON.toJSONString(directiveDTO));
             return;

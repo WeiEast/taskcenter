@@ -3,8 +3,8 @@ package com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.MoxieAbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,10 +15,10 @@ public class MoxieCancelDirectiveProcessor extends MoxieAbstractDirectiveProcess
 
     @Override
     protected void doProcess(EMoxieDirective directive, MoxieDirectiveDTO directiveDTO) {
-        TaskDTO taskDTO = directiveDTO.getTask();
-        taskDTO.setStatus(ETaskStatus.CANCEL.getStatus());
+        AttributedTaskInfo task = directiveDTO.getTask();
+        task.setStatus(ETaskStatus.CANCEL.getStatus());
         // 取消任务
-        taskService.updateStatusIfDone(taskDTO.getId(), ETaskStatus.CANCEL.getStatus());
+        taskService.updateStatusIfDone(task.getId(), ETaskStatus.CANCEL.getStatus());
     }
 
 }

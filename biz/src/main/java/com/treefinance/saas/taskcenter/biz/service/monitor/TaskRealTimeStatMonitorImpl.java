@@ -4,11 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskRealTimeMonitorMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatLink;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -27,8 +27,8 @@ import java.util.Map;
  * @date 2018/6/19
  */
 @Service
-public class TaskRealTimeStatMonitorService implements TaskRealTimeStatMonitor{
-    private static final Logger logger = LoggerFactory.getLogger(TaskRealTimeStatMonitorService.class);
+public class TaskRealTimeStatMonitorImpl implements TaskRealTimeStatMonitor{
+    private static final Logger logger = LoggerFactory.getLogger(TaskRealTimeStatMonitorImpl.class);
     /**
      * 需要监控的日志环节
      */
@@ -51,23 +51,23 @@ public class TaskRealTimeStatMonitorService implements TaskRealTimeStatMonitor{
             logger.error("任务实时监控日志环节处理,需统计的任务环节未在枚举定义中找到,taskId={},code={}", taskId, code);
             return;
         }
-        TaskDTO taskDTO = taskService.getById(taskId);
-        if (taskDTO == null) {
+        TaskInfo task = taskService.getTaskInfoById(taskId);
+        if (task == null) {
             return;
         }
         String taskLinkStatCode = taskStatLink.getStatCode();
         String taskLinkStatName = taskStatLink.getDesc();
 
         TaskRealTimeMonitorMessage message = new TaskRealTimeMonitorMessage();
-        message.setTaskId(taskDTO.getId());
-        message.setSaasEnv(String.valueOf(taskDTO.getSaasEnv()));
-        message.setAccountNo(taskDTO.getAccountNo());
-        message.setAppId(taskDTO.getAppId());
-        message.setBizType(taskDTO.getBizType());
+        message.setTaskId(task.getId());
+        message.setSaasEnv(String.valueOf(task.getSaasEnv()));
+        message.setAccountNo(task.getAccountNo());
+        message.setAppId(task.getAppId());
+        message.setBizType(task.getBizType());
         message.setDataTime(dataTime);
-        message.setStatus(taskDTO.getStatus());
-        message.setUniqueId(taskDTO.getUniqueId());
-        message.setWebSite(taskDTO.getWebSite());
+        message.setStatus(task.getStatus());
+        message.setUniqueId(task.getUniqueId());
+        message.setWebSite(task.getWebSite());
         message.setStatCode(taskLinkStatCode);
         message.setStatName(taskLinkStatName);
 

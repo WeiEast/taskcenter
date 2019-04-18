@@ -11,24 +11,21 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.domain;
+package com.treefinance.saas.taskcenter.service.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.io.Serializable;
+import java.util.Map;
 
 /**
  * @author Jerry
- * @date 2018/12/13 15:16
+ * @date 2019-04-18 19:55
  */
 @Getter
 @Setter
-@ToString
-@AllArgsConstructor
-public class TaskUpdateResult implements Serializable {
-    private Boolean accountNoUpdate;
-    private Boolean websiteUpdate;
+@ToString(callSuper = true)
+public class AttributedTaskInfo extends TaskInfo {
+    private Map<String, String> attributes;
 }

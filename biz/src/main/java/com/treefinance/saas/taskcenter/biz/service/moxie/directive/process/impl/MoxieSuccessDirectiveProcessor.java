@@ -4,9 +4,9 @@ import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.MoxieAbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +27,9 @@ public class MoxieSuccessDirectiveProcessor extends MoxieAbstractDirectiveProces
 
     @Override
     protected void doProcess(EMoxieDirective directive, MoxieDirectiveDTO directiveDTO) {
-        TaskDTO taskDTO = directiveDTO.getTask();
-        Long taskId = taskDTO.getId();
-        String appId = taskDTO.getAppId();
+        AttributedTaskInfo task = directiveDTO.getTask();
+        Long taskId = task.getId();
+        String appId = task.getAppId();
 
         // 获取商户密钥
         AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
@@ -41,22 +41,22 @@ public class MoxieSuccessDirectiveProcessor extends MoxieAbstractDirectiveProces
         int result = callback(dataMap, appLicense, directiveDTO);
 
         if (result == 0) {
-            taskDTO.setStatus(ETaskStatus.SUCCESS.getStatus());
+            task.setStatus(ETaskStatus.SUCCESS.getStatus());
         } else if (result == 1) {
-            taskDTO.setStatus(ETaskStatus.SUCCESS.getStatus());
+            task.setStatus(ETaskStatus.SUCCESS.getStatus());
         } else {
             // 指令发生变更 ： task_success -> callback_fail
             taskNextDirectiveService.insert(taskId, directiveDTO.getDirective());
 
-            taskDTO.setStatus(ETaskStatus.FAIL.getStatus());
+            task.setStatus(ETaskStatus.FAIL.getStatus());
             directiveDTO.setDirective(EMoxieDirective.CALLBACK_FAIL.getText());
         }
         // 更新任务状态,记录任务成功日志
-        String stepCode = taskService.updateStatusIfDone(taskId, taskDTO.getStatus());
-        taskDTO.setStepCode(stepCode);
+        String stepCode = taskService.updateStatusIfDone(taskId, task.getStatus());
+        task.setStepCode(stepCode);
 
         // 发送监控消息
-        monitorService.sendMonitorMessage(taskDTO.getId());
+        monitorService.sendMonitorMessage(task.getId());
 
     }
 

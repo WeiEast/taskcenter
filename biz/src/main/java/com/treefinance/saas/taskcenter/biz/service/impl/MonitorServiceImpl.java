@@ -19,8 +19,8 @@ import com.treefinance.saas.taskcenter.biz.service.monitor.BusinessMonitor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.BusinessMonitorManager;
 import com.treefinance.saas.taskcenter.biz.service.monitor.TaskCallbackMsgMonitor;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,19 +85,19 @@ public class MonitorServiceImpl implements MonitorService {
 
         @Override
         public void run() {
-            TaskDTO taskDTO = taskService.getById(taskId);
-            Byte status = taskDTO.getStatus();
+            TaskInfo task = taskService.getTaskInfoById(taskId);
+            Byte status = task.getStatus();
             // 仅成功、失败、取消发送任务
             if (!ETaskStatus.SUCCESS.getStatus().equals(status) && !ETaskStatus.FAIL.getStatus().equals(status) && !ETaskStatus.CANCEL.getStatus().equals(status)) {
                 return;
             }
 
             // 发送任务监控消息
-            EBizType bizType = EBizType.of(taskDTO.getBizType());
+            EBizType bizType = EBizType.of(task.getBizType());
             List<BusinessMonitor> monitors = businessMonitorManager.getMonitors(bizType);
             if (CollectionUtils.isNotEmpty(monitors)) {
                 for (BusinessMonitor monitor : monitors) {
-                    monitor.sendMessage(taskDTO);
+                    monitor.sendMessage(task);
                 }
             }
         }

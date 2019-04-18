@@ -13,8 +13,8 @@
 
 package com.treefinance.saas.taskcenter.biz.callback;
 
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 
 /**
  * @author Jerry
@@ -30,5 +30,5 @@ public interface CallbackResultMonitor {
      * @param config 回调配置
      * @param httpCode 回调状态码
      */
-    void sendMessage(TaskDTO task, String result, CallbackConfigBO config, int httpCode);
+    void sendMessage(TaskInfo task, String result, CallbackConfigBO config, int httpCode);
 }

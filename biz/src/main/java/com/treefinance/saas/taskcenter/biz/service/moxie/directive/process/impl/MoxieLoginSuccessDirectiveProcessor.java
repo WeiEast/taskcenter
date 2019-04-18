@@ -3,8 +3,8 @@ package com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.impl
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.process.MoxieAbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -17,9 +17,9 @@ public class MoxieLoginSuccessDirectiveProcessor extends MoxieAbstractDirectiveP
 
     @Override
     protected void doProcess(EMoxieDirective directive, MoxieDirectiveDTO directiveDTO) {
-        TaskDTO taskDTO = directiveDTO.getTask();
+        AttributedTaskInfo task = directiveDTO.getTask();
         // 1.记录登录日志
-        taskLogService.insertTaskLog(taskDTO.getId(), ETaskStep.LOGIN_SUCCESS.getText(), new Date(), null);
+        taskLogService.insertTaskLog(task.getId(), ETaskStep.LOGIN_SUCCESS.getText(), new Date(), null);
 
     }
 }

@@ -17,18 +17,18 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.taskcenter.biz.mq.model.DeliveryAddressMessage;
-import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
 import com.treefinance.saas.taskcenter.biz.service.DeliveryAddressService;
-import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
+import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
+import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.apache.commons.collections.MapUtils;
@@ -71,16 +71,17 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         // 1. 记录日志
         taskLogService.insertTaskLog(taskId, "收货地址爬取完成", new Date(), "");
         // 2.获取任务
-        TaskDTO taskDTO = taskService.getById(taskId);
-        if (taskDTO == null) {
+        TaskInfo task = taskService.getTaskInfoById(taskId);
+        if (task == null) {
             logger.info("delivery address callback failed : task {} not exists, message={}...", taskId, JSON.toJSONString(message));
             return;
         }
-        String appId = taskDTO.getAppId();
+        String appId = task.getAppId();
         // 3.获取商户密钥
         AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
 
-        List<CallbackConfigBO> callbackConfigs = getCallbackConfigs(taskDTO);
+        List<CallbackConfigBO> callbackConfigs = appCallbackConfigService.queryConfigsByAppIdAndBizType(task.getAppId(), task.getBizType(), EDataType.DELIVERY_ADDRESS);
+        logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", task.getId(), JSON.toJSONString(callbackConfigs));
         if (CollectionUtils.isEmpty(callbackConfigs)) {
             logger.info("delivery address callback failed :taskId={}, callbackConfigs of {} is null, message={}...", taskId, appId, JSON.toJSONString(message));
             return;
@@ -91,8 +92,8 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         }
         Map<String, Object> originalDataMap = Maps.newHashMap(dataMap);
         // 填充uniqueId、taskId、taskStatus
-        dataMap.put("uniqueId", taskDTO.getUniqueId());
-        dataMap.put("taskId", taskDTO.getId());
+        dataMap.put("uniqueId", task.getUniqueId());
+        dataMap.put("taskId", task.getId());
         // 4.爬取成功，下载数据
         boolean isSuccess = Integer.valueOf(1).equals(message.getStatus());
         if (isSuccess) {
@@ -174,18 +175,4 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     }
 
-    /**
-     * 获取回调配置
-     *
-     * @return
-     */
-    private List<CallbackConfigBO> getCallbackConfigs(TaskDTO taskDTO) {
-        String appId = taskDTO.getAppId();
-        Byte bizType = taskDTO.getBizType();
-         EDataType dataType = EDataType.DELIVERY_ADDRESS;
-        List<CallbackConfigBO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, bizType, dataType);
-        logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", taskDTO.getId(), JSON.toJSONString(configList));
-
-        return configList;
-    }
 }

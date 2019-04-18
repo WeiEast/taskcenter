@@ -16,7 +16,7 @@ package com.treefinance.saas.taskcenter.biz.service.monitor;
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Stopwatch;
 import com.treefinance.saas.assistant.model.base.MonitorMessage;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.toolkit.util.Preconditions;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 abstract class AbstractBusinessMonitor<T extends MonitorMessage> extends AbstractService implements BusinessMonitor {
 
     @Override
-    public final void sendMessage(TaskDTO task) {
+    public final void sendMessage(TaskInfo task) {
         logger.info("sendMonitorMessage: task={}", task);
 
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -53,7 +53,7 @@ abstract class AbstractBusinessMonitor<T extends MonitorMessage> extends Abstrac
      * @param task 任务
      * @return 监控消息
      */
-    protected abstract T buildMonitorMessage(TaskDTO task);
+    protected abstract T buildMonitorMessage(TaskInfo task);
 
     /**
      * 发生监控消息

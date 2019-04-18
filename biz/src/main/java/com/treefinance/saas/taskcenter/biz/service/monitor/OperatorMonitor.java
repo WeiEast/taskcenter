@@ -11,10 +11,10 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.TaskBuryPointLogService;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -50,7 +50,7 @@ public class OperatorMonitor extends AbstractBusinessMonitor<TaskOperatorMonitor
     }
 
     @Override
-    protected TaskOperatorMonitorMessage buildMonitorMessage(TaskDTO task) {
+    protected TaskOperatorMonitorMessage buildMonitorMessage(TaskInfo task) {
         Long taskId = task.getId();
         TaskOperatorMonitorMessage message = convert(task, TaskOperatorMonitorMessage.class);
         message.setTaskId(task.getId());

@@ -2,7 +2,6 @@ package com.treefinance.saas.taskcenter.biz.service.moxie;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
 import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
@@ -11,11 +10,12 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieTaskEventNoticeDTO;
 import com.treefinance.saas.taskcenter.interation.manager.FundManager;
 import com.treefinance.saas.taskcenter.interation.manager.FundMoxieManager;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,7 +161,7 @@ public class MoxieBusinessService {
      * @return
      */
     private boolean isTaskDone(long taskId) {
-        TaskDTO task = taskService.getById(taskId);
+        TaskInfo task = taskService.getTaskInfoById(taskId);
         if (task == null) {
             logger.error("taskId={}不存在", taskId);
             return true;

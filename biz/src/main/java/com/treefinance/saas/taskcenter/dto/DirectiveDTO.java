@@ -13,6 +13,7 @@
 
 package com.treefinance.saas.taskcenter.dto;
 
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -39,7 +40,7 @@ public class DirectiveDTO extends BaseDTO {
     /**
      * 任务详细信息
      */
-    private TaskDTO task;
+    private AttributedTaskInfo task;
 
     public String getDirectiveId() {
         return directiveId;
@@ -73,11 +74,11 @@ public class DirectiveDTO extends BaseDTO {
         this.remark = remark;
     }
 
-    public TaskDTO getTask() {
+    public AttributedTaskInfo getTask() {
         return task;
     }
 
-    public void setTask(TaskDTO task) {
+    public void setTask(AttributedTaskInfo task) {
         this.task = task;
     }
 

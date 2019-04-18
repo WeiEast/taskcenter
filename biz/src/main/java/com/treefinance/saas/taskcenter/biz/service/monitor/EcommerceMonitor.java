@@ -12,10 +12,10 @@ import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.TaskBuryPointLogService;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class EcommerceMonitor extends AbstractBusinessMonitor<TaskEcommeceMonito
     }
 
     @Override
-    protected TaskEcommeceMonitorMessage buildMonitorMessage(TaskDTO task) {
+    protected TaskEcommeceMonitorMessage buildMonitorMessage(TaskInfo task) {
         Long taskId = task.getId();
         TaskEcommeceMonitorMessage message = convert(task, TaskEcommeceMonitorMessage.class);
         message.setSaasEnv(String.valueOf(task.getSaasEnv()));

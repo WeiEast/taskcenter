@@ -20,13 +20,13 @@ import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
 import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,29 +75,27 @@ public class AsyncGrabDataHandlerImpl implements AsyncGrabDataHandler {
 
         Long taskId = message.getTaskId();
         // 1.获取任务
-        TaskDTO taskDTO = taskService.getById(taskId);
-        if (taskDTO == null) {
-            logger.info("{} callback failed : task {} not exists, message={}...", dataType.name(), taskId, JSON.toJSONString(
-                message));
+        TaskInfo task = taskService.getTaskInfoById(taskId);
+        if (task == null) {
+            logger.info("{} callback failed : task {} not exists, message={}...", dataType.name(), taskId, JSON.toJSONString(message));
             return;
         }
-        String appId = taskDTO.getAppId();
+        String appId = task.getAppId();
         // 3.获取商户密钥
         AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
 
-        List<CallbackConfigBO> callbackConfigs =  appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, taskDTO.getBizType(), dataType);
-        logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", taskDTO.getId(), JSON.toJSONString(callbackConfigs));
+        List<CallbackConfigBO> callbackConfigs = appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, task.getBizType(), dataType);
+        logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", task.getId(), JSON.toJSONString(callbackConfigs));
         if (CollectionUtils.isEmpty(callbackConfigs)) {
-            logger.info("{} callback failed :taskId={}, callbackConfigs of {} is null, message={}...", dataType.name(), taskId, appId, JSON.toJSONString(
-                message));
+            logger.info("{} callback failed :taskId={}, callbackConfigs of {} is null, message={}...", dataType.name(), taskId, appId, JSON.toJSONString(message));
             return;
         }
         Map<String, Object> dataMap = Maps.newHashMap();
         // 填充uniqueId、taskId、taskStatus
-        dataMap.put("taskId", taskDTO.getId());
+        dataMap.put("taskId", task.getId());
         dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
         dataMap.put("taskErrorMsg", "");
-        dataMap.put("uniqueId", taskDTO.getUniqueId());
+        dataMap.put("uniqueId", task.getUniqueId());
         dataMap.put("dataUrl", message.getDataUrl());
         dataMap.put("dataType", message.getDataType());
         dataMap.put("dataSize", message.getDataSize());

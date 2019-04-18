@@ -7,9 +7,9 @@ import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,16 +28,16 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
 
     @Override
     protected void doProcess(EDirective directive, DirectiveDTO directiveDTO) {
-        TaskDTO taskDTO = directiveDTO.getTask();
-        String appId = taskDTO.getAppId();
+        AttributedTaskInfo task = directiveDTO.getTask();
+        String appId = task.getAppId();
 
         // 1.任务置为失败
-        taskDTO.setStatus(ETaskStatus.FAIL.getStatus());
+        task.setStatus(ETaskStatus.FAIL.getStatus());
         // 2.更新任务状态
-        String errorCode = taskService.updateStatusIfDone(taskDTO.getId(), ETaskStatus.FAIL.getStatus());
-        taskDTO.setStepCode(errorCode);
+        String errorCode = taskService.updateStatusIfDone(task.getId(), ETaskStatus.FAIL.getStatus());
+        task.setStepCode(errorCode);
         // 3.发送监控消息
-        monitorService.sendMonitorMessage(taskDTO.getId());
+        monitorService.sendMonitorMessage(task.getId());
 
         // 4.获取商户密钥
         AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
@@ -46,7 +46,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
         // 6.回调之前预处理
         precallback(dataMap, appLicense, directiveDTO);
 
-        handleTaskFailMsg(directiveDTO, taskDTO);
+        handleTaskFailMsg(directiveDTO, task);
         // 7.异步触发触发回调
         asyncExecutor.runAsync(directiveDTO, dto -> callback(dataMap, appLicense, dto));
     }
@@ -55,11 +55,11 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
      * 处理返回到前端的消息
      *
      * @param directiveDTO
-     * @param taskDTO
+     * @param task
      */
-    private void handleTaskFailMsg(DirectiveDTO directiveDTO, TaskDTO taskDTO) {
+    private void handleTaskFailMsg(DirectiveDTO directiveDTO, AttributedTaskInfo task) {
         try {
-            if (EBizType.OPERATOR.getCode().equals(taskDTO.getBizType())) {
+            if (EBizType.OPERATOR.getCode().equals(task.getBizType())) {
                 Map<String, Object> remarkMap = JSON.parseObject(directiveDTO.getRemark());
                 // 如果是运营商维护导致任务失败,爬数发来的任务指令中,directiveDTO的remark字段为{"errorMsg","当前运营商正在维护中，请稍后重试"}.
                 // 如果是其他原因导致的任务失败,则返回下面的默认值.
@@ -67,7 +67,7 @@ public class FailureDirectiveProcessor extends AbstractDirectiveProcessor {
                 directiveDTO.setRemark(JSON.toJSONString(remarkMap));
                 logger.info("handle task-fail-msg: result={},directiveDTO={}", JSON.toJSONString(directiveDTO));
             }
-            if (EBizType.DIPLOMA.getCode().equals(taskDTO.getBizType())) {
+            if (EBizType.DIPLOMA.getCode().equals(task.getBizType())) {
                 Map<String, Object> remarkMap = JSON.parseObject(directiveDTO.getRemark());
                 remarkMap.put("errorMsg", Constants.DIPLOMA_TASK_FAIL_MSG);
                 directiveDTO.setRemark(JSON.toJSONString(remarkMap));

@@ -3,12 +3,12 @@ package com.treefinance.saas.taskcenter.biz.mq;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.assistant.model.TaskCallbackFailureReasonMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
 import com.treefinance.saas.taskcenter.dto.CallbackFailureReasonDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,14 +60,14 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
         taskCallbackLogRepository.insertOrUpdateLog(taskId, callbackConfigId, failureReason);
 
         // 发送监控消息
-        TaskDTO taskDTO = taskService.getById(taskId);
-        if (!EBizType.OPERATOR.getCode().equals(taskDTO.getBizType())) {
-            logger.info("接收爬数发送的回调失败具体原因,任务类型非运营商,暂不处理.message={},task={}", message, JSON.toJSONString(taskDTO));
+        TaskInfo task = taskService.getTaskInfoById(taskId);
+        if (!EBizType.OPERATOR.getCode().equals(task.getBizType())) {
+            logger.info("接收爬数发送的回调失败具体原因,任务类型非运营商,暂不处理.message={},task={}", message, JSON.toJSONString(task));
             return;
         }
-        TaskCallbackFailureReasonMessage taskCallbackFailureReasonMessage = convertStrict(taskDTO, TaskCallbackFailureReasonMessage.class);
-        taskCallbackFailureReasonMessage.setTaskId(taskDTO.getId());
-        taskCallbackFailureReasonMessage.setDataTime(taskDTO.getCreateTime());
+        TaskCallbackFailureReasonMessage taskCallbackFailureReasonMessage = convertStrict(task, TaskCallbackFailureReasonMessage.class);
+        taskCallbackFailureReasonMessage.setTaskId(task.getId());
+        taskCallbackFailureReasonMessage.setDataTime(task.getCreateTime());
         taskCallbackFailureReasonMessage.setFailureReason(failureReason);
         Map<String, String> attributeMap = taskAttributeService.getAttributeMapByTaskId(taskId, false);
         taskCallbackFailureReasonMessage.setTaskAttributes(attributeMap);

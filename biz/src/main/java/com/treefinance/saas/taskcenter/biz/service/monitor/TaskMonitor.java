@@ -2,8 +2,8 @@ package com.treefinance.saas.taskcenter.biz.service.monitor;
 
 import com.treefinance.saas.assistant.model.TaskMonitorMessage;
 import com.treefinance.saas.assistant.plugin.TaskMonitorPlugin;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -25,7 +25,7 @@ public class TaskMonitor extends AbstractBusinessMonitor<TaskMonitorMessage> {
     }
 
     @Override
-    protected TaskMonitorMessage buildMonitorMessage(TaskDTO task) {
+    protected TaskMonitorMessage buildMonitorMessage(TaskInfo task) {
         TaskMonitorMessage message = new TaskMonitorMessage();
         message.setTaskId(task.getId());
         message.setAccountNo(task.getAccountNo());

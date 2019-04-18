@@ -13,16 +13,17 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
-import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
-import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import com.treefinance.saas.taskcenter.service.domain.TaskUpdateResult;
+import com.treefinance.saas.taskcenter.service.param.TaskCreateObject;
 import com.treefinance.saas.taskcenter.service.param.TaskStepLogObject;
+import com.treefinance.saas.taskcenter.service.param.TaskUpdateObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,18 +37,18 @@ import java.util.List;
  */
 public interface TaskService {
 
-    TaskDTO getById(Long taskId);
-
-    /**
-     * 根据任务ID 和额外变量名字取出任务
-     * @param taskId
-     * @return
-     */
-    TaskDTO getTaskandAttribute(Long taskId);
-
     List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskAttrCompositeQuery query);
 
     long countCompositeTasks(@Nonnull TaskAttrCompositeQuery query);
+
+    /**
+     * 查询属性化的任务信息，即在任务基本信息的基础上新增附加属性。
+     * 
+     * @param taskId 任务ID
+     * @param attrNames 指定的任务附加属性，如果未指定则查询全部属性
+     * @return 带有附加属性的任务信息
+     */
+    AttributedTaskInfo getAttributedTaskInfo(@Nonnull Long taskId, String... attrNames);
 
     /**
      * 更新未完成任务
@@ -73,6 +74,8 @@ public interface TaskService {
      * @return 任务信息，非空
      */
     Task getTaskById(@Nonnull Long taskId);
+
+    TaskInfo getTaskInfoById(@Nonnull Long taskId);
 
     /**
      * 获取任务的状态
