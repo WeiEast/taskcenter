@@ -1,6 +1,11 @@
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.treefinance.commonservice.uid.UidService;
+import com.treefinance.saas.merchant.facade.request.console.MerchantFunctionRequest;
+import com.treefinance.saas.merchant.facade.result.console.MerchantFunctionResult;
+import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
+import com.treefinance.saas.merchant.facade.service.MerchantFunctionFacade;
+import com.treefinance.saas.taskcenter.biz.domain.TaskPointInner;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
@@ -26,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -86,34 +90,39 @@ public class TaskPointServiceImpl implements TaskPointService {
             Preconditions.notNull("request", taskPointRequest);
             Preconditions.notBlank("request.code", taskPointRequest.getCode());
             TaskPoint taskPoint = new TaskPoint();
+
             BeanUtils.copyProperties(taskPointRequest, taskPoint);
             taskPoint.setOccurTime(new Date());
-            String str = redisDao.get("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId());
+            TaskPointInner str = (TaskPointInner)redisDao.getObject("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId());
             String appId;
             String sourceid = "";
-            if (str == null) {
-
+            if (Objects.isEmpty(str)) {
+                TaskPointInner taskPointInner = new TaskPointInner();
                 Task task = taskMapper.selectByPrimaryKey(taskPointRequest.getTaskId());
-
                 TaskAttributeCriteria criteria = new TaskAttributeCriteria();
                 criteria.createCriteria().andTaskIdEqualTo(taskPointRequest.getTaskId()).andNameEqualTo(sourceId);
                 List<TaskAttribute> taskAttributes = taskAttributeMapper.selectByExample(criteria);
                 if (!Objects.isEmpty(taskAttributes)) {
                     sourceid = taskAttributes.get(0).getValue();
                 }
+                taskPointInner.setAppId(task.getAppId());
+                taskPointInner.setUniqueId(task.getUniqueId());
+                taskPointInner.setBizType(task.getBizType());
+                taskPointInner.setSourceId(sourceid);
+
                 String uniqueId = task.getUniqueId();
-                redisDao.setEx("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId(),
-                    task.getUniqueId() + "," + task.getBizType() + "," + task.getAppId() + "," + sourceid, 10, TimeUnit.MINUTES);
+                redisDao.setObject("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId(), taskPointInner, (long)10, TimeUnit.MINUTES);
+
                 taskPoint.setUniqueId(uniqueId);
+
                 taskPoint.setBizType(task.getBizType());
                 appId = task.getAppId();
             } else {
-                List<String> list = Arrays.asList(str.split(","));
-                taskPoint.setUniqueId(list.get(0));
-                taskPoint.setBizType((Byte.valueOf(list.get(1))));
-                appId = list.get(2);
-                if (StringUtils.isNotEmpty(sourceid)) {
-                    sourceid = list.get(3);
+                taskPoint.setUniqueId(str.getUniqueId());
+                taskPoint.setBizType(str.getBizType());
+                appId = str.getAppId();
+                if (StringUtils.isNotEmpty(str.getSourceId())) {
+                    sourceid = str.getSourceId();
                 }
             }
             int bizType = taskPoint.getBizType();
@@ -126,7 +135,6 @@ public class TaskPointServiceImpl implements TaskPointService {
             taskPoint.setId(uidService.getId());
             taskPoint.setAppId(appId);
             int i = taskPointMapper.insertSelective(taskPoint);
-
             if (i > 0 && supportNotifyBizType(bizType)) {
                 MerchantFunctionBO function = null;
                 try {
@@ -184,5 +192,4 @@ public class TaskPointServiceImpl implements TaskPointService {
         }
         return false;
     }
-
 }
