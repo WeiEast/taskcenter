@@ -35,6 +35,14 @@ public interface RedisDao {
     String get(String key);
 
     /**
+     * Object操作:获取指定key的值
+     *
+     * @param key
+     * @return
+     */
+    Object getObject(String key);
+
+    /**
      * String操作:设置指定key的值,并设置过期时间
      *
      * @param key
@@ -43,6 +51,14 @@ public interface RedisDao {
      * @param unit
      */
     Boolean setEx(String key, String value, long timeout, TimeUnit unit);
+
+    /**
+     * Objecy操作:设置指定的Key值，并设置过期时间
+     * @param key
+     * @param value
+     * @param time
+     */
+    void setObject(String key, Object value, Long time,TimeUnit unit);
 
     /**
      * String操作:增加,负数则为自减,并设置过期时间
