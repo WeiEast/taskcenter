@@ -142,7 +142,10 @@ public abstract class CallbackableDirectiveProcessor {
         Long taskId = directiveDTO.getTaskId();
 
         // 4.查询回调配置
-        List<CallbackConfigBO> configList = getCallbackConfigs(taskDTO);
+        String appId = taskDTO.getAppId();
+        Byte bizType = taskDTO.getBizType();
+        List<CallbackConfigBO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, bizType, EDataType.MAIN_STREAM);
+        logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", taskDTO.getId(), JSON.toJSONString(configList));
         if (CollectionUtils.isEmpty(configList)) {
             logger.info("callback exit: callback-config is empty, directive={}", JSON.toJSONString(directiveDTO));
             monitorService.sendTaskCallbackMsgMonitorMessage(taskId, null, null, false);
@@ -318,15 +321,6 @@ public abstract class CallbackableDirectiveProcessor {
      */
     private void flushData(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveDTO directiveDTO) {
         this.precallback(dataMap, appLicense, directiveDTO);
-    }
-
-    /**
-     * 获取回调配置
-     *
-     * @return
-     */
-    private List<CallbackConfigBO> getCallbackConfigs(TaskDTO taskDTO) {
-        return grapDataCallbackService.getCallbackConfigs(taskDTO, EDataType.MAIN_STREAM);
     }
 
     /**

@@ -18,11 +18,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
 import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
 import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
-import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
@@ -38,6 +36,9 @@ import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
+import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -76,6 +77,8 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     private DirectiveService directiveService;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private TaskLifecycleService taskLifecycleService;
 
     @Override
     public List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskAttrCompositeQuery query) {
@@ -313,6 +316,8 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
             cancelDirective.setTaskId(taskId);
             cancelDirective.setDirective(EDirective.TASK_CANCEL.getText());
             directiveService.process(cancelDirective);
+            // 删除记录的任务活跃时间
+            taskLifecycleService.deleteAliveTime(taskId);
         }
     }
 

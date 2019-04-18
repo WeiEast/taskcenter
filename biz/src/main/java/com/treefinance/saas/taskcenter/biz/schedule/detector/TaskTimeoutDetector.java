@@ -11,16 +11,21 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
+package com.treefinance.saas.taskcenter.biz.schedule.detector;
 
-import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
+import javax.annotation.Nonnull;
 
 /**
  * @author Jerry
- * @date 2018/11/22 01:11
+ * @date 2019-03-12 19:06
  */
-public interface GrapDataCallbackService {
+public interface TaskTimeoutDetector {
 
-    void handleAyscData(AsycGrapDTO asycGrapDTO);
-
+    /**
+     * 超时任务检测
+     * 
+     * @param taskId 任务ID
+     * @throws InterruptedException
+     */
+    void detect(@Nonnull Long taskId) throws InterruptedException;
 }

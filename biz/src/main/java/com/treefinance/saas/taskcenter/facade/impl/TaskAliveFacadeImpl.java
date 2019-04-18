@@ -23,37 +23,19 @@ public class TaskAliveFacadeImpl implements TaskAliveFacade {
     @Autowired
     private TaskLifecycleService taskLifecycleService;
 
-    /**
-     * 更新任务最近活跃时间 可能存在多个请求同时更新活跃时间,未获得锁的请求可过滤掉
-     *
-     * @param taskId
-     * @return
-     */
     @Override
-    public TaskResult<Void> updateTaskActiveTime(Long taskId, Date date) {
+    public TaskResult<Void> updateTaskActiveTime(Long taskId) {
         if (taskId == null) {
             throw new BusinessCheckFailException("-1", "任务id不能为空");
         }
-        if (date == null) {
-            throw new BusinessCheckFailException("-1", "任务活跃时间不能为空");
-        }
+
+        Date date = new Date();
 
         taskLifecycleService.updateAliveTime(taskId, date);
+        
         return TaskResult.wrapSuccessfulResult(null);
-
     }
 
-    @Override
-    public TaskResult<Void> updateTaskActiveTime(Long taskId) {
-        return this.updateTaskActiveTime(taskId, new Date());
-    }
-
-    /**
-     * 获取任务最近活跃时间
-     *
-     * @param taskId
-     * @return
-     */
     @Override
     public TaskResult<String> getTaskAliveTime(Long taskId) {
         if (taskId == null) {
@@ -63,12 +45,4 @@ public class TaskAliveFacadeImpl implements TaskAliveFacade {
         return TaskResult.wrapSuccessfulResult(result);
     }
 
-    @Override
-    public TaskResult<Void> deleteTaskAliveTime(Long taskId) {
-        if (taskId == null) {
-            throw new BusinessCheckFailException("-1", "任务id不能为空");
-        }
-        taskLifecycleService.deleteAliveTime(taskId);
-        return TaskResult.wrapSuccessfulResult(null);
-    }
 }

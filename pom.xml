@@ -28,6 +28,7 @@
     <properties>
         <task-center.version>${project.version}</task-center.version>
         <merchant-center.version>2.3.0-SNAPSHOT</merchant-center.version>
+        <curator.version>2.13.0</curator.version>
     </properties>
 
     <dependencyManagement>

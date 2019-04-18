@@ -1,13 +1,12 @@
-package com.treefinance.saas.taskcenter.biz.service.task.timeout;
+package com.treefinance.saas.taskcenter.biz.schedule.handler;
 
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
-import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
 import com.treefinance.saas.taskcenter.context.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
+import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.interation.manager.SpiderTaskManager;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -34,7 +33,7 @@ public class MainStreamTaskTimeoutHandler implements TaskTimeoutHandler {
     private SpiderTaskManager spiderTaskManager;
 
     @Override
-    public void handleTaskTimeout(TaskDTO task, Integer timeout, Date loginTime) {
+    public void handle(Task task, Integer timeout, Date loginTime) {
         Long taskId = task.getId();
         // 任务超时: 当前时间-登录时间>超时时间
         Date currentTime = new Date();

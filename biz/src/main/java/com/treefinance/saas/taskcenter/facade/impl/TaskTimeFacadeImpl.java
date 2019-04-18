@@ -1,10 +1,14 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.TaskTimeService;
+import com.treefinance.saas.taskcenter.biz.schedule.detector.TaskAliveTimeDetector;
+import com.treefinance.saas.taskcenter.biz.schedule.detector.TaskTimeoutDetector;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskTimeFacade;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -15,11 +19,15 @@ import java.util.Date;
  */
 @Component("taskTimeFacade")
 public class TaskTimeFacadeImpl implements TaskTimeFacade {
-
-    @Autowired
-    private TaskTimeService taskTimeService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskTimeFacadeImpl.class);
     @Autowired
     private TaskAttributeService taskAttributeService;
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolExecutor;
+    @Autowired
+    private TaskTimeoutDetector taskTimeoutDetector;
+    @Autowired
+    private TaskAliveTimeDetector taskAliveTimeDetector;
 
     @Override
     public TaskResult<Void> updateLoginTime(Long taskId, Date date) {
@@ -38,13 +46,27 @@ public class TaskTimeFacadeImpl implements TaskTimeFacade {
 
     @Override
     public TaskResult<Void> handleTaskTimeout(Long taskId) {
-        taskTimeService.handleTaskTimeout(taskId);
+        LOGGER.info("任务抓取超时异步处理:taskId={}", taskId);
+        threadPoolExecutor.execute(() -> {
+            try {
+                taskTimeoutDetector.detect(taskId);
+            } catch (InterruptedException e) {
+                LOGGER.error("Task's timeout detector interrupted!", e);
+            }
+        });
         return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override
     public TaskResult<Void> handleTaskAliveTimeout(Long taskId, Date startTime) {
-        taskTimeService.handleTaskAliveTimeout(taskId, startTime);
+        LOGGER.info("任务活跃超时异步处理:taskId={},startTime={}", taskId, startTime);
+        threadPoolExecutor.execute(() -> {
+            try {
+                taskAliveTimeDetector.detect(taskId, startTime);
+            } catch (InterruptedException e) {
+                LOGGER.error("Task's timeout detector interrupted!", e);
+            }
+        });
         return TaskResult.wrapSuccessfulResult(null);
     }
 }

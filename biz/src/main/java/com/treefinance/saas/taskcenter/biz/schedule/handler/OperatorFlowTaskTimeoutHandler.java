@@ -1,14 +1,15 @@
-package com.treefinance.saas.taskcenter.biz.service.task.timeout;
+package com.treefinance.saas.taskcenter.biz.schedule.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.GrapDataCallbackService;
-import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
-import com.treefinance.saas.taskcenter.biz.service.task.TaskTimeoutHandler;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dto.AsycGrapDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
 import com.treefinance.saas.taskcenter.facade.enums.EBizType;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
+import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
+import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -29,12 +30,14 @@ public class OperatorFlowTaskTimeoutHandler implements TaskTimeoutHandler {
     private static final Logger logger = LoggerFactory.getLogger(OperatorFlowTaskTimeoutHandler.class);
 
     @Autowired
+    private AppCallbackConfigService appCallbackConfigService;
+    @Autowired
     private GrapDataCallbackService grapDataCallbackService;
     @Autowired
     private TaskCallbackLogService taskCallbackLogService;
 
     @Override
-    public void handleTaskTimeout(TaskDTO task, Integer timeout, Date loginTime) {
+    public void handle(Task task, Integer timeout, Date loginTime) {
         // 1.非运营商任务
         if (!EBizType.OPERATOR.getCode().equals(task.getBizType())) {
             return;
@@ -44,7 +47,11 @@ public class OperatorFlowTaskTimeoutHandler implements TaskTimeoutHandler {
         Date currentTime = new Date();
         logger.info("运营商流量：isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
         // 2.判断此商户是否配置了运营商流量数据的回调
-        List<CallbackConfigBO> callbackConfigs = grapDataCallbackService.getCallbackConfigs(task, EDataType.OPERATOR_FLOW);
+
+        String appId = task.getAppId();
+        Byte bizType = task.getBizType();
+        List<CallbackConfigBO> callbackConfigs = appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, bizType, EDataType.OPERATOR_FLOW);
+        logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", task.getId(), JSON.toJSONString(callbackConfigs));
         if (CollectionUtils.isEmpty(callbackConfigs)) {
             logger.info("handle operator flow task timeout, merchant don't have callback configs: taskId={},timeout={},loginTime={}", taskId, timeout,
                 DateFormatUtils.format(loginTime, "yyyyMMdd HH:mm:ss"));
@@ -66,7 +73,7 @@ public class OperatorFlowTaskTimeoutHandler implements TaskTimeoutHandler {
         asycGrapDTO.setStatus(0);
         asycGrapDTO.setErrorMsg("任务超时");
         asycGrapDTO.setDataType(EDataType.OPERATOR_FLOW.getType().intValue());
-        asycGrapDTO.setTimestamp(new Date().getTime());
+        asycGrapDTO.setTimestamp(System.currentTimeMillis());
         grapDataCallbackService.handleAyscData(asycGrapDTO);
     }
 }

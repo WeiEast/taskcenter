@@ -11,22 +11,24 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service;
+package com.treefinance.saas.taskcenter.biz.schedule.detector;
+
+import javax.annotation.Nonnull;
 
 import java.util.Date;
 
 /**
  * @author Jerry
- * @date 2018/11/21 18:02
+ * @date 2019-03-12 19:22
  */
-public interface TaskTimeService {
+public interface TaskAliveTimeDetector {
 
     /**
-     * 处理任务抓取超时
-     *
-     * @param taskId
+     * 任务活跃时间检测
+     * 
+     * @param taskId 任务ID
+     * @param detectTime 任务检测时间
+     * @throws InterruptedException
      */
-    void handleTaskTimeout(Long taskId);
-
-    void handleTaskAliveTimeout(Long taskId, Date startTime);
+    void detect(@Nonnull Long taskId, @Nonnull Date detectTime) throws InterruptedException;
 }

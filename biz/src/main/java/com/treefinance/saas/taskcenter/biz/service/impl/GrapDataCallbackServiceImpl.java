@@ -86,7 +86,8 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
         // 3.获取商户密钥
         AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
 
-        List<CallbackConfigBO> callbackConfigs = getCallbackConfigs(taskDTO, dataType);
+        List<CallbackConfigBO> callbackConfigs =  appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, taskDTO.getBizType(), dataType);
+        logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", taskDTO.getId(), JSON.toJSONString(callbackConfigs));
         if (CollectionUtils.isEmpty(callbackConfigs)) {
             logger.info("{} callback failed :taskId={}, callbackConfigs of {} is null, message={}...", dataType.name(), taskId, appId, JSON.toJSONString(asycGrapDTO));
             return;
@@ -160,21 +161,6 @@ public class GrapDataCallbackServiceImpl implements GrapDataCallbackService {
                     result);
             }
         }
-    }
-
-    /**
-     * 获取回调配置
-     *
-     * @return
-     */
-    @Override
-    public List<CallbackConfigBO> getCallbackConfigs(TaskDTO taskDTO, EDataType dataType) {
-        String appId = taskDTO.getAppId();
-        Byte bizType = taskDTO.getBizType();
-        List<CallbackConfigBO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, bizType, dataType);
-        logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", taskDTO.getId(), JSON.toJSONString(configList));
-
-        return configList;
     }
 
 }
