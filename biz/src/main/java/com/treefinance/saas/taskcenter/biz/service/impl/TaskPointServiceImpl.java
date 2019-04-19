@@ -91,30 +91,21 @@ public class TaskPointServiceImpl implements TaskPointService {
 
             BeanUtils.copyProperties(taskPointRequest, taskPoint);
             taskPoint.setOccurTime(new Date());
+
             TaskPointInner str = (TaskPointInner)redisDao.getObject("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId());
             String appId;
             String sourceid = "";
+            // 判断是否读缓存还是取数据库
             if (Objects.isEmpty(str)) {
                 TaskPointInner taskPointInner = new TaskPointInner();
-                Task task = taskMapper.selectByPrimaryKey(taskPointRequest.getTaskId());
-                TaskAttributeCriteria criteria = new TaskAttributeCriteria();
-                criteria.createCriteria().andTaskIdEqualTo(taskPointRequest.getTaskId()).andNameEqualTo(sourceId);
-                List<TaskAttribute> taskAttributes = taskAttributeMapper.selectByExample(criteria);
-                if (!Objects.isEmpty(taskAttributes)) {
-                    sourceid = taskAttributes.get(0).getValue();
-                }
-                taskPointInner.setAppId(task.getAppId());
-                taskPointInner.setUniqueId(task.getUniqueId());
-                taskPointInner.setBizType(task.getBizType());
-                taskPointInner.setSourceId(sourceid);
-
-                String uniqueId = task.getUniqueId();
+                // 获取任务所有信息
+                taskPointInner = setTaskPoint(taskPointInner, taskPointRequest.getTaskId());
+                // 存入缓存
                 redisDao.setObject("UniqueId_bizType_appId_sourceId" + taskPointRequest.getTaskId(), taskPointInner, (long)10, TimeUnit.MINUTES);
-
-                taskPoint.setUniqueId(uniqueId);
-
-                taskPoint.setBizType(task.getBizType());
-                appId = task.getAppId();
+                taskPoint.setUniqueId(taskPointInner.getUniqueId());
+                taskPoint.setBizType(taskPointInner.getBizType());
+                sourceid = taskPointInner.getSourceId();
+                appId = taskPointInner.getAppId();
             } else {
                 taskPoint.setUniqueId(str.getUniqueId());
                 taskPoint.setBizType(str.getBizType());
@@ -146,6 +137,24 @@ public class TaskPointServiceImpl implements TaskPointService {
         } catch (Exception e) {
             logger.error("埋点通知商户异常，taskId={}", taskPointRequest.getTaskId(), e);
         }
+    }
+
+    private TaskPointInner setTaskPoint(TaskPointInner taskPointInner, Long taskId) {
+        String sourceid = "";
+        Task task = taskMapper.selectByPrimaryKey(taskId);
+        TaskAttributeCriteria criteria = new TaskAttributeCriteria();
+        criteria.createCriteria().andTaskIdEqualTo(taskId).andNameEqualTo(sourceId);
+        List<TaskAttribute> taskAttributes = taskAttributeMapper.selectByExample(criteria);
+        if (!Objects.isEmpty(taskAttributes)) {
+            sourceid = taskAttributes.get(0).getValue();
+        }
+        taskPointInner.setAppId(task.getAppId());
+        taskPointInner.setUniqueId(task.getUniqueId());
+        taskPointInner.setBizType(task.getBizType());
+        taskPointInner.setSourceId(sourceid);
+
+        return taskPointInner;
+
     }
 
     private void success(TaskPoint taskPoint, String appId, String sourceId, MerchantFunctionResult merchantFunctionResult) {
