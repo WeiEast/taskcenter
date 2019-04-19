@@ -15,12 +15,12 @@
  */
 package com.treefinance.saas.taskcenter.service.impl;
 
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskAttributeRepository;
 import com.treefinance.saas.taskcenter.exception.UnexpectedException;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisKeyUtils;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedissonLocks;
@@ -161,6 +161,17 @@ public class TaskAttributeServiceImpl implements TaskAttributeService {
 
     private String getLockKey(Long taskId) {
         return LOCK_KEY + taskId;
+    }
+
+    @Override
+    public Long findTaskIdByMoxieTid(String moxieTaskId) {
+        if (StringUtils.isNotBlank(moxieTaskId)) {
+            TaskAttribute taskAttribute = taskAttributeRepository.queryAttributeByNameAndValue(ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), moxieTaskId, false);
+            if (taskAttribute != null) {
+                return taskAttribute.getTaskId();
+            }
+        }
+        return null;
     }
 
 }

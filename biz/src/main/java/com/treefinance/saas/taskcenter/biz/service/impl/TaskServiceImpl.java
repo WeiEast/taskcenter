@@ -140,7 +140,7 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 
     @Override
     public TaskInfo getTaskInfoById(@Nonnull Long taskId) {
-        Task task = getTaskById(taskId);
+        Task task = taskRepository.getTaskById(taskId);
 
         return convert(task, TaskInfo.class);
     }

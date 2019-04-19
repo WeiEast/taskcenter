@@ -131,4 +131,11 @@ public interface TaskAttributeService {
      * @param date 登录时间
      */
     void saveLoginTime(@Nonnull Long taskId, @Nonnull Date date);
+
+    /**
+     * 根据魔蝎的任务ID查找实际任务ID
+     * @param moxieTaskId 魔蝎任务ID
+     * @return 实际任务ID
+     */
+    Long findTaskIdByMoxieTid(String moxieTaskId);
 }
