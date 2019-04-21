@@ -18,6 +18,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
+import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
@@ -31,7 +32,6 @@ import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskParams;
 import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
 import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
@@ -156,6 +156,19 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     public boolean isTaskCompleted(Long taskId) {
         Byte status = getTaskStatusById(taskId);
         return isCompleted(status);
+    }
+
+    @Override
+    public boolean isCompleted(Byte status) {
+        if (status != null) {
+            for (Byte item : DONE_STATUSES) {
+                if (item.equals(status)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -316,10 +329,7 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         Task task = taskRepository.getTaskById(taskId);
         if (ETaskStatus.isRunning(task.getStatus())) {
             logger.info("正在取消任务 : taskId={} ", taskId);
-            DirectiveDTO cancelDirective = new DirectiveDTO();
-            cancelDirective.setTaskId(taskId);
-            cancelDirective.setDirective(EDirective.TASK_CANCEL.getText());
-            directiveService.process(cancelDirective);
+            directiveService.process(new DirectivePacket(EDirective.TASK_CANCEL, taskId));
             // 删除记录的任务活跃时间
             taskLifecycleService.deleteAliveTime(taskId);
         }
@@ -345,18 +355,6 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
             taskLogService.insertTaskLog(taskId, stepMsg, log.getOccurTime(), log.getErrorMsg());
         }
         monitorService.sendMonitorMessage(taskId);
-    }
-
-    private boolean isCompleted(Byte status) {
-        if (status != null) {
-            for (Byte item : DONE_STATUSES) {
-                if (item.equals(status)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     private void setAttribute(Long taskId, Map map) {

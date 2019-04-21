@@ -94,6 +94,14 @@ public interface TaskService {
     boolean isTaskCompleted(Long taskId);
 
     /**
+     * 判断任务状态是否是已结束状态
+     * 
+     * @param status 任务状态
+     * @return true if task was success or failure or cancel.
+     */
+    boolean isCompleted(Byte status);
+
+    /**
      * 根据taskId查询任务斌检查是否是完成的。
      *
      * @param taskId 任务ID

@@ -14,7 +14,7 @@
 package com.treefinance.saas.taskcenter.biz.service;
 
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.service.domain.DirectiveEntity;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,14 +59,9 @@ public interface TaskNextDirectiveService {
         return this.insert(taskId, directive, null);
     }
 
-    /**
-     * 记录并缓存指令
-     *
-     *
-     * @param taskId 任务ID
-     * @param directive 指令对象
-     */
-    void insertAndCacheNextDirective(@Nonnull Long taskId, @Nonnull DirectiveDTO directive);
+    Long insert(@Nonnull DirectiveEntity directiveObject);
+
+    void saveDirective(@Nonnull DirectiveEntity directive);
 
     /**
      * 获取指令

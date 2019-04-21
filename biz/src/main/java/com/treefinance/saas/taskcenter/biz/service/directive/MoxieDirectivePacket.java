@@ -11,38 +11,29 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.dto;
+package com.treefinance.saas.taskcenter.biz.service.directive;
 
-import java.io.Serializable;
-import java.util.Date;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * Created by yh-treefinance on 2017/7/7.
+ * @author Jerry
+ * @date 2017/9/14.
  */
-public class BaseDTO implements Serializable {
-    /**
-     * 创建时间
-     */
-    private Date createTime;
+@Getter
+@Setter
+public class MoxieDirectivePacket extends DirectivePacket {
 
-    /**
-     * 最后更新时间
-     */
-    private Date lastUpdateTime;
+    private static final long serialVersionUID = 6201076878996673264L;
 
-    public Date getCreateTime() {
-        return createTime;
+    private String moxieTaskId;
+
+    public MoxieDirectivePacket() {
     }
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
+    public MoxieDirectivePacket(EDirective directive) {
+        super(directive);
     }
 
-    public Date getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(Date lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
-    }
 }

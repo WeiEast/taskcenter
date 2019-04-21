@@ -1,13 +1,25 @@
-package com.treefinance.saas.taskcenter.biz.service.moxie;
+/*
+ * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
+package com.treefinance.saas.taskcenter.biz.service;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.google.common.collect.ImmutableMap;
+import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
+import com.treefinance.saas.taskcenter.biz.service.directive.MoxieDirectivePacket;
 import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
-import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
-import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
 import com.treefinance.saas.taskcenter.dto.moxie.MoxieTaskEventNoticeDTO;
 import com.treefinance.saas.taskcenter.interation.manager.FundManager;
 import com.treefinance.saas.taskcenter.interation.manager.FundMoxieManager;
@@ -19,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.Map;
 
 /**
  * Created by haojiahong on 2017/9/15.
@@ -31,7 +42,7 @@ public class MoxieBusinessService {
     @Autowired
     private TaskLogService taskLogService;
     @Autowired
-    private MoxieDirectiveService moxieDirectiveService;
+    private DirectiveService directiveService;
     @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
@@ -64,30 +75,25 @@ public class MoxieBusinessService {
         // 1.记录采集失败日志
         taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_FAIL.getText(), new Date(), message);
         // 2.发送任务失败指令
-        MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
-        directiveDTO.setDirective(EMoxieDirective.TASK_FAIL.getText());
-        Map<String, Object> map = Maps.newHashMap();
-        map.put("taskErrorMsg", "爬数失败");
-        directiveDTO.setRemark(JSON.toJSONString(map));
-        directiveDTO.setTaskId(taskId);
-        directiveDTO.setMoxieTaskId(moxieTaskId);
-        moxieDirectiveService.process(directiveDTO);
+        MoxieDirectivePacket directivePacket = new MoxieDirectivePacket(EDirective.TASK_FAIL);
+        directivePacket.setTaskId(taskId);
+        directivePacket.setMoxieTaskId(moxieTaskId);
+        directivePacket.setRemark(JSON.toJSONString(ImmutableMap.of("taskErrorMsg", "爬数失败")));
+        directiveService.process(directivePacket);
 
     }
 
     public void loginSuccess(MoxieTaskEventNoticeDTO eventNoticeDTO) {
-        MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
-        directiveDTO.setMoxieTaskId(eventNoticeDTO.getMoxieTaskId());
-        directiveDTO.setDirective(EMoxieDirective.LOGIN_SUCCESS.getText());
-        moxieDirectiveService.process(directiveDTO);
+        MoxieDirectivePacket directivePacket = new MoxieDirectivePacket(EDirective.LOGIN_SUCCESS);
+        directivePacket.setMoxieTaskId(eventNoticeDTO.getMoxieTaskId());
+        directiveService.process(directivePacket);
     }
 
     public void loginFail(MoxieTaskEventNoticeDTO eventNoticeDTO) {
-        MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
-        directiveDTO.setMoxieTaskId(eventNoticeDTO.getMoxieTaskId());
-        directiveDTO.setDirective(EMoxieDirective.LOGIN_FAIL.getText());
-        directiveDTO.setRemark(eventNoticeDTO.getMessage());
-        moxieDirectiveService.process(directiveDTO);
+        MoxieDirectivePacket directivePacket = new MoxieDirectivePacket(EDirective.LOGIN_FAIL);
+        directivePacket.setMoxieTaskId(eventNoticeDTO.getMoxieTaskId());
+        directivePacket.setRemark(eventNoticeDTO.getMessage());
+        directiveService.process(directivePacket);
     }
 
     /**
@@ -123,23 +129,19 @@ public class MoxieBusinessService {
             message = e.getMessage();
         }
         // 3.根据洗数返回结果,发送任务成功或失败指令
+
+        MoxieDirectivePacket directivePacket = new MoxieDirectivePacket();
+        directivePacket.setMoxieTaskId(moxieTaskId);
+        directivePacket.setTaskId(taskId);
         if (result) {
-            MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
-            directiveDTO.setMoxieTaskId(moxieTaskId);
-            directiveDTO.setTaskId(taskId);
-            directiveDTO.setDirective(EMoxieDirective.TASK_SUCCESS.getText());
-            directiveDTO.setRemark(processResult);
-            moxieDirectiveService.process(directiveDTO);
+            directivePacket.setDirective(EDirective.TASK_SUCCESS);
+            directivePacket.setRemark(processResult);
         } else {
-            MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
-            directiveDTO.setMoxieTaskId(moxieTaskId);
-            directiveDTO.setTaskId(taskId);
-            directiveDTO.setDirective(EMoxieDirective.TASK_FAIL.getText());
-            Map<String, Object> map = Maps.newHashMap();
-            map.put("taskErrorMsg", message);
-            directiveDTO.setRemark(JSON.toJSONString(map));
-            moxieDirectiveService.process(directiveDTO);
+            directivePacket.setDirective(EDirective.TASK_FAIL);
+            directivePacket.setRemark(JSON.toJSONString(ImmutableMap.of("taskErrorMsg", message)));
         }
+
+        directiveService.process(directivePacket);
     }
 
     private String billAndProcess(Long taskId, String moxieTaskId) throws Exception {

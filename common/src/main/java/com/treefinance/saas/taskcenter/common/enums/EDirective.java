@@ -24,6 +24,18 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum EDirective {
     /**
+     * 等待中(过渡指令)
+     */
+    WAITING("waiting"),
+    /**
+     * 登录成功（目前主要用于魔蝎）
+     */
+    LOGIN_SUCCESS("login_success"),
+    /**
+     * 登录失败（目前主要用于魔蝎）
+     */
+    LOGIN_FAIL("login_fail"),
+    /**
      * 短信验证码
      */
     REQUIRE_SMS("require_sms"),
@@ -54,7 +66,11 @@ public enum EDirective {
     /**
      * 任务成功
      */
-    TASK_CANCEL("task_cancel");
+    TASK_CANCEL("task_cancel"),
+    /**
+     * 临时成功状态，成功指令处理但回调失败的处理阶段记录成临时成功的过渡状态，即：task_success -> temporary_success -> callback_fail
+     */
+    TEMPORARY_SUCCESS("temporary_success");
 
     private final String text;
 
@@ -65,7 +81,6 @@ public enum EDirective {
     public String getText() {
         return text;
     }
-
 
     public static EDirective directiveOf(String text) {
         if (StringUtils.isNotEmpty(text)) {

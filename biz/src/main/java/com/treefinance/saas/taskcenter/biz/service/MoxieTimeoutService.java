@@ -1,21 +1,37 @@
-package com.treefinance.saas.taskcenter.biz.service.moxie;
+/*
+ * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.treefinance.saas.taskcenter.biz.service;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.moxie.directive.MoxieDirectiveService;
+import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
-import com.treefinance.saas.taskcenter.context.enums.moxie.EMoxieDirective;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
-import com.treefinance.saas.taskcenter.dto.moxie.MoxieDirectiveDTO;
+import com.treefinance.saas.taskcenter.biz.service.directive.MoxieDirectivePacket;
 import com.treefinance.saas.taskcenter.interation.manager.BizTypeManager;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
@@ -60,7 +76,7 @@ public class MoxieTimeoutService {
     @Autowired
     private TaskLogService taskLogService;
     @Autowired
-    private MoxieDirectiveService moxieDirectiveService;
+    private DirectiveService directiveService;
     @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
@@ -152,13 +168,10 @@ public class MoxieTimeoutService {
             taskLogService.log(task.getId(), TaskStatusMsgEnum.TIMEOUT_MSG, errorMessage);
 
             // 超时处理：任务更新为失败
-            MoxieDirectiveDTO directiveDTO = new MoxieDirectiveDTO();
-            directiveDTO.setTaskId(task.getId());
-            directiveDTO.setDirective(EMoxieDirective.TASK_FAIL.getText());
-            Map<String, Object> map = Maps.newHashMap();
-            map.put("taskErrorMsg", errorMessage);
-            directiveDTO.setRemark(JSON.toJSONString(map));
-            moxieDirectiveService.process(directiveDTO);
+            MoxieDirectivePacket directivePacket = new MoxieDirectivePacket(EDirective.TASK_FAIL);
+            directivePacket.setTaskId(task.getId());
+            directivePacket.setRemark(JSON.toJSONString(ImmutableMap.of("taskErrorMsg", errorMessage)));
+            directiveService.process(directivePacket);
         }
     }
 

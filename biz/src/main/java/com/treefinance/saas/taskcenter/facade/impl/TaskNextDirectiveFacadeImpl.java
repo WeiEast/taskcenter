@@ -2,8 +2,6 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.facade.request.TaskDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskNextDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskNextDirectiveRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
@@ -30,26 +28,6 @@ public class TaskNextDirectiveFacadeImpl extends AbstractFacade implements TaskN
         List<TaskNextDirectiveRO> taskNextDirectiveROList = convert(list, TaskNextDirectiveRO.class);
 
         return TaskResult.wrapSuccessfulResult(taskNextDirectiveROList);
-    }
-
-    @Override
-    public TaskResult<Long> insert(Long taskId, String directive, String remark) {
-        Long id = taskNextDirectiveService.insert(taskId, directive, remark);
-        return TaskResult.wrapSuccessfulResult(id);
-    }
-
-    @Override
-    public TaskResult<TaskNextDirectiveRO> queryRecentDirective(Long taskId) {
-        TaskNextDirective taskNextDirective = taskNextDirectiveService.getLastDirectiveByTaskId(taskId);
-        TaskNextDirectiveRO taskNextDirectiveRO = convert(taskNextDirective, TaskNextDirectiveRO.class);
-        return TaskResult.wrapSuccessfulResult(taskNextDirectiveRO);
-    }
-
-    @Override
-    public TaskResult<Void> insertAndCacheNextDirective(Long taskId, TaskDirectiveRequest directive) {
-        DirectiveDTO directiveDTO = convertStrict(directive, DirectiveDTO.class);
-        taskNextDirectiveService.insertAndCacheNextDirective(taskId, directiveDTO);
-        return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override

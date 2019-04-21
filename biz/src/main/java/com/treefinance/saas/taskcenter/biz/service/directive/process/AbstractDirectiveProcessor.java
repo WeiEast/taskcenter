@@ -1,85 +1,76 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
-import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
+import com.google.common.base.Stopwatch;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.common.enums.EDirective;
+import com.treefinance.saas.taskcenter.biz.service.directive.process.interceptor.ProcessorInterceptorChain;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.service.AccountNoService;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
+import com.treefinance.toolkit.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Created by yh-treefinance on 2017/7/5.
+ * @author Jerry
+ * @date 2019/4/19
  */
-public abstract class AbstractDirectiveProcessor extends CallbackableDirectiveProcessor implements DirectiveProcessor {
-    /**
-     * logger
-     */
+public abstract class AbstractDirectiveProcessor implements DirectiveProcessor {
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     protected TaskService taskService;
     @Autowired
-    protected  TaskAttributeService taskAttributeService;
-    @Autowired
-    protected TaskNextDirectiveService taskNextDirectiveService;
-    @Autowired
-    private AccountNoService accountNoService;
+    private ProcessorInterceptorChain interceptorChain;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void process(DirectiveDTO directiveDTO) {
-        long start = System.currentTimeMillis();
-        if (directiveDTO == null || directiveDTO.getTaskId() == null) {
-            logger.error("handle directive error : directive or taskId is null, directive={}", JSON.toJSONString(directiveDTO));
-            return;
-        }
-        Long taskId = directiveDTO.getTaskId();
-        // 1.转化为指令
-        String directiveName = directiveDTO.getDirective();
-        EDirective directive = EDirective.directiveOf(directiveName);
-        if (directive == null) {
-            logger.error("handle directive error : no support the directive of {}, directive={}", directiveName, JSON.toJSONString(directiveDTO));
-            return;
-        }
-        // 2.初始化任务详细
-        AttributedTaskInfo task = directiveDTO.getTask();
-        if (task == null) {
-            task = taskService.getAttributedTaskInfo(taskId, ETaskAttribute.SOURCE_ID.getAttribute());
-            if (task == null) {
-                throw new IllegalStateException("Task not found! - taskId: " + taskId);
-            }
-            directiveDTO.setTask(task);
-        }
-        // 3.任务是否是已经完成
-        Byte taskStatus = task.getStatus();
-        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus) || ETaskStatus.SUCCESS.getStatus().equals(taskStatus) || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
-            logger.info("handle directive error : the task id={} is completed: directive={}", taskId, JSON.toJSONString(directiveDTO));
-            return;
-        }
-        // 4.处理指令
+    public void process(DirectiveContext context) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
-            this.doProcess(directive, directiveDTO);
+            // 检查DirectiveContext是否合法
+            validate(context);
+            // 查询任务信息
+            AttributedTaskInfo task = taskService.getAttributedTaskInfo(context.getTaskId(), ETaskAttribute.SOURCE_ID.getAttribute());
+            if (task == null) {
+                throw new IllegalStateException("Task not found! - taskId: " + context.getTaskId());
+            }
+            // 检查任务是否已完成
+            if (taskService.isCompleted(task.getStatus())) {
+                logger.warn("Skip completed task when processing directive! - directive-context: {}", context);
+                return;
+            }
+            // DirectiveContext设置task
+            context.setTask(task);
+
+            try {
+                // 处理指令
+                this.doProcess(context);
+            } finally {
+                interceptorChain.applyAfterCompletion(context);
+            }
         } finally {
-            accountNoService.saveAccountNoIfAbsent(taskId);
-            taskNextDirectiveService.insertAndCacheNextDirective(taskId, directiveDTO);
-            logger.info("process directive completed  cost {} ms : directive={}", System.currentTimeMillis() - start, JSON.toJSONString(directiveDTO));
+            logger.info("Directive processing completed! >> cost: {}, directive-context: {}", stopwatch.toString(), context);
         }
     }
 
     /**
-     * 处理指令
+     * 检查DirectiveContext是否合法
      *
-     * @param directive
-     * @param directiveDTO
+     * @param context 指令信息上下文
      */
-    protected abstract void doProcess(EDirective directive, DirectiveDTO directiveDTO);
+    protected void validate(DirectiveContext context) {
+        Assert.notNull(context, "Empty directive context!");
+        Assert.notNull(context.getDirective(), "Invalid directive context!");
+        Assert.notNull(context.getTaskId(), "Not found 'taskId' in directive context!");
+    }
+
+    /**
+     * do processing when received given directive
+     *
+     * @param context 指令信息上下文
+     */
+    protected abstract void doProcess(DirectiveContext context);
 
 }

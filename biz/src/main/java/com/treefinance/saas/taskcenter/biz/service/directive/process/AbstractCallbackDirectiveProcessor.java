@@ -10,18 +10,18 @@ import com.treefinance.saas.taskcenter.biz.callback.AsyncGrabDataHandler;
 import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
 import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
-import com.treefinance.saas.taskcenter.context.Constants;
-import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
-import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.context.Constants;
+import com.treefinance.saas.taskcenter.context.enums.EDataType;
+import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
-import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
@@ -38,8 +38,6 @@ import com.treefinance.toolkit.util.http.exception.HttpException;
 import com.treefinance.toolkit.util.net.NetUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
@@ -55,9 +53,7 @@ import java.util.stream.Collectors;
 /**
  * 支持回调的指令处理 Created by yh-treefinance on 2017/7/11.
  */
-public abstract class CallbackableDirectiveProcessor {
-
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirectiveProcessor {
 
     @Autowired
     protected AppCallbackConfigService appCallbackConfigService;
@@ -77,16 +73,18 @@ public abstract class CallbackableDirectiveProcessor {
     protected MonitorService monitorService;
     @Autowired
     private TaskPointService taskPointService;
+    @Autowired
+    protected TaskNextDirectiveService taskNextDirectiveService;
 
     /**
      * 回调前处理
      *
-     * @param directiveDTO
+     * @param context
      */
-    protected boolean precallback(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveDTO directiveDTO) {
+    protected boolean precallback(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveContext context) {
         // 使用商户密钥加密数据，返回给前端
         Map<String, Object> paramMap = Maps.newHashMap();
-        String remark = directiveDTO.getRemark();
+        String remark = context.getRemark();
         if (StringUtils.isNotEmpty(remark)) {
             try {
                 Map<String, Object> jsonObject = JSON.parseObject(remark);
@@ -102,10 +100,10 @@ public abstract class CallbackableDirectiveProcessor {
             logger.info("回调数据生成： {}", JSON.toJSONString(dataMap));
             String params = encryptByRSA(dataMap, appLicense);
             paramMap.put("params", params);
-            directiveDTO.setRemark(JSON.toJSONString(paramMap));
+            context.setRemark(JSON.toJSONString(paramMap));
         } catch (Exception e) {
             logger.error("encryptByRSA error : " + dataMap + ",key=" + appLicense.getServerPublicKey(), e);
-            directiveDTO.setRemark(JSON.toJSONString("指令信息处理失败"));
+            context.setRemark(JSON.toJSONString("指令信息处理失败"));
             return false;
         }
         return true;
@@ -114,18 +112,18 @@ public abstract class CallbackableDirectiveProcessor {
     /**
      * 执行回调(无需预处理)
      *
-     * @param directiveDTO
+     * @param context
      * @return
      */
-    protected int callback(DirectiveDTO directiveDTO) {
-        AttributedTaskInfo taskDTO = directiveDTO.getTask();
+    protected int callback(DirectiveContext context) {
+        AttributedTaskInfo taskDTO = context.getTask();
         String appId = taskDTO.getAppId();
         // 1.获取商户密钥
         AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
         // 2.成数据map
-        Map<String, Object> dataMap = generateDataMap(directiveDTO);
+        Map<String, Object> dataMap = generateDataMap(context);
         // 3.回调
-        return callback(dataMap, appLicense, directiveDTO);
+        return callback(dataMap, appLicense, context);
     }
 
     /**
@@ -133,12 +131,12 @@ public abstract class CallbackableDirectiveProcessor {
      *
      * @param dataMap
      * @param appLicense
-     * @param directiveDTO
+     * @param context
      * @return 0-无需回调，1-回调成功，-1-回调失败
      */
-    protected int callback(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveDTO directiveDTO) {
-        AttributedTaskInfo taskDTO = directiveDTO.getTask();
-        Long taskId = directiveDTO.getTaskId();
+    protected int callback(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveContext context) {
+        AttributedTaskInfo taskDTO = context.getTask();
+        Long taskId = context.getTaskId();
 
         // 4.查询回调配置
         String appId = taskDTO.getAppId();
@@ -146,15 +144,15 @@ public abstract class CallbackableDirectiveProcessor {
         List<CallbackConfigBO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, bizType, EDataType.MAIN_STREAM);
         logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", taskDTO.getId(), JSON.toJSONString(configList));
         if (CollectionUtils.isEmpty(configList)) {
-            logger.info("callback exit: callback-config is empty, directive={}", JSON.toJSONString(directiveDTO));
+            logger.info("callback exit: callback-config is empty, directive={}", JSON.toJSONString(context));
             monitorService.sendTaskCallbackMsgMonitorMessage(taskId, null, null, false);
             return 0;
         }
 
         // 5.校验是否需要回调
-        configList = configList.stream().filter(config -> needCallback(config, directiveDTO)).collect(Collectors.toList());
+        configList = configList.stream().filter(config -> needCallback(config, context)).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(configList)) {
-            logger.info("callback exit: the task no callback required, directive={}", JSON.toJSONString(directiveDTO));
+            logger.info("callback exit: the task no callback required, directive={}", JSON.toJSONString(context));
             monitorService.sendTaskCallbackMsgMonitorMessage(taskId, null, null, false);
             return 0;
         }
@@ -171,11 +169,11 @@ public abstract class CallbackableDirectiveProcessor {
             try {
                 taskPointService.addTaskPoint(taskId, "900401");
                 // 执行回调
-                callbackSuccess = doCallBack(dataMap, appLicense, config, directiveDTO);
+                callbackSuccess = doCallBack(dataMap, appLicense, config, context);
             } catch (Exception e) {
                 dataMap.put("taskStatus", EGrapStatus.FAIL.getCode());
                 dataMap.put("taskErrorMsg", "回调通知失败");
-                flushData(dataMap, appLicense, directiveDTO);
+                flushData(dataMap, appLicense, context);
                 callbackSuccess = Boolean.FALSE;
                 String errorMsg = "回调通知失败：" + e.getMessage();
                 logger.error(errorMsg + "，config=" + JSON.toJSONString(config), e);
@@ -204,13 +202,13 @@ public abstract class CallbackableDirectiveProcessor {
     /**
      * 生成数据Map
      *
-     * @param directiveDTO
+     * @param context
      * @return
      */
-    protected Map<String, Object> generateDataMap(DirectiveDTO directiveDTO) {
-        AttributedTaskInfo task = directiveDTO.getTask();
+    protected Map<String, Object> generateDataMap(DirectiveContext context) {
+        AttributedTaskInfo task = context.getTask();
         // 1. 初始化回调数据 并填充uniqueId、taskId、taskStatus、sourceid
-        Map<String, Object> dataMap = ifNull(JSON.parseObject(directiveDTO.getRemark()), Maps.newHashMap());
+        Map<String, Object> dataMap = ifNull(JSON.parseObject(context.getRemark()), Maps.newHashMap());
         dataMap.putIfAbsent("uniqueId", task.getUniqueId());
         dataMap.putIfAbsent("taskId", task.getId());
 
@@ -242,7 +240,7 @@ public abstract class CallbackableDirectiveProcessor {
             dataMap.put("taskStatus", EGrapStatus.CANCEL.getCode());
             dataMap.put("taskErrorMsg", "用户取消");
         }
-        logger.info("generateDataMap: data={}, directive={}", JSON.toJSONString(dataMap), JSON.toJSONString(directiveDTO));
+        logger.info("generateDataMap: data={}, directive={}", JSON.toJSONString(dataMap), JSON.toJSONString(context));
         return dataMap;
     }
 
@@ -254,8 +252,7 @@ public abstract class CallbackableDirectiveProcessor {
      * @param config
      * @throws Exception
      */
-    private void initDataMap(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, CallbackConfigBO config,
-        DirectiveDTO directiveDTO) throws Exception {
+    private void initDataMap(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, CallbackConfigBO config, DirectiveContext context) throws Exception {
         // 如果是数据传输，则需先下载数据
         Byte notifyModel = config.getNotifyModel();
         if (SystemUtils.isDataNotifyModel(notifyModel)) {
@@ -273,27 +270,27 @@ public abstract class CallbackableDirectiveProcessor {
                     if (MapUtils.isEmpty(downloadDataMap)) {
                         dataMap.put("taskErrorMsg", EGrapStatus.RESULT_EMPTY.getName());
                         dataMap.put("taskStatus", EGrapStatus.RESULT_EMPTY.getCode());
-                        flushData(dataMap, appLicense, directiveDTO);
+                        flushData(dataMap, appLicense, context);
                     }
                 } catch (HttpException e) {
                     logger.error("download data failed : data={}", JSON.toJSONString(dataMap));
                     dataMap.put("taskErrorMsg", "下载数据失败");
                     dataMap.put("taskStatus", EGrapStatus.FAIL.getCode());
                     dataMap.put("dataUrl", dataUrlObj);
-                    flushData(dataMap, appLicense, directiveDTO);
+                    flushData(dataMap, appLicense, context);
                 }
             }
         }
         // 此时针对工商无需爬取时处理
         Object crawlerStatus = dataMap.get("crawlerStatus");
         if (crawlerStatus != null && (int)crawlerStatus == 1) {
-            logger.info("工商回调，回调code设置为005，taskId={}", directiveDTO.getTaskId());
+            logger.info("工商回调，回调code设置为005，taskId={}", context.getTaskId());
             dataMap.put("taskStatus", EGrapStatus.NO_NEED_CRAWLER.getCode());
             dataMap.put("taskErrorMsg", "");
         }
         // 如果是运营商数据
-        if (directiveDTO.getTask() != null && EBizType.OPERATOR.getCode().equals(directiveDTO.getTask().getBizType())) {
-            Long taskId = directiveDTO.getTask().getId();
+        if (context.getTask() != null && EBizType.OPERATOR.getCode().equals(context.getTask().getBizType())) {
+            Long taskId = context.getTask().getId();
             String groupCodeAttribute = ETaskAttribute.OPERATOR_GROUP_CODE.getAttribute();
             String groupNameAttribute = ETaskAttribute.OPERATOR_GROUP_NAME.getAttribute();
 
@@ -319,27 +316,27 @@ public abstract class CallbackableDirectiveProcessor {
      *
      * @param dataMap
      * @param appLicense
-     * @param directiveDTO
+     * @param context
      */
-    private void flushData(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveDTO directiveDTO) {
-        this.precallback(dataMap, appLicense, directiveDTO);
+    private void flushData(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, DirectiveContext context) {
+        this.precallback(dataMap, appLicense, context);
     }
 
     /**
      * 校验是否需要回调
      *
      * @param config
-     * @param directiveDTO
+     * @param context
      * @return
      */
-    private boolean needCallback(CallbackConfigBO config, DirectiveDTO directiveDTO) {
+    private boolean needCallback(CallbackConfigBO config, DirectiveContext context) {
         if (config == null) {
             return false;
         }
 
-        String directive = directiveDTO.getDirective();
+        EDirective directive = context.getDirective();
 
-        logger.debug("Check task notify config! - taskId: {}, directive: {}, callback-config: {}", directiveDTO.getTaskId(), directive, config);
+        logger.debug("Check task notify config! - taskId: {}, directive: {}, callback-config: {}", context.getTaskId(), directive, config);
 
         // 当前任务成功，但成功不通知
         if (EDirective.isTaskSuccess(directive) && SystemUtils.isNotTrue(config.getIsNotifySuccess())) {
@@ -421,12 +418,12 @@ public abstract class CallbackableDirectiveProcessor {
      * @param config
      * @return
      */
-    private boolean doCallBack(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, CallbackConfigBO config, DirectiveDTO directiveDTO) throws Exception {
+    private boolean doCallBack(Map<String, Object> dataMap, @Nonnull AppLicense appLicense, CallbackConfigBO config, DirectiveContext context) throws Exception {
         // 1.备份数据
         Map<String, Object> originalDataMap = Maps.newHashMap(dataMap);
 
         // 2.初始化数据
-        this.initDataMap(dataMap, appLicense, config, directiveDTO);
+        this.initDataMap(dataMap, appLicense, config, context);
         String params = this.encryptParams(dataMap, appLicense, config);
         Map<String, Object> paramMap = Maps.newHashMap();
         paramMap.put("params", params);
@@ -436,7 +433,7 @@ public abstract class CallbackableDirectiveProcessor {
         Byte timeOut = config.getTimeOut();
         // 重试次数，3次
         Byte retryTimes = config.getRetryTimes();
-        logger.info("回调执行：taskId={},dataMap={}, params={}", directiveDTO.getTaskId(), JSON.toJSONString(dataMap), JSON.toJSONString(paramMap));
+        logger.info("回调执行：taskId={},dataMap={}, params={}", context.getTaskId(), JSON.toJSONString(dataMap), JSON.toJSONString(paramMap));
         String result = "";
         int httpCode = 200;
         long startTime = System.currentTimeMillis();
@@ -454,15 +451,15 @@ public abstract class CallbackableDirectiveProcessor {
         } finally {
             long consumeTime = System.currentTimeMillis() - startTime;
             // 记录回调日志
-            taskCallbackLogService.insert(config, directiveDTO.getTaskId(), (byte)1, JSON.toJSONString(originalDataMap), result, consumeTime, httpCode);
+            taskCallbackLogService.insert(config, context.getTaskId(), (byte)1, JSON.toJSONString(originalDataMap), result, consumeTime, httpCode);
             // 主流程回调做监控
             if (config.getDataType() != null && config.getDataType() == 0) {
-                monitorService.sendTaskCallbackMsgMonitorMessage(directiveDTO.getTaskId(), httpCode, result, true);
+                monitorService.sendTaskCallbackMsgMonitorMessage(context.getTaskId(), httpCode, result, true);
             }
             // 处理返回结果
-            handleRequestResult(directiveDTO, result);
+            handleRequestResult(context, result);
             // 回调处理
-            callbackResultMonitor.sendMessage(directiveDTO.getTask(), result, config, httpCode);
+            callbackResultMonitor.sendMessage(context.getTask(), result, config, httpCode);
         }
         return true;
     }
@@ -470,26 +467,26 @@ public abstract class CallbackableDirectiveProcessor {
     /**
      * 处理请求失败异常
      *
-     * @param directiveDTO
+     * @param context
      * @param result
      */
-    private void handleRequestResult(DirectiveDTO directiveDTO, String result) {
+    private void handleRequestResult(DirectiveContext context, String result) {
         try {
             result = result.trim();
             if (!StringUtil.isNullOrEmpty(result) && result.startsWith("{") && result.endsWith("}")) {
                 SimpleResult simpleResult = JSON.parseObject(result, SimpleResult.class);
                 Map<String, Object> remarkMap = Maps.newHashMap();
-                if (StringUtils.isNotBlank(directiveDTO.getRemark())) {
-                    remarkMap = JSON.parseObject(directiveDTO.getRemark());
+                if (StringUtils.isNotBlank(context.getRemark())) {
+                    remarkMap = JSON.parseObject(context.getRemark());
                 }
                 if (simpleResult != null && StringUtils.isNotEmpty(simpleResult.getErrorMsg())) {
                     remarkMap.put(Constants.ERROR_MSG_NAME, simpleResult.getErrorMsg());
                 }
-                directiveDTO.setRemark(JSON.toJSONString(remarkMap));
-                logger.info("handle callback result : result={},directiveDTO={}", result, JSON.toJSONString(directiveDTO));
+                context.setRemark(JSON.toJSONString(remarkMap));
+                logger.info("handle callback result : result={},directiveContext={}", result, JSON.toJSONString(context));
             }
         } catch (Exception e) {
-            logger.info("handle result failed : directiveDTO={},   result={}", JSON.toJSONString(directiveDTO), result, e);
+            logger.info("handle result failed : directiveContext={},   result={}", JSON.toJSONString(context), result, e);
         }
     }
 }

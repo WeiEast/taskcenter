@@ -2,11 +2,11 @@ package com.treefinance.saas.taskcenter.biz.schedule.handler;
 
 import com.google.common.collect.Maps;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 import com.treefinance.saas.taskcenter.interation.manager.SpiderTaskManager;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -48,11 +48,8 @@ public class MainStreamTaskTimeoutHandler implements TaskTimeoutHandler {
         Map<String, String> extMap = Maps.newHashMap();
         extMap.put("reason", "timeout");
         spiderTaskManager.cancelQuietly(taskId, extMap);
-        // 超时处理：任务更新为失败
-        DirectiveDTO directiveDTO = new DirectiveDTO();
-        directiveDTO.setTaskId(task.getId());
-        directiveDTO.setDirective(EDirective.TASK_FAIL.getText());
-        directiveService.process(directiveDTO);
 
+        // 超时处理：任务更新为失败
+        directiveService.process(new DirectivePacket(EDirective.TASK_FAIL, task.getId()));
     }
 }

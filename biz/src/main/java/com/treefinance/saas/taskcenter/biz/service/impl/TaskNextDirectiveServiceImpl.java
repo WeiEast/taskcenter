@@ -15,12 +15,14 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.treefinance.b2b.saas.util.JsonUtils;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
 import com.treefinance.saas.taskcenter.dao.repository.TaskNextDirectiveRepository;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
+import com.treefinance.saas.taskcenter.service.domain.DirectiveEntity;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
+import com.treefinance.saas.taskcenter.share.cache.redis.RedissonLocks;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +41,15 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TaskNextDirectiveServiceImpl implements TaskNextDirectiveService {
     private static final Logger logger = LoggerFactory.getLogger(TaskNextDirectiveServiceImpl.class);
-    private final static int DAY_SECOND = 24 * 60 * 60;
+    private static final int DAY_SECOND = 24 * 60 * 60;
+    private static final String LOCK_KEY = "task_directive_save_lock:";
 
     @Autowired
     private TaskNextDirectiveRepository taskNextDirectiveRepository;
     @Autowired
     private RedisDao redisDao;
+    @Autowired
+    private RedissonLocks redissonLocks;
 
     @Override
     public TaskNextDirective getLastDirectiveByTaskId(@Nonnull Long taskId) {
@@ -64,14 +69,39 @@ public class TaskNextDirectiveServiceImpl implements TaskNextDirectiveService {
     }
 
     @Override
-    public void insertAndCacheNextDirective(@Nonnull Long taskId, @Nonnull DirectiveDTO directive) {
-        this.insert(taskId, directive.getDirective(), directive.getRemark());
+    public Long insert(@Nonnull DirectiveEntity directiveEntity) {
+        Long taskId = directiveEntity.getTaskId();
+        String directive = directiveEntity.getDirective();
+        String remark = directiveEntity.getRemark();
+        TaskNextDirective taskNextDirective = taskNextDirectiveRepository.insertDirective(taskId, directive, remark);
 
-        String content = JsonUtils.toJsonString(directive, "task");
-        String key = generaRedisKey(taskId);
-        if (redisDao.setEx(key, content, DAY_SECOND, TimeUnit.SECONDS)) {
-            logger.info("指令已经放到redis缓存,有效期一天, key={}，content={}", key, content);
+        return taskNextDirective.getId();
+    }
+
+    @Override
+    public void saveDirective(@Nonnull DirectiveEntity directiveEntity) {
+        String lockKey = getLockKey(directiveEntity.getTaskId());
+        redissonLocks.lock(lockKey, () -> {
+            this.insert(directiveEntity);
+
+            cacheDirective(directiveEntity);
+        });
+    }
+
+    private String cacheDirective(@Nonnull DirectiveEntity directiveEntity) {
+        String key = generaRedisKey(directiveEntity.getTaskId());
+        String value = JSON.toJSONString(directiveEntity);
+        if (redisDao.setEx(key, value, DAY_SECOND, TimeUnit.SECONDS)) {
+            logger.info("指令已经放到redis缓存,有效期一天! key={}，value={}", key, value);
+        } else {
+            logger.warn("添加指令缓存失败! key={}，value={}", key, value);
         }
+
+        return value;
+    }
+
+    private String getLockKey(Long taskId) {
+        return LOCK_KEY + taskId;
     }
 
     @Override
@@ -82,12 +112,12 @@ public class TaskNextDirectiveServiceImpl implements TaskNextDirectiveService {
         if (StringUtils.isBlank(value)) {
             TaskNextDirective taskNextDirective = this.getLastDirectiveByTaskId(taskId);
             if (taskNextDirective != null) {
-                DirectiveDTO directiveDTO = new DirectiveDTO();
-                directiveDTO.setTaskId(taskNextDirective.getTaskId());
-                directiveDTO.setDirective(taskNextDirective.getDirective());
-                directiveDTO.setRemark(taskNextDirective.getRemark());
+                DirectivePacket directivePacket = new DirectivePacket();
+                directivePacket.setTaskId(taskNextDirective.getTaskId());
+                directivePacket.setDirective(EDirective.directiveOf(taskNextDirective.getDirective()));
+                directivePacket.setRemark(taskNextDirective.getRemark());
 
-                value = JSON.toJSONString(directiveDTO);
+                value = JSON.toJSONString(directivePacket);
             }
         }
         return value;

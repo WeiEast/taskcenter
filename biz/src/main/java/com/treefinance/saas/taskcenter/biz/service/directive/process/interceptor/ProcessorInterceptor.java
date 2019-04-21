@@ -11,24 +11,17 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.dto.moxie;
+package com.treefinance.saas.taskcenter.biz.service.directive.process.interceptor;
 
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
+
+import javax.annotation.Nonnull;
 
 /**
- * Created by haojiahong on 2017/9/14.
+ * @author Jerry
+ * @date 2019-03-05 00:30
  */
-public class MoxieDirectiveDTO extends DirectiveDTO {
+public interface ProcessorInterceptor {
 
-    private static final long serialVersionUID = 6201076878996673264L;
-
-    private String moxieTaskId;
-
-    public String getMoxieTaskId() {
-        return moxieTaskId;
-    }
-
-    public void setMoxieTaskId(String moxieTaskId) {
-        this.moxieTaskId = moxieTaskId;
-    }
+    void afterCompletion(@Nonnull DirectiveContext context);
 }

@@ -1,6 +1,6 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.moxie.MoxieTimeoutService;
+import com.treefinance.saas.taskcenter.biz.service.MoxieTimeoutService;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.MoxieTimeoutFacade;
 import org.springframework.beans.factory.annotation.Autowired;
