@@ -16,7 +16,10 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 /**
- * 任务失败回调 Created by yh-treefinance on 2017/7/10.
+ * 任务失败回调
+ * 
+ * @author yh-treefinance
+ * @date 2017/7/10.
  */
 @Component
 public class FailureDirectiveProcessor extends AbstractCallbackDirectiveProcessor {
@@ -48,10 +51,14 @@ public class FailureDirectiveProcessor extends AbstractCallbackDirectiveProcesso
         // 回调之前预处理
         precallback(dataMap, context);
 
-        handleTaskFailMsg(context);
-
         // 异步触发触发回调
-        asyncExecutor.runAsync(context, dto -> callback(dataMap, dto));
+        asyncExecutor.runAsync(context, ctx -> callback(dataMap, ctx));
+    }
+
+    @Override
+    protected void precallback(Map<String, Object> dataMap, DirectiveContext context) {
+        super.precallback(dataMap, context);
+        handleTaskFailMsg(context);
     }
 
     /**

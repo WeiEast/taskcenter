@@ -31,7 +31,8 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Created by haojiahong on 2017/9/15.
+ * @author haojiahong
+ * @date 2017/9/15.
  */
 @Component
 public class MoxieLoginFailDirectiveProcessor extends AbstractCallbackDirectiveProcessor implements MoxieDirectiveProcessor {

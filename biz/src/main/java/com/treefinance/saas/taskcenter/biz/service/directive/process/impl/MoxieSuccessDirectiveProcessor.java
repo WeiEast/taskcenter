@@ -25,7 +25,10 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 /**
- * 成功指令处理 Created by yh-treefinance on 2017/7/6.
+ * 成功指令处理
+ * 
+ * @author yh-treefinance
+ * @date 2017/7/6.
  */
 @Component
 public class MoxieSuccessDirectiveProcessor extends AbstractCallbackDirectiveProcessor implements MoxieDirectiveProcessor {

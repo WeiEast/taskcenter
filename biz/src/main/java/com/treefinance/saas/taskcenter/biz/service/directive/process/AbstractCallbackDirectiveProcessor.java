@@ -1,8 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.rocketmq.shade.io.netty.util.internal.StringUtil;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
@@ -37,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +77,7 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
      *
      * @param context
      */
-    protected boolean precallback(Map<String, Object> dataMap, DirectiveContext context) {
+    protected void precallback(Map<String, Object> dataMap, DirectiveContext context) {
         // 使用商户密钥加密数据，返回给前端
         Map<String, Object> paramMap = new HashMap<>(2);
         String remark = context.getRemark();
@@ -101,11 +100,9 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
             String params = encryptByRSA(dataMap, context);
             paramMap.put("params", params);
             context.setRemark(JSON.toJSONString(paramMap));
-            return true;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             context.setRemark(JSON.toJSONString("指令信息处理失败"));
-            return false;
         }
     }
 
@@ -130,21 +127,18 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
      * @return 0-无需回调，1-回调成功，-1-回调失败
      */
     protected int callback(Map<String, Object> dataMap, DirectiveContext context) {
-        AttributedTaskInfo taskDTO = context.getTask();
         Long taskId = context.getTaskId();
 
-        // 4.查询回调配置
-        String appId = taskDTO.getAppId();
-        Byte bizType = taskDTO.getBizType();
-        List<CallbackConfigBO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(appId, bizType, EDataType.MAIN_STREAM);
-        logger.info("根据业务类型匹配回调配置结果:taskId={},configList={}", taskDTO.getId(), JSON.toJSONString(configList));
+        // 查询回调配置
+        List<CallbackConfigBO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(context.getAppId(), context.getBizType(), EDataType.MAIN_STREAM);
+        logger.info("根据业务类型匹配回调配置结果:taskId={}, configList={}", taskId, JSON.toJSONString(configList));
         if (CollectionUtils.isEmpty(configList)) {
-            logger.info("callback exit: callback-config is empty, directive={}", JSON.toJSONString(context));
+            logger.info("callback exit: callback-config is empty, directive={}", context);
             monitorService.sendTaskCallbackMsgMonitorMessage(taskId, null, null, false);
             return 0;
         }
 
-        // 5.校验是否需要回调
+        // 校验是否需要回调
         configList = configList.stream().filter(config -> needCallback(config, context)).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(configList)) {
             logger.info("callback exit: the task no callback required, directive={}", JSON.toJSONString(context));
@@ -152,10 +146,11 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
             return 0;
         }
 
+        // 埋点-开始回调
         taskPointService.addTaskPoint(taskId, "900401");
 
-        // 6.执行回调，支持一个任务回调多方
-        List<Boolean> callbackFlags = Lists.newArrayList();
+        // 执行回调，支持一个任务回调多方
+        List<Boolean> callbackFlags = new ArrayList<>(configList.size());
         for (CallbackConfigBO config : configList) {
             Boolean callbackSuccess;
             try {
@@ -167,17 +162,18 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
                 flushData(dataMap, context);
                 callbackSuccess = Boolean.FALSE;
                 String errorMsg = "回调通知失败：" + e.getMessage();
-                logger.error(errorMsg + "，config=" + JSON.toJSONString(config), e);
+                logger.error(errorMsg + "，config=" + config, e);
                 taskLogService.insertTaskLog(taskId, "回调通知失败", new Date(), StringUtils.substring(errorMsg, 0, 1000));
             }
             callbackFlags.add(callbackSuccess);
 
         }
-        // 7.有回调失败的整个任务算失败
+        // 有回调失败的整个任务算失败
         if (callbackFlags.contains(Boolean.FALSE)) {
             return -1;
         }
 
+        // 埋点-回调成功
         taskPointService.addTaskPoint(taskId, "900402");
 
         dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
@@ -464,20 +460,25 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
     private void handleRequestResult(DirectiveContext context, String result) {
         try {
             result = result.trim();
-            if (!StringUtil.isNullOrEmpty(result) && result.startsWith("{") && result.endsWith("}")) {
+            if (StringUtils.isNotEmpty(result) && result.startsWith("{") && result.endsWith("}")) {
                 SimpleResult simpleResult = JSON.parseObject(result, SimpleResult.class);
-                Map<String, Object> remarkMap = Maps.newHashMap();
-                if (StringUtils.isNotBlank(context.getRemark())) {
-                    remarkMap = JSON.parseObject(context.getRemark());
+                String errorMsg = simpleResult == null ? null : simpleResult.getErrorMsg();
+                if (StringUtils.isNotEmpty(errorMsg)) {
+                    Map<String, Object> remarkMap;
+                    String remark = StringUtils.trim(context.getRemark());
+                    if (StringUtils.isNotEmpty(remark)) {
+                        remarkMap = JSON.parseObject(remark);
+                    } else {
+                        remarkMap = new HashMap<>(1);
+                    }
+                    remarkMap.put(Constants.ERROR_MSG_NAME, errorMsg);
+
+                    context.setRemark(JSON.toJSONString(remarkMap));
+                    logger.info("handle callback result : result={},directiveContext={}", result, JSON.toJSONString(context));
                 }
-                if (simpleResult != null && StringUtils.isNotEmpty(simpleResult.getErrorMsg())) {
-                    remarkMap.put(Constants.ERROR_MSG_NAME, simpleResult.getErrorMsg());
-                }
-                context.setRemark(JSON.toJSONString(remarkMap));
-                logger.info("handle callback result : result={},directiveContext={}", result, JSON.toJSONString(context));
             }
         } catch (Exception e) {
-            logger.info("handle result failed : directiveContext={},   result={}", JSON.toJSONString(context), result, e);
+            logger.info("handle result failed : directiveContext={}, result={}", JSON.toJSONString(context), result, e);
         }
     }
 }

@@ -24,10 +24,13 @@ import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import org.springframework.stereotype.Component;
 
 /**
- * 基础指令处理 Created by yh-treefinance on 2017/7/6.
+ * 基础指令处理
+ * 
+ * @author yh-treefinance
+ * @date 2017/7/6.
  */
 @Component
-public class MoxieBaseDirectiveProcessor extends AbstractDirectiveProcessor implements MoxieDirectiveProcessor {
+public class MoxieDefaultDirectiveProcessor extends AbstractDirectiveProcessor implements MoxieDirectiveProcessor {
 
     @Override
     public EDirective getSpecifiedDirective() {

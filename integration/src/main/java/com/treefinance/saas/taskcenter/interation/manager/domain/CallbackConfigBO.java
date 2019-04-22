@@ -16,9 +16,9 @@
 
 package com.treefinance.saas.taskcenter.interation.manager.domain;
 
+import com.alibaba.fastjson.JSON;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.List;
@@ -29,7 +29,6 @@ import java.util.List;
  */
 @Getter
 @Setter
-@ToString
 public class CallbackConfigBO implements Serializable {
 
     private Integer id;
@@ -62,4 +61,8 @@ public class CallbackConfigBO implements Serializable {
 
     private List<Byte> bizTypes;
 
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
+    }
 }

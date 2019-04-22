@@ -66,7 +66,14 @@ public class TaskPointServiceImpl implements TaskPointService {
 
     @Override
     public void addTaskPoint(Long taskId, String pointCode) {
-        addTaskPoint(taskId, pointCode, NetUtils.getLocalHost());
+        String localHost;
+        try {
+            localHost = NetUtils.getLocalHost();
+        } catch (Exception e) {
+            logger.warn("获取本机host失败！", e);
+            localHost = StringUtils.EMPTY;
+        }
+        addTaskPoint(taskId, pointCode, localHost);
     }
 
     @Override

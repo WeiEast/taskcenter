@@ -14,7 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 取消任务执行 Created by yh-treefinance on 2017/7/10.
+ * 取消任务执行
+ *
+ * @author yh-treefinance
+ * @date 2017/7/10.
  */
 @Component
 public class CancelDirectiveProcessor extends AbstractCallbackDirectiveProcessor {

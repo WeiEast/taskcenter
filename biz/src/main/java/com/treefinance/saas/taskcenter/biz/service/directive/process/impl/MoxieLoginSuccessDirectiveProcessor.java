@@ -23,7 +23,8 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 /**
- * Created by haojiahong on 2017/9/15.
+ * @author haojiahong
+ * @date 2017/9/15.
  */
 @Component
 public class MoxieLoginSuccessDirectiveProcessor extends AbstractCallbackDirectiveProcessor implements MoxieDirectiveProcessor {

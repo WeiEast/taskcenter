@@ -7,10 +7,13 @@ import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import org.springframework.stereotype.Component;
 
 /**
- * 基础指令处理 Created by yh-treefinance on 2017/7/6.
+ * 基础指令处理
+ * 
+ * @author yh-treefinance
+ * @date 2017/7/6.
  */
 @Component
-public class BaseDirectiveProcessor extends AbstractDirectiveProcessor {
+public class DefaultDirectiveProcessor extends AbstractDirectiveProcessor {
 
     @Override
     public EDirective getSpecifiedDirective() {
