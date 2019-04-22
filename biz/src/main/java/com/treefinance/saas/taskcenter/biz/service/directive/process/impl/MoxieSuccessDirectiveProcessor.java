@@ -19,8 +19,6 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveCo
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
-import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -42,36 +40,31 @@ public class MoxieSuccessDirectiveProcessor extends AbstractCallbackDirectivePro
 
     @Override
     protected void doProcess(DirectiveContext context) {
-        AttributedTaskInfo task = context.getTask();
-        Long taskId = task.getId();
-        String appId = task.getAppId();
+        Long taskId = context.getTaskId();
 
-        // 获取商户密钥
-        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
         // 生成数据map
         Map<String, Object> dataMap = generateDataMap(context);
         // 回调之前预处理
-        precallback(dataMap, appLicense, context);
+        precallback(dataMap, context);
         // 触发回调: 0-无需回调，1-回调成功，-1-回调失败
-        int result = callback(dataMap, appLicense, context);
+        int result = callback(dataMap, context);
 
-        if (result == 0) {
-            task.setStatus(ETaskStatus.SUCCESS.getStatus());
-        } else if (result == 1) {
-            task.setStatus(ETaskStatus.SUCCESS.getStatus());
+        if (result == 0 || result == 1) {
+            context.updateTaskStatus(ETaskStatus.SUCCESS);
         } else {
             // 指令发生变更 ： task_success -> callback_fail
             taskNextDirectiveService.insert(taskId, context.getDirectiveString());
 
-            task.setStatus(ETaskStatus.FAIL.getStatus());
+            context.updateTaskStatus(ETaskStatus.FAIL);
+
             context.updateDirective(EDirective.CALLBACK_FAIL);
         }
         // 更新任务状态,记录任务成功日志
-        String stepCode = taskService.updateStatusIfDone(taskId, task.getStatus());
-        task.setStepCode(stepCode);
+        String stepCode = taskService.updateStatusIfDone(taskId, context.getTaskStatus());
+        context.updateStepCode(stepCode);
 
         // 发送监控消息
-        monitorService.sendMonitorMessage(task.getId());
+        monitorService.sendMonitorMessage(taskId);
 
     }
 

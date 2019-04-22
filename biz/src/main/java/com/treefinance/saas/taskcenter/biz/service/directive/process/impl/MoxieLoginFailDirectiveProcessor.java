@@ -25,7 +25,6 @@ import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -44,8 +43,8 @@ public class MoxieLoginFailDirectiveProcessor extends AbstractCallbackDirectiveP
 
     @Override
     protected void doProcess(DirectiveContext context) {
-        AttributedTaskInfo task = context.getTask();
-        TaskAttribute taskAttribute = taskAttributeService.queryAttributeByTaskIdAndName(task.getId(), ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), false);
+        final Long taskId = context.getTaskId();
+        TaskAttribute taskAttribute = taskAttributeService.queryAttributeByTaskIdAndName(taskId, ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), false);
         String moxieTaskId = "";
         if (taskAttribute != null) {
             moxieTaskId = taskAttribute.getValue();
@@ -55,6 +54,6 @@ public class MoxieLoginFailDirectiveProcessor extends AbstractCallbackDirectiveP
         map.put("moxieTaskId", moxieTaskId);
 
         // 1.记录登录日志
-        taskLogService.insertTaskLog(task.getId(), ETaskStep.LOGIN_FAIL.getText(), new Date(), JSON.toJSONString(map));
+        taskLogService.insertTaskLog(taskId, ETaskStep.LOGIN_FAIL.getText(), new Date(), JSON.toJSONString(map));
     }
 }

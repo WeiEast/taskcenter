@@ -13,6 +13,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
+import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
@@ -21,7 +22,6 @@ import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackLicense
 import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.annotation.Nonnull;
 
@@ -34,7 +34,6 @@ import java.util.Objects;
  * @author Jerry
  * @date 2019-04-21 22:19
  */
-@ToString
 public class DirectiveContext implements Serializable {
     @Getter
     private EDirective directive;
@@ -84,7 +83,7 @@ public class DirectiveContext implements Serializable {
         this.directiveId = null;
     }
 
-    public void updateTaskStatus(ETaskStatus status) {
+    public void updateTaskStatus(@Nonnull ETaskStatus status) {
         task.setStatus(status.getStatus());
     }
 
@@ -108,22 +107,42 @@ public class DirectiveContext implements Serializable {
         return licenseManager != null;
     }
 
+    /**
+     * 获取商户的授权许可
+     * 
+     * @return 商户授权许可 {@link AppLicense}
+     */
     public AppLicense getAppLicense() {
         if (appLicense == null) {
-            appLicense = Objects.requireNonNull(licenseManager).getAppLicenseByAppId(task.getAppId());
+            appLicense = Objects.requireNonNull(licenseManager).getAppLicenseByAppId(this.getAppId());
         }
         return appLicense;
     }
 
-    public CallbackLicense getCallbackLicenseByCallbackId(Integer callbackId) {
+    /**
+     * 获取新版回调数据加密许可
+     * 
+     * @param callbackId 回调配置ID
+     * @return 回调数据加密许可对象 {@link CallbackLicense}
+     */
+    public CallbackLicense getCallbackLicenseByCallbackId(@Nonnull Integer callbackId) {
         return Objects.requireNonNull(licenseManager).getCallbackLicenseByCallbackId(callbackId);
     }
 
+    public String getNewDataSecretKeyForCallback(@Nonnull Integer callbackId) {
+        return this.getCallbackLicenseByCallbackId(callbackId).getDataSecretKey();
+    }
+
     public String getDataSecretKey() {
-        return getAppLicense().getDataSecretKey();
+        return this.getAppLicense().getDataSecretKey();
     }
 
     public String getServerPublicKey() {
-        return getAppLicense().getServerPublicKey();
+        return this.getAppLicense().getServerPublicKey();
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 }

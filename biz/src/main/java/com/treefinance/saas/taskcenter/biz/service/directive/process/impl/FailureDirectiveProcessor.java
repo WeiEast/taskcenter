@@ -8,7 +8,6 @@ import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.Constants;
-import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,56 +32,54 @@ public class FailureDirectiveProcessor extends AbstractCallbackDirectiveProcesso
 
     @Override
     protected void doProcess(DirectiveContext context) {
-        AttributedTaskInfo task = context.getTask();
-        String appId = task.getAppId();
+        // 任务置为失败
+        context.updateTaskStatus(ETaskStatus.FAIL);
 
-        // 1.任务置为失败
-        task.setStatus(ETaskStatus.FAIL.getStatus());
+        Long taskId = context.getTaskId();
+        // 更新任务状态
+        String errorCode = taskService.updateStatusIfDone(taskId, ETaskStatus.FAIL.getStatus());
+        context.updateStepCode(errorCode);
 
-        // 2.更新任务状态
-        String errorCode = taskService.updateStatusIfDone(task.getId(), ETaskStatus.FAIL.getStatus());
-        task.setStepCode(errorCode);
+        // 发送监控消息
+        monitorService.sendMonitorMessage(taskId);
 
-        // 3.发送监控消息
-        monitorService.sendMonitorMessage(task.getId());
-
-        // 4.获取商户密钥
-        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
-        // 5.成数据map
+        // 成数据map
         Map<String, Object> dataMap = generateDataMap(context);
-        // 6.回调之前预处理
-        precallback(dataMap, appLicense, context);
+        // 回调之前预处理
+        precallback(dataMap, context);
 
-        handleTaskFailMsg(context, task);
+        handleTaskFailMsg(context);
 
-        // 7.异步触发触发回调
-        asyncExecutor.runAsync(context, dto -> callback(dataMap, appLicense, dto));
+        // 异步触发触发回调
+        asyncExecutor.runAsync(context, dto -> callback(dataMap, dto));
     }
 
     /**
      * 处理返回到前端的消息
      *
-     * @param directiveDTO
-     * @param task
+     * @param context 指令处理上下文对象
      */
-    private void handleTaskFailMsg(DirectiveContext directiveDTO, AttributedTaskInfo task) {
+    private void handleTaskFailMsg(DirectiveContext context) {
         try {
-            if (EBizType.OPERATOR.getCode().equals(task.getBizType())) {
-                Map<String, Object> remarkMap = JSON.parseObject(directiveDTO.getRemark());
+            AttributedTaskInfo task = context.getTask();
+            Byte bizType = task.getBizType();
+            if (EBizType.OPERATOR.getCode().equals(bizType)) {
                 // 如果是运营商维护导致任务失败,爬数发来的任务指令中,directiveDTO的remark字段为{"errorMsg","当前运营商正在维护中，请稍后重试"}.
                 // 如果是其他原因导致的任务失败,则返回下面的默认值.
+                Map<String, Object> remarkMap = JSON.parseObject(context.getRemark());
                 remarkMap.putIfAbsent("errorMsg", Constants.OPERATOR_TASK_FAIL_MSG);
-                directiveDTO.setRemark(JSON.toJSONString(remarkMap));
-                logger.info("handle task-fail-msg: result={},directiveDTO={}", JSON.toJSONString(directiveDTO));
-            }
-            if (EBizType.DIPLOMA.getCode().equals(task.getBizType())) {
-                Map<String, Object> remarkMap = JSON.parseObject(directiveDTO.getRemark());
+                String remark = JSON.toJSONString(remarkMap);
+                context.setRemark(remark);
+                logger.info("handle task-fail-msg: result={}, directiveContext={}", remark, context);
+            } else if (EBizType.DIPLOMA.getCode().equals(bizType)) {
+                Map<String, Object> remarkMap = JSON.parseObject(context.getRemark());
                 remarkMap.put("errorMsg", Constants.DIPLOMA_TASK_FAIL_MSG);
-                directiveDTO.setRemark(JSON.toJSONString(remarkMap));
-                logger.info("handle task-fail-msg: result={},directiveDTO={}", JSON.toJSONString(directiveDTO));
+                String remark = JSON.toJSONString(remarkMap);
+                context.setRemark(remark);
+                logger.info("handle task-fail-msg: result={}, directiveContext={}", remark, context);
             }
         } catch (Exception e) {
-            logger.info("handle result failed : directiveDTO={}", JSON.toJSONString(directiveDTO), e);
+            logger.error("handle result failed : directiveContext={}", context, e);
         }
     }
 }

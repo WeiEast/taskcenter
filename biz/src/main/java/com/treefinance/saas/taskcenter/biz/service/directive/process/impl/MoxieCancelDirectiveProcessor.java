@@ -21,7 +21,6 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveCo
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.springframework.stereotype.Component;
 
 /**
@@ -37,10 +36,11 @@ public class MoxieCancelDirectiveProcessor extends AbstractCallbackDirectiveProc
 
     @Override
     protected void doProcess(DirectiveContext context) {
-        AttributedTaskInfo task = context.getTask();
-        task.setStatus(ETaskStatus.CANCEL.getStatus());
+        context.updateTaskStatus(ETaskStatus.CANCEL);
+
         // 取消任务
-        taskService.updateStatusIfDone(task.getId(), ETaskStatus.CANCEL.getStatus());
+        final Long taskId = context.getTaskId();
+        taskService.updateStatusIfDone(taskId, ETaskStatus.CANCEL.getStatus());
     }
 
 }

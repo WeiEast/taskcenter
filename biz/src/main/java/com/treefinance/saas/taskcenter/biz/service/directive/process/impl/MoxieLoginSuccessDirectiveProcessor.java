@@ -18,7 +18,6 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveCo
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -36,9 +35,9 @@ public class MoxieLoginSuccessDirectiveProcessor extends AbstractCallbackDirecti
 
     @Override
     protected void doProcess(DirectiveContext context) {
-        AttributedTaskInfo task = context.getTask();
         // 1.记录登录日志
-        taskLogService.insertTaskLog(task.getId(), ETaskStep.LOGIN_SUCCESS.getText(), new Date(), null);
+        final Long taskId = context.getTaskId();
+        taskLogService.insertTaskLog(taskId, ETaskStep.LOGIN_SUCCESS.getText(), new Date(), null);
 
     }
 }

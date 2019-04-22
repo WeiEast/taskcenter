@@ -22,8 +22,6 @@ import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveCo
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
-import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,27 +45,23 @@ public class MoxieFailureDirectiveProcessor extends AbstractCallbackDirectivePro
 
     @Override
     protected void doProcess(DirectiveContext context) {
-        AttributedTaskInfo task = context.getTask();
-        String appId = task.getAppId();
-
         // 任务置为失败
-        task.setStatus(ETaskStatus.FAIL.getStatus());
+        context.updateTaskStatus(ETaskStatus.FAIL);
 
         // 更新任务状态,记录失败任务日志
-        String stepCode = taskService.updateStatusIfDone(task.getId(), ETaskStatus.FAIL.getStatus());
-        task.setStepCode(stepCode);
+        final Long taskId = context.getTaskId();
+        String stepCode = taskService.updateStatusIfDone(taskId, ETaskStatus.FAIL.getStatus());
+        context.updateStepCode(stepCode);
 
         // 发送监控消息
-        monitorService.sendMonitorMessage(task.getId());
+        monitorService.sendMonitorMessage(taskId);
 
-        // 获取商户秘钥,包装数据:任务失败后返回失败信息加密后通过指令传递给前端
-        AppLicense appLicense = licenseManager.getAppLicenseByAppId(appId);
-        // 成数据map
+        // 成数据map,包装数据:任务失败后返回失败信息加密后通过指令传递给前端
         Map<String, Object> dataMap = generateDataMap(context);
         // 回调之前预处理
-        precallback(dataMap, appLicense, context);
+        precallback(dataMap, context);
         // 异步触发触发回调
-        asyncExecutor.runAsync(context, dto -> callback(dataMap, appLicense, dto));
+        asyncExecutor.runAsync(context, dto -> callback(dataMap, dto));
 
     }
 }
