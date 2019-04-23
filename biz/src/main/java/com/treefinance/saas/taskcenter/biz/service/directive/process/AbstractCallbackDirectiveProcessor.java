@@ -6,8 +6,6 @@ import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
 import com.treefinance.saas.taskcenter.biz.service.MonitorService;
-import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
@@ -22,7 +20,6 @@ import com.treefinance.saas.taskcenter.exception.CryptoException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
 import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
@@ -57,12 +54,7 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
     private TaskPointService taskPointService;
     @Autowired
     protected TaskCallbackLogService taskCallbackLogService;
-    @Autowired
-    protected TaskLogService taskLogService;
-    @Autowired
-    protected TaskAttributeService taskAttributeService;
-    @Autowired
-    protected TaskNextDirectiveService taskNextDirectiveService;
+
 
     @Override
     protected void validate(DirectiveContext context) {

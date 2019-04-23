@@ -17,8 +17,7 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
@@ -28,6 +27,7 @@ import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -35,7 +35,7 @@ import java.util.Map;
  * @date 2017/9/15.
  */
 @Component
-public class MoxieLoginFailDirectiveProcessor extends AbstractCallbackDirectiveProcessor implements MoxieDirectiveProcessor {
+public class MoxieLoginFailDirectiveProcessor extends AbstractDirectiveProcessor implements MoxieDirectiveProcessor {
 
     @Override
     public EDirective getSpecifiedDirective() {
@@ -50,7 +50,7 @@ public class MoxieLoginFailDirectiveProcessor extends AbstractCallbackDirectiveP
         if (taskAttribute != null) {
             moxieTaskId = taskAttribute.getValue();
         }
-        Map<String, Object> map = Maps.newHashMap();
+        Map<String, Object> map = new HashMap<>(2);
         map.put("error", context.getRemark());
         map.put("moxieTaskId", moxieTaskId);
 

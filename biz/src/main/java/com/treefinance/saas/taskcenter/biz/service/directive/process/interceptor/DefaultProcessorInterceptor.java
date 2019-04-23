@@ -13,6 +13,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service.directive.process.interceptor;
 
+import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveHelper;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
@@ -35,6 +36,8 @@ public class DefaultProcessorInterceptor implements ProcessorInterceptor {
     private TaskNextDirectiveService taskDirectiveService;
     @Autowired
     private AccountNoService accountNoService;
+    @Autowired
+    private MonitorService monitorService;
 
     @Override
     public void afterCompletion(@Nonnull DirectiveContext context) {
@@ -43,8 +46,12 @@ public class DefaultProcessorInterceptor implements ProcessorInterceptor {
             accountNoService.saveAccountNoIfAbsent(context.getTaskId());
         }
 
+        // 保存最新的指令信息
         DirectiveEntity directiveEntity = DirectiveHelper.buildDirectiveEntity(context);
         taskDirectiveService.saveDirective(directiveEntity);
+
+        // 发送监控消息
+        monitorService.sendMonitorMessage(context.getTaskId());
     }
 
 }

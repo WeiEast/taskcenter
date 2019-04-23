@@ -16,7 +16,6 @@
 
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
@@ -36,8 +35,6 @@ import java.util.Map;
 public class MoxieFailureDirectiveProcessor extends AbstractCallbackDirectiveProcessor implements MoxieDirectiveProcessor {
     @Autowired
     private AsyncExecutor asyncExecutor;
-    @Autowired
-    private MonitorService monitorService;
 
     @Override
     public EDirective getSpecifiedDirective() {
@@ -53,9 +50,6 @@ public class MoxieFailureDirectiveProcessor extends AbstractCallbackDirectivePro
         final Long taskId = context.getTaskId();
         String stepCode = taskService.updateStatusIfDone(taskId, ETaskStatus.FAIL.getStatus());
         context.updateStepCode(stepCode);
-
-        // 发送监控消息
-        monitorService.sendMonitorMessage(taskId);
 
         // 成数据map,包装数据:任务失败后返回失败信息加密后通过指令传递给前端
         Map<String, Object> dataMap = generateDataMap(context);

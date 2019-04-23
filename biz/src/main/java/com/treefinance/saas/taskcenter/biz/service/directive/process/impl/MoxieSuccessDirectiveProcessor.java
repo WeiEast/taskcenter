@@ -13,13 +13,11 @@
 
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -32,9 +30,6 @@ import java.util.Map;
  */
 @Component
 public class MoxieSuccessDirectiveProcessor extends AbstractCallbackDirectiveProcessor implements MoxieDirectiveProcessor {
-
-    @Autowired
-    protected MonitorService monitorService;
 
     @Override
     public EDirective getSpecifiedDirective() {
@@ -65,9 +60,6 @@ public class MoxieSuccessDirectiveProcessor extends AbstractCallbackDirectivePro
         // 更新任务状态,记录任务成功日志
         String stepCode = taskService.updateStatusIfDone(taskId, context.getTaskStatus());
         context.updateStepCode(stepCode);
-
-        // 发送监控消息
-        monitorService.sendMonitorMessage(taskId);
 
     }
 

@@ -1,6 +1,5 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
@@ -21,8 +20,6 @@ import java.util.Map;
  */
 @Component
 public class CancelDirectiveProcessor extends AbstractCallbackDirectiveProcessor {
-    @Autowired
-    protected MonitorService monitorService;
     @Autowired
     private AsyncExecutor asyncExecutor;
     @Autowired
@@ -45,8 +42,6 @@ public class CancelDirectiveProcessor extends AbstractCallbackDirectiveProcessor
         Map<String, String> extMap = new HashMap<>(1);
         extMap.put("reason", "user");
         spiderTaskManager.cancelQuietly(taskId, extMap);
-
-        monitorService.sendMonitorMessage(taskId);
 
         // 异步触发触发回调
         asyncExecutor.runAsync(context, this::callback);

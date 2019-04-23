@@ -1,7 +1,6 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
@@ -24,8 +23,6 @@ import java.util.Map;
 @Component
 public class FailureDirectiveProcessor extends AbstractCallbackDirectiveProcessor {
     @Autowired
-    protected MonitorService monitorService;
-    @Autowired
     private AsyncExecutor asyncExecutor;
 
     @Override
@@ -42,9 +39,6 @@ public class FailureDirectiveProcessor extends AbstractCallbackDirectiveProcesso
         // 更新任务状态
         String errorCode = taskService.updateStatusIfDone(taskId, ETaskStatus.FAIL.getStatus());
         context.updateStepCode(errorCode);
-
-        // 发送监控消息
-        monitorService.sendMonitorMessage(taskId);
 
         // 成数据map
         Map<String, Object> dataMap = generateDataMap(context);

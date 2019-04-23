@@ -1,9 +1,12 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.google.common.base.Stopwatch;
+import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
+import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.interceptor.ProcessorInterceptorChain;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import com.treefinance.toolkit.util.Assert;
 import org.slf4j.Logger;
@@ -21,6 +24,12 @@ public abstract class AbstractDirectiveProcessor implements DirectiveProcessor {
 
     @Autowired
     protected TaskService taskService;
+    @Autowired
+    protected TaskLogService taskLogService;
+    @Autowired
+    protected TaskAttributeService taskAttributeService;
+    @Autowired
+    protected TaskNextDirectiveService taskNextDirectiveService;
     @Autowired
     private ProcessorInterceptorChain interceptorChain;
 

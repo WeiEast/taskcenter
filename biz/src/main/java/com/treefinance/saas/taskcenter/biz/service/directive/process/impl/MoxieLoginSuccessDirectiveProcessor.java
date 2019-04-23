@@ -13,7 +13,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
@@ -27,7 +27,7 @@ import java.util.Date;
  * @date 2017/9/15.
  */
 @Component
-public class MoxieLoginSuccessDirectiveProcessor extends AbstractCallbackDirectiveProcessor implements MoxieDirectiveProcessor {
+public class MoxieLoginSuccessDirectiveProcessor extends AbstractDirectiveProcessor implements MoxieDirectiveProcessor {
 
     @Override
     public EDirective getSpecifiedDirective() {
@@ -39,6 +39,5 @@ public class MoxieLoginSuccessDirectiveProcessor extends AbstractCallbackDirecti
         // 1.记录登录日志
         final Long taskId = context.getTaskId();
         taskLogService.insertTaskLog(taskId, ETaskStep.LOGIN_SUCCESS.getText(), new Date(), null);
-
     }
 }
