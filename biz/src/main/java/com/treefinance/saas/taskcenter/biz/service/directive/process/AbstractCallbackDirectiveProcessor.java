@@ -40,7 +40,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 支持回调的指令处理 Created by yh-treefinance on 2017/7/11.
+ * 支持回调的指令处理
+ * 
+ * @author yh-treefinance
+ * @date 2017/7/11.
  */
 public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirectiveProcessor {
 
