@@ -1,14 +1,11 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackEntity;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.Map;
 
 /**
  * 成功指令处理
@@ -29,19 +26,19 @@ public class SuccessDirectiveProcessor extends AbstractCallbackDirectiveProcesso
         Long taskId = context.getTaskId();
 
         // 记录任务日志
-        taskLogService.insertTaskLog(taskId, "爬数任务执行完成", new Date(), null);
+        this.saveTaskLog(taskId, "爬数任务执行完成", null);
 
         // 生成数据map
-        Map<String, Object> dataMap = generateDataMap(context);
+        CallbackEntity callbackEntity = buildCallbackEntity(context);
         // 回调之前预处理
-        precallback(dataMap, context);
+        precallback(callbackEntity, context);
 
         // 触发回调: 0-无需回调，1-回调成功，-1-回调失败
-        int result = callback(dataMap, context);
+        int result = callback(callbackEntity, context);
         if (result == 0) {
             // 任务成功但是不需要回调(前端回调),仍需记录回调日志,获取dataUrl提供数据下载以及回调统计
-            taskCallbackLogService.insert(null, taskId, (byte)2, JSON.toJSONString(dataMap), null, 0, 0);
-            taskLogService.insertTaskLog(taskId, "回调通知成功", new Date(), null);
+            this.saveCallbackLog((byte)2, null,0, 0,callbackEntity, null, context);
+            this.saveTaskLog(taskId, "回调通知成功", null);
 
             context.updateTaskStatus(ETaskStatus.SUCCESS);
         } else if (result == 1) {

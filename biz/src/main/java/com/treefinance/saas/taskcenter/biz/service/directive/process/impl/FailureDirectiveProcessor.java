@@ -2,6 +2,7 @@ package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackEntity;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
@@ -41,17 +42,17 @@ public class FailureDirectiveProcessor extends AbstractCallbackDirectiveProcesso
         context.updateStepCode(errorCode);
 
         // 成数据map
-        Map<String, Object> dataMap = generateDataMap(context);
+        CallbackEntity callbackEntity = buildCallbackEntity(context);
         // 回调之前预处理
-        precallback(dataMap, context);
+        precallback(callbackEntity, context);
 
         // 异步触发触发回调
-        asyncExecutor.runAsync(context, ctx -> callback(dataMap, ctx));
+        asyncExecutor.runAsync(context, ctx -> callback(callbackEntity, ctx));
     }
 
     @Override
-    protected void precallback(Map<String, Object> dataMap, DirectiveContext context) {
-        super.precallback(dataMap, context);
+    protected void precallback(CallbackEntity callbackEntity, DirectiveContext context) {
+        super.precallback(callbackEntity, context);
         handleTaskFailMsg(context);
     }
 
@@ -68,13 +69,13 @@ public class FailureDirectiveProcessor extends AbstractCallbackDirectiveProcesso
                 // 如果是运营商维护导致任务失败,爬数发来的任务指令中,directiveDTO的remark字段为{"errorMsg","当前运营商正在维护中，请稍后重试"}.
                 // 如果是其他原因导致的任务失败,则返回下面的默认值.
                 Map<String, Object> remarkMap = JSON.parseObject(context.getRemark());
-                remarkMap.putIfAbsent("errorMsg", Constants.OPERATOR_TASK_FAIL_MSG);
+                remarkMap.putIfAbsent(Constants.ERROR_MSG_NAME, Constants.OPERATOR_TASK_FAIL_MSG);
                 String remark = JSON.toJSONString(remarkMap);
                 context.setRemark(remark);
                 logger.info("handle task-fail-msg: result={}, directiveContext={}", remark, context);
             } else if (EBizType.DIPLOMA.getCode().equals(bizType)) {
                 Map<String, Object> remarkMap = JSON.parseObject(context.getRemark());
-                remarkMap.put("errorMsg", Constants.DIPLOMA_TASK_FAIL_MSG);
+                remarkMap.put(Constants.ERROR_MSG_NAME, Constants.DIPLOMA_TASK_FAIL_MSG);
                 String remark = JSON.toJSONString(remarkMap);
                 context.setRemark(remark);
                 logger.info("handle task-fail-msg: result={}, directiveContext={}", remark, context);

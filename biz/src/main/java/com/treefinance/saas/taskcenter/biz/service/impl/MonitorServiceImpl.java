@@ -18,8 +18,8 @@ import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.BusinessMonitor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.BusinessMonitorManager;
 import com.treefinance.saas.taskcenter.biz.service.monitor.TaskCallbackMsgMonitor;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -65,8 +65,12 @@ public class MonitorServiceImpl implements MonitorService {
     @Override
     @Async
     public void sendTaskCallbackMsgMonitorMessage(Long taskId, Integer httpCode, String result, Boolean isCallback) {
-        taskCallbackMsgMonitor.sendMessage(taskId, httpCode, result, isCallback);
-        logger.info("sendTaskCallbackMsgMonitorMessage:taskId={},httpCode={},result={},isCallback={}", taskId, httpCode, result, isCallback);
+        try {
+            taskCallbackMsgMonitor.sendMessage(taskId, httpCode, result, isCallback);
+            logger.info("sent TaskCallbackMsgMonitorMessage >> taskId={},httpCode={},result={},isCallback={}", taskId, httpCode, result, isCallback);
+        } catch (Exception e) {
+            logger.error("Error sending TaskCallbackMsgMonitorMessage >> taskId={},httpCode={},result={},isCallback={}", taskId, httpCode, result, isCallback, e);
+        }
     }
 
     /**

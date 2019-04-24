@@ -26,7 +26,6 @@ import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,6 +54,6 @@ public class MoxieLoginFailDirectiveProcessor extends AbstractDirectiveProcessor
         map.put("moxieTaskId", moxieTaskId);
 
         // 1.记录登录日志
-        taskLogService.insertTaskLog(taskId, ETaskStep.LOGIN_FAIL.getText(), new Date(), JSON.toJSONString(map));
+        this.saveTaskLog(taskId, ETaskStep.LOGIN_FAIL.getText(), JSON.toJSONString(map));
     }
 }

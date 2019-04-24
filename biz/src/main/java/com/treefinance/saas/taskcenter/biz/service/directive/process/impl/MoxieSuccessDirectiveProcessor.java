@@ -14,13 +14,12 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackEntity;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * 成功指令处理
@@ -41,11 +40,11 @@ public class MoxieSuccessDirectiveProcessor extends AbstractCallbackDirectivePro
         Long taskId = context.getTaskId();
 
         // 生成数据map
-        Map<String, Object> dataMap = generateDataMap(context);
+        CallbackEntity callbackEntity = buildCallbackEntity(context);
         // 回调之前预处理
-        precallback(dataMap, context);
+        precallback(callbackEntity, context);
         // 触发回调: 0-无需回调，1-回调成功，-1-回调失败
-        int result = callback(dataMap, context);
+        int result = callback(callbackEntity, context);
 
         if (result == 0 || result == 1) {
             context.updateTaskStatus(ETaskStatus.SUCCESS);

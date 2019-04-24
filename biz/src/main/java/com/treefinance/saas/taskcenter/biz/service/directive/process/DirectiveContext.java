@@ -26,6 +26,7 @@ import lombok.Setter;
 import javax.annotation.Nonnull;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -99,8 +100,20 @@ public class DirectiveContext implements Serializable {
         return task.getBizType();
     }
 
+    public String getTaskUniqueId() {
+        return task.getUniqueId();
+    }
+
     public Byte getTaskStatus() {
         return task.getStatus();
+    }
+
+    public Object getTaskAttributeValue(String attrName) {
+        Map<String, String> attributes = task.getAttributes();
+        if (attributes != null) {
+            return attributes.get(attrName);
+        }
+        return null;
     }
 
     public boolean supportLicenseManager() {
@@ -145,4 +158,5 @@ public class DirectiveContext implements Serializable {
     public String toString() {
         return JSON.toJSONString(this);
     }
+
 }

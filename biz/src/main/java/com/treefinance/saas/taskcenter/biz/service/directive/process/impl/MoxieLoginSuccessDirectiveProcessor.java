@@ -20,8 +20,6 @@ import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-
 /**
  * @author haojiahong
  * @date 2017/9/15.
@@ -37,7 +35,6 @@ public class MoxieLoginSuccessDirectiveProcessor extends AbstractDirectiveProces
     @Override
     protected void doProcess(DirectiveContext context) {
         // 1.记录登录日志
-        final Long taskId = context.getTaskId();
-        taskLogService.insertTaskLog(taskId, ETaskStep.LOGIN_SUCCESS.getText(), new Date(), null);
+        this.saveTaskLog(context.getTaskId(), ETaskStep.LOGIN_SUCCESS.getText(), null);
     }
 }

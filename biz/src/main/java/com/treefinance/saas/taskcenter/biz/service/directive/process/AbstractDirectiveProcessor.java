@@ -9,10 +9,13 @@ import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import com.treefinance.toolkit.util.Assert;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 
 /**
  * @author Jerry
@@ -82,4 +85,14 @@ public abstract class AbstractDirectiveProcessor implements DirectiveProcessor {
      */
     protected abstract void doProcess(DirectiveContext context);
 
+    /**
+     * 保存任务日志
+     */
+    protected void saveTaskLog(Long taskId, String msg, String errorMsg) {
+        try {
+            taskLogService.insertTaskLog(taskId, msg, new Date(), StringUtils.substring(errorMsg, 0, 1000));
+        } catch (Exception e) {
+            logger.warn("保存任务日志失败！- taskId: {}, msg: {}", taskId, msg, e);
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Maps;
+import com.alibaba.fastjson.JSONObject;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
@@ -15,25 +15,21 @@ import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
-import com.treefinance.saas.taskcenter.exception.CallbackEncryptException;
 import com.treefinance.saas.taskcenter.exception.CryptoException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
 import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
-import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
-import com.treefinance.toolkit.util.http.exception.HttpException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +52,20 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
     @Autowired
     private TaskPointService taskPointService;
     @Autowired
-    protected TaskCallbackLogService taskCallbackLogService;
+    private TaskCallbackLogService taskCallbackLogService;
+
+    /**
+     * 保存回调操作日志
+     * 
+     */
+    protected void saveCallbackLog(byte type, String result, int httpCode, long cost, CallbackEntity callbackEntity, CallbackConfigBO config, DirectiveContext context) {
+        final Long taskId = context.getTaskId();
+        try {
+            taskCallbackLogService.insert(config, taskId, type, JSON.toJSONString(callbackEntity), result, cost, httpCode);
+        } catch (Exception e) {
+            logger.warn("保存回调操作日志发生错误！- taskId：{}, type: {}", taskId, type, e);
+        }
+    }
 
 
     @Override
@@ -70,9 +79,10 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
     /**
      * 回调前处理
      *
-     * @param context
+     * @param callbackEntity 回调数据
+     * @param context 指令处理上下文
      */
-    protected void precallback(Map<String, Object> dataMap, DirectiveContext context) {
+    protected void precallback(CallbackEntity callbackEntity, DirectiveContext context) {
         // 使用商户密钥加密数据，返回给前端
         Map<String, Object> paramMap = new HashMap<>(2);
         String remark = context.getRemark();
@@ -88,11 +98,9 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
             }
         }
 
-        logger.info("回调数据生成： {}", JSON.toJSONString(dataMap));
-
         try {
 
-            String params = encryptByRSA(dataMap, context);
+            String params = encryptByRSA(callbackEntity, context);
             paramMap.put("params", params);
             context.setRemark(JSON.toJSONString(paramMap));
         } catch (Exception e) {
@@ -104,24 +112,23 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
     /**
      * 执行回调(无需预处理)
      *
-     * @param context
+     * @param context 指令处理上下文
      * @return
      */
     protected int callback(DirectiveContext context) {
-        // 生成数据map
-        Map<String, Object> dataMap = generateDataMap(context);
-        // 回调
-        return callback(dataMap, context);
+        CallbackEntity callbackEntity = this.buildCallbackEntity(context);
+
+        return callback(callbackEntity, context);
     }
 
     /**
      * 执行回调
      *
-     * @param dataMap
-     * @param context
+     * @param callbackEntity 回调数据
+     * @param context 指令处理上下文
      * @return 0-无需回调，1-回调成功，-1-回调失败
      */
-    protected int callback(Map<String, Object> dataMap, DirectiveContext context) {
+    protected int callback(CallbackEntity callbackEntity, DirectiveContext context) {
         Long taskId = context.getTaskId();
 
         // 查询回调配置
@@ -145,168 +152,84 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
         taskPointService.addTaskPoint(taskId, "900401");
 
         // 执行回调，支持一个任务回调多方
-        List<Boolean> callbackFlags = new ArrayList<>(configList.size());
+        int failure = 0;
         for (CallbackConfigBO config : configList) {
-            Boolean callbackSuccess;
             try {
                 // 执行回调
-                callbackSuccess = doCallBack(dataMap, config, context);
+                doCallback(callbackEntity, config, context);
             } catch (Exception e) {
-                dataMap.put("taskStatus", EGrapStatus.FAIL.getCode());
-                dataMap.put("taskErrorMsg", "回调通知失败");
-                flushData(dataMap, context);
-                callbackSuccess = Boolean.FALSE;
+                failure++;
                 String errorMsg = "回调通知失败：" + e.getMessage();
                 logger.error(errorMsg + "，config=" + config, e);
-                taskLogService.insertTaskLog(taskId, "回调通知失败", new Date(), StringUtils.substring(errorMsg, 0, 1000));
+                this.saveTaskLog(taskId, "回调通知失败", errorMsg);
             }
-            callbackFlags.add(callbackSuccess);
-
         }
         // 有回调失败的整个任务算失败
-        if (callbackFlags.contains(Boolean.FALSE)) {
+        if (failure > 0) {
+            callbackEntity.failure("回调通知失败");
+            flushData(callbackEntity, context);
             return -1;
         }
+
+        callbackEntity.success();
 
         // 埋点-回调成功
         taskPointService.addTaskPoint(taskId, "900402");
 
-        dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
-        dataMap.put("taskErrorMsg", "");
-        taskLogService.insertTaskLog(taskId, "回调通知成功", new Date(), null);
+        this.saveTaskLog(taskId, "回调通知成功", null);
+
         return 1;
-
     }
 
     /**
-     * 生成数据Map
+     * 生成回调数据实体，包含uniqueId、taskId、taskStatus、sourceId等信息。
      *
-     * @param context
-     * @return
+     * @param context 指令处理上下文
+     * @return 回调数据实体 {@link CallbackEntity}
      */
-    protected Map<String, Object> generateDataMap(DirectiveContext context) {
-        AttributedTaskInfo task = context.getTask();
+    protected CallbackEntity buildCallbackEntity(DirectiveContext context) {
         // 1. 初始化回调数据 并填充uniqueId、taskId、taskStatus、sourceId
-        Map<String, Object> dataMap = ifNull(JSON.parseObject(context.getRemark()), Maps.newHashMap());
-        dataMap.putIfAbsent("uniqueId", task.getUniqueId());
-        dataMap.putIfAbsent("taskId", task.getId());
+        final JSONObject initialAttrs = JSON.parseObject(context.getRemark());
 
-        Map<String, String> attributes = task.getAttributes();
-        if (attributes != null) {
-            String attrName = ETaskAttribute.SOURCE_ID.getAttribute();
-            String sourceId = attributes.get(attrName);
-            if (sourceId != null) {
-                dataMap.putIfAbsent(attrName, sourceId);
-            }
-        }
+        CallbackEntity entity = initialAttrs == null ? new CallbackEntity() : new CallbackEntity(initialAttrs);
 
-        dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
-        dataMap.put("taskErrorMsg", "");
+        entity.setTaskIdIfAbsent(context.getTaskId());
+        entity.setUniqueIdIfAbsent(context.getTaskUniqueId());
+        entity.computeIfAbsent(ETaskAttribute.SOURCE_ID.getAttribute(), context::getTaskAttributeValue);
+
         // 此次任务状态：001-抓取成功，002-抓取失败，003-抓取结果为空,004-任务取消
-        if (ETaskStatus.SUCCESS.getStatus().equals(task.getStatus())) {
-            dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
-            dataMap.put("taskErrorMsg", "");
-        } else if (ETaskStatus.FAIL.getStatus().equals(task.getStatus())) {
-            dataMap.put("taskStatus", EGrapStatus.FAIL.getCode());
+        final Byte status = context.getTaskStatus();
+        if (ETaskStatus.SUCCESS.getStatus().equals(status)) {
+            entity.success();
+        } else if (ETaskStatus.FAIL.getStatus().equals(status)) {
             // 任务失败消息
-            TaskLog log = taskLogService.queryLastErrorLog(task.getId());
-            if (log != null) {
-                dataMap.put("taskErrorMsg", log.getMsg());
-            } else {
-                dataMap.put("taskErrorMsg", EGrapStatus.FAIL.getName());
-            }
-        } else if (ETaskStatus.CANCEL.getStatus().equals(task.getStatus())) {
-            dataMap.put("taskStatus", EGrapStatus.CANCEL.getCode());
-            dataMap.put("taskErrorMsg", "用户取消");
+            TaskLog log = taskLogService.queryLastErrorLog(context.getTaskId());
+            entity.failure(log != null ? log.getMsg() : EGrapStatus.FAIL.getName());
+        } else if (ETaskStatus.CANCEL.getStatus().equals(status)) {
+            entity.cancel("用户取消");
+        } else {
+            entity.success();
         }
-        logger.info("generateDataMap: data={}, directive={}", JSON.toJSONString(dataMap), JSON.toJSONString(context));
-        return dataMap;
-    }
-
-    /**
-     * 初始化回调参数
-     *
-     * @param dataMap
-     * @param config
-     * @param context
-     * @throws Exception
-     */
-    private void initDataMap(Map<String, Object> dataMap, CallbackConfigBO config, DirectiveContext context) throws Exception {
-        // 如果是数据传输，则需先下载数据
-        Byte notifyModel = config.getNotifyModel();
-        if (SystemUtils.isDataNotifyModel(notifyModel)) {
-            dataMap.put("data", StringUtils.EMPTY);
-            Object dataUrlObj = dataMap.remove("dataUrl");
-            if (dataUrlObj != null) {
-                try {
-                    String dataUrl = dataUrlObj.toString();
-                    // oss 下载数据
-                    byte[] result = RemoteDataUtils.download(dataUrl, byte[].class);
-                    // 数据体默认使用商户密钥加密
-                    // 获取商户密钥
-                    String appDataKey = context.getDataSecretKey();
-                    Map<String, Object> downloadDataMap = CallbackDataUtils.decryptAsMapByAES(result, appDataKey);
-                    dataMap.put("data", downloadDataMap);
-                    if (MapUtils.isEmpty(downloadDataMap)) {
-                        dataMap.put("taskErrorMsg", EGrapStatus.RESULT_EMPTY.getName());
-                        dataMap.put("taskStatus", EGrapStatus.RESULT_EMPTY.getCode());
-                        flushData(dataMap, context);
-                    }
-                } catch (HttpException e) {
-                    logger.error("download data failed : data={}", JSON.toJSONString(dataMap));
-                    dataMap.put("taskErrorMsg", "下载数据失败");
-                    dataMap.put("taskStatus", EGrapStatus.FAIL.getCode());
-                    dataMap.put("dataUrl", dataUrlObj);
-                    flushData(dataMap, context);
-                }
-            }
-        }
-        // 此时针对工商无需爬取时处理
-        Object crawlerStatus = dataMap.get("crawlerStatus");
-        if (crawlerStatus != null && (int)crawlerStatus == 1) {
-            logger.info("工商回调，回调code设置为005，taskId={}", context.getTaskId());
-            dataMap.put("taskStatus", EGrapStatus.NO_NEED_CRAWLER.getCode());
-            dataMap.put("taskErrorMsg", "");
-        }
-        // 如果是运营商数据
-        if (context.getTask() != null && EBizType.OPERATOR.getCode().equals(context.getTask().getBizType())) {
-            Long taskId = context.getTask().getId();
-            String groupCodeAttribute = ETaskAttribute.OPERATOR_GROUP_CODE.getAttribute();
-            String groupNameAttribute = ETaskAttribute.OPERATOR_GROUP_NAME.getAttribute();
-
-            Map<String, String> attributeMap = taskAttributeService.getAttributeMapByTaskIdAndInNames(taskId, new String[] {groupCodeAttribute, groupNameAttribute}, false);
-
-            dataMap.put(groupCodeAttribute, StringUtils.defaultString(attributeMap.get(groupCodeAttribute)));
-
-            dataMap.put(groupNameAttribute, StringUtils.defaultString(attributeMap.get(groupNameAttribute)));
-        }
-    }
-
-    /**
-     * null值判断,
-     *
-     * @return <code>defaultValue</code> if given <code>value</code> was null.
-     */
-    private <T> T ifNull(T value, T defaultValue) {
-        return value == null ? defaultValue : value;
+        logger.info("回调数据生成 >> {}, directive={}", entity, context);
+        return entity;
     }
 
     /**
      * 刷新数据
      *
-     * @param dataMap
+     * @param callbackEntity
      * @param context
      */
-    private void flushData(Map<String, Object> dataMap, DirectiveContext context) {
-        this.precallback(dataMap, context);
+    private void flushData(CallbackEntity callbackEntity, DirectiveContext context) {
+        this.precallback(callbackEntity, context);
     }
 
     /**
-     * 校验是否需要回调
+     * 判断是否需要回调
      *
-     * @param config
-     * @param context
-     * @return
+     * @param config 回调配置
+     * @param context 指令处理上下文对象
+     * @return true if to callback
      */
     private boolean needCallback(CallbackConfigBO config, DirectiveContext context) {
         if (config == null) {
@@ -333,129 +256,68 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
     }
 
     /**
-     * 初始化回调参数
-     *
-     * @param dataMap
-     * @param config
-     * @param context
-     * @return
-     * @throws Exception
-     */
-    private String encryptParams(Map<String, Object> dataMap, CallbackConfigBO config, DirectiveContext context) throws Exception {
-        byte version = config.getVersion();
-        if (version > 0) {
-            // 默认使用AES方式
-            // 是否使用新密钥，0-否，1-是
-            Byte isNewKey = config.getIsNewKey();
-            String aesDataKey;
-            if (SystemUtils.isTrue(isNewKey)) {
-                aesDataKey = context.getNewDataSecretKeyForCallback(config.getId());
-            } else {
-                // 获取商户密钥
-                aesDataKey = context.getDataSecretKey();
-            }
-            return encryptByAES(dataMap, aesDataKey);
-        }
-
-        return encryptByRSA(dataMap, context);
-    }
-
-    /**
-     * AES 加密
-     *
-     * @param dataMap
-     * @param aesDataKey
-     * @return
-     * @throws CallbackEncryptException
-     */
-    private String encryptByAES(Map<String, Object> dataMap, String aesDataKey) throws CallbackEncryptException {
-        return CallbackDataUtils.encryptByAES(dataMap, aesDataKey);
-    }
-
-    /**
-     * RSA 加密
-     *
-     * @param dataMap
-     * @param context
-     * @return
-     * @throws CryptoException
-     */
-    private String encryptByRSA(Map<String, Object> dataMap, DirectiveContext context) throws CryptoException {
-        // 获取商户密钥
-        String rsaPublicKey = context.getServerPublicKey();
-        try {
-            // 兼容老版本，使用RSA
-            String params = CallbackDataUtils.encryptByRSA(dataMap, rsaPublicKey);
-
-            return URLEncoder.encode(params, "utf-8");
-        } catch (Exception e) {
-            throw new CryptoException("encryptByRSA error : " + dataMap + ", key=" + context.getServerPublicKey(), e);
-        }
-    }
-
-    /**
      * 执行回调
      *
-     * @param dataMap
-     * @param config
-     * @param context
-     * @return
+     * @param callbackEntity 回调数据实体
+     * @param config 回调配置
+     * @param context 指令处理上下文对象
      */
-    private boolean doCallBack(Map<String, Object> dataMap, CallbackConfigBO config, DirectiveContext context) throws Exception {
-        // 1.备份数据
-        Map<String, Object> originalDataMap = Maps.newHashMap(dataMap);
-        // 2.初始化数据
-        this.initDataMap(dataMap, config, context);
-        String params = this.encryptParams(dataMap, config, context);
-        Map<String, Object> paramMap = Maps.newHashMap();
-        paramMap.put("params", params);
-        paramMap.put("appId", context.getAppId());
-        String callbackUrl = config.getUrl();
-        // 超时时间（秒）
-        Byte timeOut = config.getTimeOut();
-        // 重试次数，3次
-        Byte retryTimes = config.getRetryTimes();
-        logger.info("回调执行：taskId={},dataMap={}, params={}", context.getTaskId(), JSON.toJSONString(dataMap), JSON.toJSONString(paramMap));
+    private void doCallback(CallbackEntity callbackEntity, CallbackConfigBO config, DirectiveContext context) throws Exception {
+        // 回调数据实体备份
+        CallbackEntity backupCallbackEntity = (CallbackEntity)callbackEntity.clone();
+
+        // 准备回调数据
+        this.prepareCallbackData(callbackEntity, config, context);
+
+        long startTime = System.currentTimeMillis();
         String result = "";
         int httpCode = 200;
-        long startTime = System.currentTimeMillis();
+        // 回调请求地址
+        String callbackUrl = config.getUrl();
+        // 超时时间（秒）
+        Byte timeout = config.getTimeOut();
+        // 重试次数，3次
+        Byte retryTimes = config.getRetryTimes();
         try {
+            Map<String, Object> paramMap = this.buildCallbackRequestParameters(callbackEntity, config, context);
+            logger.info("回调执行：taskId={}, callbackUrl={}, callbackEntity={}, params={}", context.getTaskId(), callbackUrl, callbackEntity, JSON.toJSONString(paramMap));
             if (SystemUtils.isDataNotifyModel(config.getNotifyModel())) {
-                result = HttpClientUtils.doPostWithTimeoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
+                result = HttpClientUtils.doPostWithTimeoutAndRetryTimes(callbackUrl, timeout, retryTimes, paramMap);
             } else {
-                result = HttpClientUtils.doGetWithTimeoutAndRetryTimes(callbackUrl, timeOut, retryTimes, paramMap);
+                result = HttpClientUtils.doGetWithTimeoutAndRetryTimes(callbackUrl, timeout, retryTimes, paramMap);
             }
         } catch (RequestFailedException e) {
-            logger.error("doCallBack exception: callbackUrl={},dataMap={}", callbackUrl, JSON.toJSONString(dataMap), e);
+            logger.error("doCallback exception: callbackUrl={},callbackEntity={}", callbackUrl, callbackEntity, e);
             result = e.getResult();
             httpCode = e.getStatusCode();
             throw e;
         } finally {
+            // 处理返回结果
+            this.handleRequestResult(result, context);
+
             long consumeTime = System.currentTimeMillis() - startTime;
             // 记录回调日志
-            taskCallbackLogService.insert(config, context.getTaskId(), (byte)1, JSON.toJSONString(originalDataMap), result, consumeTime, httpCode);
+            this.saveCallbackLog((byte)1, result, httpCode, consumeTime, backupCallbackEntity, config, context);
             // 主流程回调做监控
-            if (config.getDataType() != null && config.getDataType() == 0) {
+            if (Constants.DATA_TYPE_0.equals(config.getDataType())) {
                 monitorService.sendTaskCallbackMsgMonitorMessage(context.getTaskId(), httpCode, result, true);
             }
-            // 处理返回结果
-            handleRequestResult(context, result);
             // 回调处理
             callbackResultMonitor.sendMessage(context.getTask(), result, config, httpCode);
         }
-        return true;
     }
 
     /**
      * 处理请求失败异常
      *
-     * @param context
-     * @param result
+     * @param requestResult 回调请求结果
+     * @param context 指令处理上下文对象
      */
-    private void handleRequestResult(DirectiveContext context, String result) {
+    private void handleRequestResult(String requestResult, DirectiveContext context) {
         try {
-            result = result.trim();
+            String result = StringUtils.trimToEmpty(requestResult);
             if (StringUtils.isNotEmpty(result) && result.startsWith("{") && result.endsWith("}")) {
+                logger.info("handle callback result : result={}, directiveContext={}", result, context);
                 SimpleResult simpleResult = JSON.parseObject(result, SimpleResult.class);
                 String errorMsg = simpleResult == null ? null : simpleResult.getErrorMsg();
                 if (StringUtils.isNotEmpty(errorMsg)) {
@@ -469,11 +331,141 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
                     remarkMap.put(Constants.ERROR_MSG_NAME, errorMsg);
 
                     context.setRemark(JSON.toJSONString(remarkMap));
-                    logger.info("handle callback result : result={},directiveContext={}", result, JSON.toJSONString(context));
                 }
             }
         } catch (Exception e) {
-            logger.info("handle result failed : directiveContext={}, result={}", JSON.toJSONString(context), result, e);
+            logger.error("handle result failed : directiveContext={}, result={}", context, requestResult, e);
+        }
+    }
+
+    /**
+     * 创建回调请求参数
+     *
+     * @param callbackEntity 回调数据实体
+     * @param config 回调配置
+     * @param context 指令处理上下文
+     * @return 回调请求参数
+     * @throws CryptoException 回调数据加密异常
+     */
+    private Map<String, Object> buildCallbackRequestParameters(CallbackEntity callbackEntity, CallbackConfigBO config, DirectiveContext context) throws CryptoException {
+        String params = this.safeEncryptCallbackEntity(callbackEntity, config, context);
+
+        Map<String, Object> paramMap = new HashMap<>(2);
+        paramMap.put("appId", context.getAppId());
+        paramMap.put("params", params);
+
+        return paramMap;
+    }
+
+    /**
+     * 安全加密回调数据实体
+     *
+     * @param callbackEntity 回调数据实体
+     * @param config 回调配置
+     * @param context 指令处理上下文
+     * @return 回调数据加密后的字符串
+     * @throws CryptoException 加密异常
+     */
+    private String safeEncryptCallbackEntity(CallbackEntity callbackEntity, CallbackConfigBO config, DirectiveContext context) throws CryptoException {
+        byte version = config.getVersion();
+        if (version > 0) {
+            // 默认使用AES方式
+            // 是否使用新密钥，0-否，1-是
+            Byte isNewKey = config.getIsNewKey();
+            String aesDataKey;
+            if (SystemUtils.isTrue(isNewKey)) {
+                aesDataKey = context.getNewDataSecretKeyForCallback(config.getId());
+            } else {
+                // 获取商户密钥
+                aesDataKey = context.getDataSecretKey();
+            }
+            return CallbackDataUtils.encryptByAES(callbackEntity, aesDataKey);
+        }
+
+        return encryptByRSA(callbackEntity, context);
+    }
+
+    /**
+     * RSA加密回调数据
+     *
+     * @param callbackEntity 回调数据实体
+     * @param context 指令处理上下文
+     * @return 回调数据RSA加密后的字符串
+     * @throws CryptoException 加密异常
+     */
+    private String encryptByRSA(CallbackEntity callbackEntity, DirectiveContext context) throws CryptoException {
+        // 获取商户密钥
+        String rsaPublicKey = context.getServerPublicKey();
+        try {
+            // 兼容老版本，使用RSA
+            String params = CallbackDataUtils.encryptByRSA(callbackEntity, rsaPublicKey);
+
+            return URLEncoder.encode(params, "utf-8");
+        } catch (Exception e) {
+            throw new CryptoException("encryptByRSA error : " + callbackEntity + ", key=" + context.getServerPublicKey(), e);
+        }
+    }
+
+    /**
+     * 准备回调数据
+     *
+     * @param callbackEntity 回调数据实体
+     * @param config 回调配置
+     * @param context 指令处理上下文对象
+     */
+    private void prepareCallbackData(CallbackEntity callbackEntity, CallbackConfigBO config, DirectiveContext context) {
+        // 如果是数据传输，则需先下载数据
+        Byte notifyModel = config.getNotifyModel();
+        if (SystemUtils.isDataNotifyModel(notifyModel)) {
+            Object dataUrlObj = callbackEntity.remove("dataUrl");
+            if (dataUrlObj != null) {
+                boolean success = true;
+                Map<String, Object> downloadDataMap = null;
+                try {
+                    // oss 下载数据
+                    byte[] result = RemoteDataUtils.download(dataUrlObj.toString(), byte[].class);
+                    if (ArrayUtils.isNotEmpty(result)) {
+                        // 数据体默认使用商户密钥加密
+                        downloadDataMap = CallbackDataUtils.decryptAsMapByAES(result, context.getDataSecretKey());
+                    }
+                } catch (Exception e) {
+                    logger.error("download data failed : data={}", callbackEntity, e);
+                    success = false;
+                }
+
+                if (success) {
+                    if (MapUtils.isNotEmpty(downloadDataMap)) {
+                        callbackEntity.setData(downloadDataMap);
+                    } else {
+                        callbackEntity.emptyData();
+                        flushData(callbackEntity, context);
+                    }
+                } else {
+                    callbackEntity.put("dataUrl", dataUrlObj);
+                    callbackEntity.failure("下载数据失败");
+                    flushData(callbackEntity, context);
+                }
+            } else {
+                callbackEntity.setData(StringUtils.EMPTY);
+            }
+        }
+
+        // 此时针对工商无需爬取时处理
+        if (callbackEntity.getCrawlerStatus()) {
+            logger.info("工商回调，回调code设置为005，taskId={}", context.getTaskId());
+            callbackEntity.setStatus(EGrapStatus.NO_NEED_CRAWLER, "");
+        }
+
+        // 如果是运营商数据
+        if (EBizType.OPERATOR.getCode().equals(context.getBizType())) {
+            String groupCodeAttribute = ETaskAttribute.OPERATOR_GROUP_CODE.getAttribute();
+            String groupNameAttribute = ETaskAttribute.OPERATOR_GROUP_NAME.getAttribute();
+
+            Map<String, String> attributeMap =
+                taskAttributeService.getAttributeMapByTaskIdAndInNames(context.getTaskId(), new String[] {groupCodeAttribute, groupNameAttribute}, false);
+
+            callbackEntity.put(groupCodeAttribute, StringUtils.defaultString(attributeMap.get(groupCodeAttribute)));
+            callbackEntity.put(groupNameAttribute, StringUtils.defaultString(attributeMap.get(groupNameAttribute)));
         }
     }
 }

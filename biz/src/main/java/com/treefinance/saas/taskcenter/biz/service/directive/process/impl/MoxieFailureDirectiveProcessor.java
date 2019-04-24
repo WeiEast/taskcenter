@@ -17,6 +17,7 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
+import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackEntity;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.MoxieDirectiveProcessor;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
@@ -24,8 +25,6 @@ import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.share.AsyncExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * @author haojiahong
@@ -52,11 +51,11 @@ public class MoxieFailureDirectiveProcessor extends AbstractCallbackDirectivePro
         context.updateStepCode(stepCode);
 
         // 成数据map,包装数据:任务失败后返回失败信息加密后通过指令传递给前端
-        Map<String, Object> dataMap = generateDataMap(context);
+        CallbackEntity callbackEntity = buildCallbackEntity(context);
         // 回调之前预处理
-        precallback(dataMap, context);
+        precallback(callbackEntity, context);
         // 异步触发触发回调
-        asyncExecutor.runAsync(context, dto -> callback(dataMap, dto));
+        asyncExecutor.runAsync(context, ctx -> callback(callbackEntity, ctx));
 
     }
 }
