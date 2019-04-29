@@ -14,6 +14,7 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
@@ -22,10 +23,16 @@ import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackLicense
 import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -36,20 +43,41 @@ import java.util.Objects;
  * @date 2019-04-21 22:19
  */
 public class DirectiveContext implements Serializable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DirectiveContext.class);
+
+    /**
+     * 指令
+     */
     @Getter
     private EDirective directive;
 
+    /**
+     * 指令ID
+     */
     @Setter
     @Getter
     private String directiveId;
 
+    /**
+     * 任务ID
+     */
     @Setter
     @Getter
     private Long taskId;
 
+    /**
+     * 备注信息
+     */
     @Setter
     @Getter
     private String remark;
+
+    /**
+     * 额外信息
+     */
+    @Setter
+    @Getter
+    private Map<String, Object> extra;
 
     /**
      * directive processing 内部使用参数
@@ -58,14 +86,28 @@ public class DirectiveContext implements Serializable {
     @Getter
     private AttributedTaskInfo task;
 
+    /**
+     * 是否是魔蝎导入任务的指令
+     */
     @Setter
     @Getter
     private boolean fromMoxie;
 
+    /**
+     * 商户的授权许可管理器
+     */
     @Setter
     private LicenseManager licenseManager;
 
+    /**
+     * 商户的授权许可
+     */
     private AppLicense appLicense;
+
+    /**
+     * 初始化信息来源于remark的json解析
+     */
+    private Map<String, Object> attributes;
 
     private DirectiveContext(EDirective directive) {
         this.directive = Objects.requireNonNull(directive);
@@ -75,39 +117,82 @@ public class DirectiveContext implements Serializable {
         return new DirectiveContext(directive);
     }
 
+    public void putExtra(String key, Object value) {
+        if (this.extra == null) {
+            this.extra = new HashMap<>(16);
+        }
+        this.extra.put(key, value);
+    }
+
+    /**
+     * @return 指令的字符表示
+     */
     public String getDirectiveString() {
         return directive == null ? "" : directive.getText();
     }
 
+    /**
+     * 更新指令
+     * 
+     * @param directive 新的指令
+     */
     public void updateDirective(EDirective directive) {
         this.directive = directive;
         this.directiveId = null;
     }
 
+    /**
+     * 更新任务状态
+     * 
+     * @param status 任务状态
+     */
     public void updateTaskStatus(@Nonnull ETaskStatus status) {
         task.setStatus(status.getStatus());
     }
 
+    /**
+     * 更新最近的任务步骤编号
+     * 
+     * @param stepCode 任务步骤编号
+     */
     public void updateStepCode(String stepCode) {
         task.setStepCode(stepCode);
     }
 
+    /**
+     * @return 商户ID
+     */
     public String getAppId() {
         return task.getAppId();
     }
 
+    /**
+     * @return 导入任务的业务类型
+     */
     public Byte getBizType() {
         return task.getBizType();
     }
 
+    /**
+     * @return 用户唯一标识
+     */
     public String getTaskUniqueId() {
         return task.getUniqueId();
     }
 
+    /**
+     * @return 任务状态
+     */
     public Byte getTaskStatus() {
         return task.getStatus();
     }
 
+    /**
+     * 返回任务附带的属性值
+     * 
+     * @param attrName 属性名
+     * @return 属性值
+     */
     public Object getTaskAttributeValue(String attrName) {
         Map<String, String> attributes = task.getAttributes();
         if (attributes != null) {
@@ -116,6 +201,9 @@ public class DirectiveContext implements Serializable {
         return null;
     }
 
+    /**
+     * @return true if license manager was not null.
+     */
     public boolean supportLicenseManager() {
         return licenseManager != null;
     }
@@ -154,9 +242,63 @@ public class DirectiveContext implements Serializable {
         return this.getAppLicense().getServerPublicKey();
     }
 
+    public Map<String, Object> getAttributes() {
+        return Collections.unmodifiableMap(getInnerAttributes());
+    }
+
+    private Map<String, Object> getInnerAttributes() {
+        if (this.attributes == null) {
+            final String remark = StringUtils.trim(this.getRemark());
+            JSONObject remarks = null;
+            try {
+                if (StringUtils.isNotEmpty(remark)) {
+                    remarks = JSON.parseObject(remark);
+                }
+            } catch (Exception e) {
+                LOGGER.error("不正确的json格式，解析remark失败！>> {}", remark, e);
+            }
+            this.attributes = remarks == null ? new HashMap<>(16) : new HashMap<>(remarks);
+        }
+
+        return this.attributes;
+    }
+
+    public Object getAttributeValue(String name) {
+        final Map<String, Object> innerExtra = getInnerAttributes();
+        if (MapUtils.isNotEmpty(innerExtra)) {
+            return innerExtra.get(name);
+        }
+        return null;
+    }
+
+    public void putAttribute(String key, Object value) {
+        this.getInnerAttributes().put(key, value);
+    }
+
+    public void putAttributeIfAbsent(String key, Object value) {
+        this.getInnerAttributes().putIfAbsent(key, value);
+    }
+
+    public void resetAttributes(Map<String, Object> attributes) {
+        if (this.attributes != null) {
+            this.attributes.clear();
+            if (MapUtils.isNotEmpty(attributes)) {
+                this.attributes.putAll(attributes);
+            }
+        } else if (MapUtils.isNotEmpty(attributes)) {
+            this.attributes = new HashMap<>(attributes);
+        }
+    }
+
+    public String getAttributesAsString() {
+        if (this.attributes == null) {
+            return this.remark;
+        }
+        return JSON.toJSONString(this.attributes);
+    }
+
     @Override
     public String toString() {
         return JSON.toJSONString(this);
     }
-
 }

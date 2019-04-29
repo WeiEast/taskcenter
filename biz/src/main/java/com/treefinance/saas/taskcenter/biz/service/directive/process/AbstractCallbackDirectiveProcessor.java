@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.ImmutableMap;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
@@ -85,27 +85,18 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
     protected void precallback(CallbackEntity callbackEntity, DirectiveContext context) {
         // 使用商户密钥加密数据，返回给前端
         Map<String, Object> paramMap = new HashMap<>(2);
-        String remark = context.getRemark();
-        if (StringUtils.isNotEmpty(remark)) {
-            try {
-                Map<String, Object> jsonObject = JSON.parseObject(remark);
-                if (MapUtils.isNotEmpty(jsonObject)) {
-                    paramMap.put(Constants.ERROR_MSG_NAME, jsonObject.get(Constants.ERROR_MSG_NAME));
-
-                }
-            } catch (Exception e) {
-                logger.warn(e.getMessage(), e);
-            }
+        final Object attrValue = context.getAttributeValue(Constants.ERROR_MSG_NAME);
+        if (attrValue != null) {
+            paramMap.put(Constants.ERROR_MSG_NAME, attrValue);
         }
 
         try {
-
             String params = encryptByRSA(callbackEntity, context);
             paramMap.put("params", params);
-            context.setRemark(JSON.toJSONString(paramMap));
+            context.resetAttributes(paramMap);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            context.setRemark(JSON.toJSONString("指令信息处理失败"));
+            context.resetAttributes(ImmutableMap.of(Constants.ERROR_MSG_NAME, "指令信息处理失败"));
         }
     }
 
@@ -189,7 +180,7 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
      */
     protected CallbackEntity buildCallbackEntity(DirectiveContext context) {
         // 1. 初始化回调数据 并填充uniqueId、taskId、taskStatus、sourceId
-        final JSONObject initialAttrs = JSON.parseObject(context.getRemark());
+        final Map<String, Object> initialAttrs = context.getAttributes();
 
         CallbackEntity entity = initialAttrs == null ? new CallbackEntity() : new CallbackEntity(initialAttrs);
 
@@ -321,16 +312,7 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
                 SimpleResult simpleResult = JSON.parseObject(result, SimpleResult.class);
                 String errorMsg = simpleResult == null ? null : simpleResult.getErrorMsg();
                 if (StringUtils.isNotEmpty(errorMsg)) {
-                    Map<String, Object> remarkMap;
-                    String remark = StringUtils.trim(context.getRemark());
-                    if (StringUtils.isNotEmpty(remark)) {
-                        remarkMap = JSON.parseObject(remark);
-                    } else {
-                        remarkMap = new HashMap<>(1);
-                    }
-                    remarkMap.put(Constants.ERROR_MSG_NAME, errorMsg);
-
-                    context.setRemark(JSON.toJSONString(remarkMap));
+                    context.putAttribute(Constants.ERROR_MSG_NAME, errorMsg);
                 }
             }
         } catch (Exception e) {

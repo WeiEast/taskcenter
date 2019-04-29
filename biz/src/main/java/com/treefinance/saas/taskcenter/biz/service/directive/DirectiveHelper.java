@@ -36,7 +36,7 @@ public final class DirectiveHelper {
         directiveEntity.setTaskId(context.getTaskId());
         directiveEntity.setDirective(context.getDirectiveString());
         directiveEntity.setDirectiveId(context.getDirectiveId());
-        directiveEntity.setRemark(context.getRemark());
+        directiveEntity.setRemark(context.getAttributesAsString());
 
         return directiveEntity;
     }
