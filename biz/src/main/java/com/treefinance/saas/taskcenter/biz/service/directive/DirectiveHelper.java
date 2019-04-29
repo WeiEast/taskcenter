@@ -28,7 +28,7 @@ public final class DirectiveHelper {
     /**
      * 创建{@link DirectiveEntity}
      * 
-     * @param context {@link DirectivePacket}
+     * @param context {@link DirectiveContext}
      * @return {@link DirectiveEntity}
      */
     public static DirectiveEntity buildDirectiveEntity(DirectiveContext context) {

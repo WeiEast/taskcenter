@@ -32,19 +32,19 @@ public class TaskNextDirectiveFacadeImpl extends AbstractFacade implements TaskN
 
     @Override
     public TaskResult<String> getNextDirective(Long taskId) {
-        String directive = taskNextDirectiveService.getNextDirective(taskId);
+        String directive = taskNextDirectiveService.queryPresentDirectiveAsJson(taskId);
         return TaskResult.wrapSuccessfulResult(directive);
     }
 
     @Override
     public TaskResult<Void> deleteNextDirective(Long taskId) {
-        taskNextDirectiveService.deleteNextDirective(taskId);
+        taskNextDirectiveService.awaitNext(taskId);
         return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override
     public TaskResult<Void> deleteNextDirective(Long taskId, String directive) {
-        taskNextDirectiveService.deleteNextDirective(taskId, directive);
+        taskNextDirectiveService.compareAndEnd(taskId, directive);
         return TaskResult.wrapSuccessfulResult(null);
     }
 }

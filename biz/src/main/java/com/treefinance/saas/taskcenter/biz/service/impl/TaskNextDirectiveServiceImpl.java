@@ -14,12 +14,11 @@
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
 import com.treefinance.saas.taskcenter.dao.repository.TaskNextDirectiveRepository;
-import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
+import com.treefinance.saas.taskcenter.exception.UnexpectedException;
 import com.treefinance.saas.taskcenter.service.domain.DirectiveEntity;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedissonLocks;
@@ -52,11 +51,6 @@ public class TaskNextDirectiveServiceImpl implements TaskNextDirectiveService {
     private RedissonLocks redissonLocks;
 
     @Override
-    public TaskNextDirective getLastDirectiveByTaskId(@Nonnull Long taskId) {
-        return taskNextDirectiveRepository.getLastDirectiveByTaskId(taskId);
-    }
-
-    @Override
     public List<TaskNextDirective> listDirectivesDescWithCreateTimeByTaskId(@Nonnull Long taskId) {
         return taskNextDirectiveRepository.listDirectivesDescWithCreateTimeByTaskId(taskId);
     }
@@ -68,15 +62,6 @@ public class TaskNextDirectiveServiceImpl implements TaskNextDirectiveService {
         return taskNextDirective.getId();
     }
 
-    @Override
-    public Long insert(@Nonnull DirectiveEntity directiveEntity) {
-        Long taskId = directiveEntity.getTaskId();
-        String directive = directiveEntity.getDirective();
-        String remark = directiveEntity.getRemark();
-        TaskNextDirective taskNextDirective = taskNextDirectiveRepository.insertDirective(taskId, directive, remark);
-
-        return taskNextDirective.getId();
-    }
 
     @Override
     public void saveDirective(@Nonnull DirectiveEntity directiveEntity) {
@@ -104,50 +89,105 @@ public class TaskNextDirectiveServiceImpl implements TaskNextDirectiveService {
         return LOCK_KEY + taskId;
     }
 
-    @Override
-    public String getNextDirective(@Nonnull Long taskId) {
+    private String readCachedDirective(@Nonnull Long taskId) {
         String key = generaRedisKey(taskId);
-        String value = redisDao.get(key);
+        return StringUtils.trim(redisDao.get(key));
+    }
 
-        if (StringUtils.isBlank(value)) {
-            TaskNextDirective taskNextDirective = this.getLastDirectiveByTaskId(taskId);
-            if (taskNextDirective != null) {
-                DirectivePacket directivePacket = new DirectivePacket();
-                directivePacket.setTaskId(taskNextDirective.getTaskId());
-                directivePacket.setDirective(EDirective.directiveOf(taskNextDirective.getDirective()));
-                directivePacket.setRemark(taskNextDirective.getRemark());
+    @Override
+    public DirectiveEntity queryPresentDirective(@Nonnull Long taskId) {
+        String value = readCachedDirective(taskId);
 
-                value = JSON.toJSONString(directivePacket);
+        if (StringUtils.isNotEmpty(value)) {
+            return JSON.parseObject(value, DirectiveEntity.class);
+        }
+
+        String lockKey = getLockKey(taskId);
+        try {
+            return redissonLocks.tryLock(lockKey, 5, 60, TimeUnit.SECONDS, isLock -> {
+                DirectiveEntity directiveEntity = null;
+                TaskNextDirective taskDirective = taskNextDirectiveRepository.getLastDirectiveByTaskId(taskId);
+                if (taskDirective != null) {
+                    directiveEntity = new DirectiveEntity();
+                    directiveEntity.setTaskId(taskDirective.getTaskId());
+                    directiveEntity.setDirective(taskDirective.getDirective());
+                    directiveEntity.setRemark(taskDirective.getRemark());
+
+                    if (isLock) {
+                        cacheDirective(directiveEntity);
+                    }
+                }
+                return directiveEntity;
+            });
+        } catch (InterruptedException e) {
+            throw new UnexpectedException("Unexpected exception when querying present directive! - taskId:" + taskId, e);
+        }
+    }
+
+    @Override
+    public String queryPresentDirectiveAsJson(@Nonnull Long taskId) {
+        String value = readCachedDirective(taskId);
+
+        if (StringUtils.isEmpty(value)) {
+            String lockKey = getLockKey(taskId);
+            try {
+                value = redissonLocks.tryLock(lockKey, 5, 60, TimeUnit.SECONDS, isLock -> {
+                    DirectiveEntity directiveEntity;
+                    TaskNextDirective taskDirective = taskNextDirectiveRepository.getLastDirectiveByTaskId(taskId);
+                    if (taskDirective != null) {
+                        directiveEntity = new DirectiveEntity();
+                        directiveEntity.setTaskId(taskDirective.getTaskId());
+                        directiveEntity.setDirective(taskDirective.getDirective());
+                        directiveEntity.setRemark(taskDirective.getRemark());
+
+                        if (isLock) {
+                            return cacheDirective(directiveEntity);
+                        }
+                        return JSON.toJSONString(directiveEntity);
+                    }
+
+                    return null;
+                });
+            } catch (InterruptedException e) {
+                throw new UnexpectedException("Unexpected exception when querying present directive! - taskId:" + taskId, e);
             }
         }
+
         return value;
     }
 
     @Override
-    public void deleteNextDirective(@Nonnull Long taskId) {
-        redisDao.deleteKey(generaRedisKey(taskId));
-        this.insert(taskId, "waiting", "请等待");
+    public void awaitNext(@Nonnull Long taskId) {
+        logger.info("新增过渡指令 >> {}, taskId: {}", EDirective.WAITING, taskId);
+        DirectiveEntity directiveEntity = new DirectiveEntity();
+        directiveEntity.setTaskId(taskId);
+        directiveEntity.setDirective(EDirective.WAITING.getText());
+        directiveEntity.setRemark("请等待");
+
+        this.saveDirective(directiveEntity);
     }
 
     @Override
-    public void deleteNextDirective(@Nonnull Long taskId, @Nullable String directive) {
+    public void compareAndEnd(@Nonnull Long taskId, @Nullable String directive) {
         if (StringUtils.isNotEmpty(directive)) {
-            String value = this.getNextDirective(taskId);
-            if (StringUtils.isNotEmpty(value)) {
-                JSONObject jasonObject = JSON.parseObject(value);
-                String existDirective = jasonObject.getString("directive");
-                if (directive.equals(existDirective)) {
-                    this.deleteNextDirective(taskId);
-                    logger.info("taskId={},下一指令信息={}已删除", taskId, existDirective);
+            String lockKey = getLockKey(taskId);
+            redissonLocks.lock(lockKey, () -> {
+                final DirectiveEntity directiveEntity = this.queryPresentDirective(taskId);
+                if(directiveEntity != null){
+                    String existDirective = directiveEntity.getDirective();
+                    if (directive.equals(existDirective)) {
+                        this.awaitNext(taskId);
+                        logger.info("当前指令\"{}\"已结束，等待下个指令！taskId: {}", directive, taskId);
+                    } else {
+                        logger.warn("当前指令已更新，和指定指令不一致，拒绝结束操作！taskId: {}, 当前指令: {}, 目标指令: {}", taskId, existDirective, directive);
+                    }
                 } else {
-                    logger.info("taskId={},需要删除的指令信息={}和缓存的指令信息={}不一致", taskId, directive, existDirective);
+                    logger.warn("taskId={}, 指令\"{}\"不存在", taskId, directive);
                 }
-            } else {
-                logger.info("taskId={},下一指令信息={}不存在", taskId, directive);
-            }
+            });
         } else {
-            this.deleteNextDirective(taskId);
-            logger.info("taskId={},下一指令信息已删除", taskId);
+            this.awaitNext(taskId);
+            logger.info("当前指令已结束，等待下个指令！taskId: {}", taskId);
         }
     }
 

@@ -27,14 +27,6 @@ import java.util.List;
  */
 public interface TaskNextDirectiveService {
 
-    /**
-     * 查询最近一条指令记录
-     *
-     * @param taskId 任务ID
-     * @return the latest {@link TaskNextDirective}
-     */
-    TaskNextDirective getLastDirectiveByTaskId(@Nonnull Long taskId);
-
     List<TaskNextDirective> listDirectivesDescWithCreateTimeByTaskId(@Nonnull Long taskId);
 
     /**
@@ -59,24 +51,45 @@ public interface TaskNextDirectiveService {
         return this.insert(taskId, directive, null);
     }
 
-    Long insert(@Nonnull DirectiveEntity directiveObject);
+    /**
+     * 添加一条指令记录
+     *
+     * @param directiveEntity 指令信息
+     * @return the id of {@link TaskNextDirective}
+     * @see #insert(Long, String, String)
+     */
+    default Long insert(@Nonnull DirectiveEntity directiveEntity) {
+        Long taskId = directiveEntity.getTaskId();
+        String directive = directiveEntity.getDirective();
+        String remark = directiveEntity.getRemark();
+
+        return this.insert(taskId, directive, remark);
+    }
 
     void saveDirective(@Nonnull DirectiveEntity directive);
 
     /**
-     * 获取指令
+     *  获取当前的指令信息
      *
      * @param taskId 任务ID
-     * @return 指令
+     * @return 指令信息 {@link DirectiveEntity}
      */
-    String getNextDirective(@Nonnull Long taskId);
+    DirectiveEntity queryPresentDirective(@Nonnull Long taskId);
+
+    /**
+     *  获取当前的指令信息
+     * 
+     * @param taskId 任务ID
+     * @return 指令信息 {@link DirectiveEntity} 序列化后的json字符串
+     */
+    String queryPresentDirectiveAsJson(@Nonnull Long taskId);
 
     /**
      * 删除指令。注意：数据库中的指令是只插入的,所以这里的删除指插入waiting指令
      *
      * @param taskId 任务ID
      */
-    void deleteNextDirective(@Nonnull Long taskId);
+    void awaitNext(@Nonnull Long taskId);
 
-    void deleteNextDirective(@Nonnull Long taskId, @Nullable String directive);
+    void compareAndEnd(@Nonnull Long taskId, @Nullable String directive);
 }
