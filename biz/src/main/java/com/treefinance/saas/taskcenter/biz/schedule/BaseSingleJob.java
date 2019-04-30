@@ -15,6 +15,7 @@ package com.treefinance.saas.taskcenter.biz.schedule;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +30,15 @@ public abstract class BaseSingleJob implements SimpleJob {
     @Override
     public final void execute(ShardingContext shardingContext) {
         if (shardingContext.getShardingItem() == 0) {
-            logger.info("Running leader job: {}", getClass().getSimpleName());
-
+            final String simpleName = getClass().getSimpleName();
+            logger.info("Starting schedule job: {}", simpleName);
+            final Stopwatch stopwatch = Stopwatch.createStarted();
             try {
                 this.process();
             } catch (Throwable e) {
                 logger.error("Unexpected exception when running leader job!", e);
+            } finally {
+                logger.info("Completed schedule job: {}, cost: {}", simpleName, stopwatch);
             }
         }
     }
