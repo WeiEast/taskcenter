@@ -6,5 +6,6 @@
   <import resource="task-center-diamond.xml"/>
   <import resource="task-center-dubbo-registry.xml"/>
   <import resource="classpath*:spring/task-center-service.xml"/>
+  <import resource="classpath*:spring/spring-job.xml"/>
 
 </beans>

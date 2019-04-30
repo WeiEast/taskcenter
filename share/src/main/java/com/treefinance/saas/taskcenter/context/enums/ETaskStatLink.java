@@ -13,16 +13,18 @@ import java.util.List;
  */
 public enum ETaskStatLink {
 
-    TASK_CREATE("任务创建", "taskCreate", "任务创建", "task_log"), LOGIN_SUCCESS("登陆成功", "loginSuccess", "登陆成功", "task_log"), CRAWL_SUCCESS("抓取成功", "crawlSuccess", "抓取成功", "task_log"),
-    DATA_SAVE_SUCCESS("数据保存成功", "dataSaveSuccess", "洗数成功", "task_log"), CALLBACK_SUCCESS("回调通知成功", "callbackSuccess", "回调通知成功", "task_log"),
+    TASK_CREATE("任务创建", "taskCreate", "任务创建", "task_log"),
+    LOGIN_SUCCESS("登陆成功", "loginSuccess", "登陆成功", "task_log"),
+    CRAWL_SUCCESS("抓取成功", "crawlSuccess", "抓取成功", "task_log"),
+    DATA_SAVE_SUCCESS("数据保存成功", "dataSaveSuccess", "洗数成功", "task_log"),
+    CALLBACK_SUCCESS("回调通知成功", "callbackSuccess", "回调通知成功", "task_log"),
     TASK_SUCCESS("任务成功", "taskSuccess", "任务成功", "task_log"),
-
     NO_DATA("无数据", "noData", "无数据", "self-define");
 
-    private String stepCode;
-    private String statCode;
-    private String desc;
-    private String source;
+    private final String stepCode;
+    private final String statCode;
+    private final String desc;
+    private final String source;
 
     ETaskStatLink(String stepCode, String statCode, String desc, String source) {
         this.stepCode = stepCode;
@@ -95,31 +97,15 @@ public enum ETaskStatLink {
         return stepCode;
     }
 
-    public void setStepCode(String stepCode) {
-        this.stepCode = stepCode;
-    }
-
     public String getStatCode() {
         return statCode;
-    }
-
-    public void setStatCode(String statCode) {
-        this.statCode = statCode;
     }
 
     public String getDesc() {
         return desc;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
-
     public String getSource() {
         return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
     }
 }

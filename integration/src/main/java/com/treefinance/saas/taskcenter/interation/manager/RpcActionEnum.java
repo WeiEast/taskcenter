@@ -56,9 +56,27 @@ public enum RpcActionEnum {
      */
     QUERY_BIZ_TYPE_LIST_ASSIGNED,
     /**
+     * 根据callbackId查询callback_biz信息
+     */
+    QUERY_APP_CALLBACK_BIZ_BY_CALLBACK_ID,
+    /**
+     * 查询
+     */
+    QUERY_APP_CALLBACK_BIZ_ALL,
+    /**
+     * 根据appId查询callback配置
+     */
+    QUERY_APP_CALLBACK_CONFIG_BY_APP_ID,
+    /**
+     * 查询全部的callback配置
+     */
+    QUERY_APP_CALLBACK_CONFIG_ALL,
+    /**
      * 根据指定的taskId列表查询任务日志
      */
     QUERY_TASK_LOG_ASSIGNED_TASK_IDS,
+
+    QUERY_FUNDS_EX,
 
     /**
      * 查询商户每天的访问统计记录的集合
@@ -80,5 +98,13 @@ public enum RpcActionEnum {
      * 查询saas每天的ErrorStep统计记录
      */
     STATISTICS_ERROR_STEP_DAILY_RECORDS,
+    /**
+     * 取消爬取任务
+     */
+    SPIDER_TASK_CANCEL,
+    /**
+     * 根appId查询商户的一些功能配置，比如埋点同步配置等等
+     */
+    QUERY_MERCHANT_FUNCTION_BY_APP_ID
 
 }

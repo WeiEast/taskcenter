@@ -39,5 +39,7 @@ public final class Constants {
      */
     public static final Byte NO = Byte.valueOf("0");
 
+    public static final Byte DATA_TYPE_0 = Byte.valueOf("0");
+
     private Constants() {}
 }

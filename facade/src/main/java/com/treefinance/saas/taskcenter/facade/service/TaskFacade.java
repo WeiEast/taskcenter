@@ -6,6 +6,7 @@ import com.treefinance.saas.taskcenter.facade.request.TaskCreateRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskPagingQueryRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskQueryRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskStepLogRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskUpdateRequest;
 import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.CompositeTaskAttrDTO;
@@ -244,4 +245,12 @@ public interface TaskFacade {
      */
     TaskResponse<Void> cancelTask(Long taskId);
 
+    /**
+     * 结束任务并发送监控消息
+     * 
+     * @param taskId 任务ID
+     * @param logList 任务结束状态日志
+     * @return Void
+     */
+    TaskResponse<Void> completeTaskAndMonitoring(Long taskId, List<TaskStepLogRequest> logList);
 }

@@ -2,9 +2,9 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
-import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
-import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
+import com.treefinance.saas.taskcenter.service.domain.TaskUpdateResult;
+import com.treefinance.saas.taskcenter.service.param.TaskCreateObject;
+import com.treefinance.saas.taskcenter.service.param.TaskUpdateObject;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
@@ -17,6 +17,7 @@ import com.treefinance.saas.taskcenter.facade.request.TaskCreateRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskPagingQueryRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskQueryRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskStepLogRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskUpdateRequest;
 import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.CompositeTaskAttrDTO;
@@ -29,6 +30,7 @@ import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskFacade;
 import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
+import com.treefinance.saas.taskcenter.service.param.TaskStepLogObject;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -502,6 +504,18 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
         Preconditions.notNull("taskId", taskId);
 
         taskService.cancelTask(taskId);
+
+        return TaskResponse.success(null);
+    }
+
+    @Override
+    public TaskResponse<Void> completeTaskAndMonitoring(Long taskId, List<TaskStepLogRequest> logList) {
+        Preconditions.notNull("taskId", taskId);
+        if (CollectionUtils.isNotEmpty(logList)) {
+            List<TaskStepLogObject> logs = convert(logList, TaskStepLogObject.class);
+
+            taskService.completeTaskAndMonitoring(taskId, logs);
+        }
 
         return TaskResponse.success(null);
     }

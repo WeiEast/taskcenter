@@ -17,7 +17,7 @@ import com.google.gson.reflect.TypeToken;
 import com.treefinance.saas.taskcenter.biz.mq.model.LoginMessage;
 import com.treefinance.saas.taskcenter.biz.service.AcquisitionService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.biz.service.TaskTimeService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.share.mq.MessageProducer;
 import com.treefinance.toolkit.util.json.GsonUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +41,7 @@ public class AcquisitionServiceImpl implements AcquisitionService {
     @Autowired
     private TaskService taskService;
     @Autowired
-    private TaskTimeService taskTimeService;
+    private TaskAttributeService taskAttributeService;
 
     @Override
     public void acquisition(Long taskid, String header, String cookie, String url, String website, String accountNo, String topic, String extra) {
@@ -71,7 +71,7 @@ public class AcquisitionServiceImpl implements AcquisitionService {
 
         taskService.updateAccountNoAndWebsiteIfNeedWhenProcessing(taskid, accountNo, website);
 
-        taskTimeService.updateLoginTime(taskid, new Date());
+        taskAttributeService.saveLoginTime(taskid, new Date());
     }
 
 }

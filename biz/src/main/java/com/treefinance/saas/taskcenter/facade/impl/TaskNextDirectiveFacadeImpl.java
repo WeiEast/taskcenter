@@ -2,8 +2,6 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.facade.request.TaskDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskNextDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.result.TaskNextDirectiveRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
@@ -33,40 +31,20 @@ public class TaskNextDirectiveFacadeImpl extends AbstractFacade implements TaskN
     }
 
     @Override
-    public TaskResult<Long> insert(Long taskId, String directive, String remark) {
-        Long id = taskNextDirectiveService.insert(taskId, directive, remark);
-        return TaskResult.wrapSuccessfulResult(id);
-    }
-
-    @Override
-    public TaskResult<TaskNextDirectiveRO> queryRecentDirective(Long taskId) {
-        TaskNextDirective taskNextDirective = taskNextDirectiveService.getLastDirectiveByTaskId(taskId);
-        TaskNextDirectiveRO taskNextDirectiveRO = convert(taskNextDirective, TaskNextDirectiveRO.class);
-        return TaskResult.wrapSuccessfulResult(taskNextDirectiveRO);
-    }
-
-    @Override
-    public TaskResult<Void> insertAndCacheNextDirective(Long taskId, TaskDirectiveRequest directive) {
-        DirectiveDTO directiveDTO = convertStrict(directive, DirectiveDTO.class);
-        taskNextDirectiveService.insertAndCacheNextDirective(taskId, directiveDTO);
-        return TaskResult.wrapSuccessfulResult(null);
-    }
-
-    @Override
     public TaskResult<String> getNextDirective(Long taskId) {
-        String directive = taskNextDirectiveService.getNextDirective(taskId);
+        String directive = taskNextDirectiveService.queryPresentDirectiveAsJson(taskId);
         return TaskResult.wrapSuccessfulResult(directive);
     }
 
     @Override
     public TaskResult<Void> deleteNextDirective(Long taskId) {
-        taskNextDirectiveService.deleteNextDirective(taskId);
+        taskNextDirectiveService.awaitNext(taskId);
         return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override
     public TaskResult<Void> deleteNextDirective(Long taskId, String directive) {
-        taskNextDirectiveService.deleteNextDirective(taskId, directive);
+        taskNextDirectiveService.compareAndEnd(taskId, directive);
         return TaskResult.wrapSuccessfulResult(null);
     }
 }

@@ -4,10 +4,14 @@ package com.treefinance.saas.taskcenter.context.enums;
  * Created by yh-treefinance on 2017/12/19.
  */
 public enum EGrapStatus {
-    SUCCESS("001", "抓取成功"), FAIL("002", "抓取失败"), RESULT_EMPTY("003", "抓取结果为空"), CANCEL("004", "任务取消"), NO_NEED_CRAWLER("005", "无需爬取");
+    SUCCESS("001", "抓取成功"),
+    FAIL("002", "抓取失败"),
+    RESULT_EMPTY("003", "抓取结果为空"),
+    CANCEL("004", "任务取消"),
+    NO_NEED_CRAWLER("005", "无需爬取");
 
-    private String code;
-    private String name;
+    private final String code;
+    private final String name;
 
     EGrapStatus(String code, String name) {
         this.code = code;

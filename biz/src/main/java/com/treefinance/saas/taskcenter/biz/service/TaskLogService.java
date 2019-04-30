@@ -13,7 +13,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 

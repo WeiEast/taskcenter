@@ -15,32 +15,36 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
-import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
-import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
+import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
-import com.treefinance.saas.taskcenter.biz.service.AbstractService;
-import com.treefinance.saas.taskcenter.context.enums.EDirective;
-import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
-import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
+import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskParams;
 import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import com.treefinance.saas.taskcenter.service.domain.TaskUpdateResult;
+import com.treefinance.saas.taskcenter.service.impl.AbstractService;
+import com.treefinance.saas.taskcenter.service.param.TaskCreateObject;
+import com.treefinance.saas.taskcenter.service.param.TaskStepLogObject;
+import com.treefinance.saas.taskcenter.service.param.TaskUpdateObject;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +57,6 @@ import javax.annotation.Nullable;
 import javax.validation.ValidationException;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,8 +70,6 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     private static final Byte[] DONE_STATUSES = {ETaskStatus.CANCEL.getStatus(), ETaskStatus.SUCCESS.getStatus(), ETaskStatus.FAIL.getStatus()};
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    // 任务附加属性sourceId
-    private final String sourceId = "sourceId";
     @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
@@ -77,6 +78,10 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     private DirectiveService directiveService;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private TaskLifecycleService taskLifecycleService;
+    @Autowired
+    private MonitorService monitorService;
 
     @Override
     public List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskAttrCompositeQuery query) {
@@ -89,26 +94,20 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     }
 
     @Override
-    public TaskDTO getById(Long taskId) {
+    public AttributedTaskInfo getAttributedTaskInfo(@Nonnull Long taskId, String... attrNames) {
         Task task = getTaskById(taskId);
 
-        return convert(task, TaskDTO.class);
-    }
+        AttributedTaskInfo taskInfo = convertStrict(task, AttributedTaskInfo.class);
 
-    @Override
-    public TaskDTO getTaskandAttribute(Long taskId) {
-
-        String[] strings = new String[] {sourceId};
-        Task task = getTaskById(taskId);
-        List<TaskAttribute> taskAttributeList = taskAttributeService.listTaskAttributesByTaskIdAndInNames(taskId, strings, false);
-        TaskDTO taskDTO = convert(task, TaskDTO.class);
-        if (!org.springframework.util.ObjectUtils.isEmpty(taskAttributeList)) {
-            Map<String, Object> resultMap = new HashMap(1);
-            resultMap.put(sourceId, taskAttributeList.get(0));
-            taskDTO.setAttributes(resultMap);
+        Map<String, String> attributeMap;
+        if (ArrayUtils.isNotEmpty(attrNames)) {
+            attributeMap = taskAttributeService.getAttributeMapByTaskIdAndInNames(taskId, attrNames, false);
+        } else {
+            attributeMap = taskAttributeService.getAttributeMapByTaskId(taskId, false);
         }
+        taskInfo.setAttributes(attributeMap);
 
-        return taskDTO;
+        return taskInfo;
     }
 
     @Override
@@ -140,6 +139,13 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     }
 
     @Override
+    public TaskInfo getTaskInfoById(@Nonnull Long taskId) {
+        Task task = taskRepository.getTaskById(taskId);
+
+        return convert(task, TaskInfo.class);
+    }
+
+    @Override
     public Byte getTaskStatusById(@Nonnull Long taskId) {
         Task task = taskRepository.getTaskById(taskId);
 
@@ -150,6 +156,19 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     public boolean isTaskCompleted(Long taskId) {
         Byte status = getTaskStatusById(taskId);
         return isCompleted(status);
+    }
+
+    @Override
+    public boolean isCompleted(Byte status) {
+        if (status != null) {
+            for (Byte item : DONE_STATUSES) {
+                if (item.equals(status)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -310,23 +329,32 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         Task task = taskRepository.getTaskById(taskId);
         if (ETaskStatus.isRunning(task.getStatus())) {
             logger.info("正在取消任务 : taskId={} ", taskId);
-            DirectiveDTO cancelDirective = new DirectiveDTO();
-            cancelDirective.setTaskId(taskId);
-            cancelDirective.setDirective(EDirective.TASK_CANCEL.getText());
-            directiveService.process(cancelDirective);
+            directiveService.process(new DirectivePacket(EDirective.TASK_CANCEL, taskId));
+            // 删除记录的任务活跃时间
+            taskLifecycleService.deleteAliveTime(taskId);
         }
     }
 
-    private boolean isCompleted(Byte status) {
-        if (status != null) {
-            for (Byte item : DONE_STATUSES) {
-                if (item.equals(status)) {
-                    return true;
-                }
-            }
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void completeTaskAndMonitoring(@Nonnull Long taskId, @Nonnull List<TaskStepLogObject> logList) {
+        if (CollectionUtils.isEmpty(logList)) {
+            return;
         }
 
-        return false;
+        for (TaskStepLogObject log : logList) {
+            String stepMsg = log.getStepMsg();
+            if (ETaskStep.TASK_SUCCESS.getText().equals(stepMsg)) {
+                // 任务成功
+                updateStatusWhenProcessing(taskId, ETaskStatus.SUCCESS.getStatus());
+            } else if (ETaskStep.TASK_FAIL.getText().equals(stepMsg)) {
+                // 任务失败
+                updateStatusWhenProcessing(taskId, ETaskStatus.FAIL.getStatus());
+            }
+
+            taskLogService.insertTaskLog(taskId, stepMsg, log.getOccurTime(), log.getErrorMsg());
+        }
+        monitorService.sendMonitorMessage(taskId);
     }
 
     private void setAttribute(Long taskId, Map map) {

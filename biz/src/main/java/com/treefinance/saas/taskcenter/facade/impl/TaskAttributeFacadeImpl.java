@@ -1,7 +1,7 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
@@ -39,7 +39,7 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
         query.setName(request.getName());
         query.setValue(request.getValue());
 
-        List<TaskAttribute> list = taskAttributeService.queryTaskAttributes(query);
+        List<TaskAttribute> list = taskAttributeService.queryAttributes(query);
 
         List<TaskAttributeRO> attributeROList = convert(list, TaskAttributeRO.class);
 
@@ -48,7 +48,7 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
 
     @Override
     public TaskResult<List<TaskAttributeRO>> queryTaskAttributeByTaskId(TaskAttributeRequest request) {
-        List<TaskAttribute> list = taskAttributeService.listTaskAttributesByNameAndInTaskIds(request.getName(), request.getTaskIds());
+        List<TaskAttribute> list = taskAttributeService.listAttributesInTaskIdsAndByName(request.getTaskIds(), request.getName());
 
         List<TaskAttributeRO> taskAttributeROS = convert(list, TaskAttributeRO.class);
 
@@ -59,7 +59,7 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
     public TaskResult<Map<String, TaskAttributeRO>> findByNames(Long taskId, boolean decrypt, String... names) {
         Map<String, TaskAttributeRO> result;
 
-        List<TaskAttribute> attributes = taskAttributeService.listTaskAttributesByTaskIdAndInNames(taskId, names, decrypt);
+        List<TaskAttribute> attributes = taskAttributeService.listAttributesByTaskIdAndInNames(taskId, names, decrypt);
         if (CollectionUtils.isNotEmpty(attributes)) {
             result = Maps.newHashMap();
             for (TaskAttribute attribute : attributes) {
@@ -93,7 +93,7 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
 
     @Override
     public TaskResult<TaskAttributeRO> findByName(Long taskId, String name, boolean decrypt) {
-        TaskAttribute taskAttribute = taskAttributeService.findByName(taskId, name, decrypt);
+        TaskAttribute taskAttribute = taskAttributeService.queryAttributeByTaskIdAndName(taskId, name, decrypt);
         if (taskAttribute == null) {
             return TaskResult.wrapSuccessfulResult(null);
         }
@@ -103,14 +103,14 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
 
     @Override
     public TaskResult<TaskAttributeRO> findByNameAndValue(String name, String value, boolean encrypt) {
-        TaskAttribute taskAttribute = taskAttributeService.findByNameAndValue(name, value, encrypt);
+        TaskAttribute taskAttribute = taskAttributeService.queryAttributeByNameAndValue(name, value, encrypt);
         TaskAttributeRO taskAttributeRO = convert(taskAttribute, TaskAttributeRO.class);
         return TaskResult.wrapSuccessfulResult(taskAttributeRO);
     }
 
     @Override
     public TaskResult<List<TaskAttributeRO>> findByTaskId(Long taskId) {
-        List<TaskAttribute> taskAttributeList = taskAttributeService.findByTaskId(taskId);
+        List<TaskAttribute> taskAttributeList = taskAttributeService.listAttributesByTaskId(taskId);
         List<TaskAttributeRO> taskAttributeROList = convert(taskAttributeList, TaskAttributeRO.class);
         return TaskResult.wrapSuccessfulResult(taskAttributeROList);
     }
