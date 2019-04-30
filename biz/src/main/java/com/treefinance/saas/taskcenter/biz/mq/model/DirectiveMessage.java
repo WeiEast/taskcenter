@@ -21,6 +21,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.annotation.Nonnull;
+
 import java.io.Serializable;
 
 /**
@@ -63,7 +65,7 @@ public class DirectiveMessage implements Serializable {
         this.taskId = taskId;
     }
 
-    public static DirectiveMessage from(EDirective directive, Long taskId) {
-        return new DirectiveMessage(directive.getText(), taskId);
+    public static DirectiveMessage from(@Nonnull EDirective directive, Long taskId) {
+        return new DirectiveMessage(directive.value(), taskId);
     }
 }

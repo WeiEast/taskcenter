@@ -73,7 +73,11 @@ public enum EBizType {
     /**
      * 网查
      */
-    OPINION_DETECT("OPINION_DETECT", (byte)14);
+    OPINION_DETECT("OPINION_DETECT", (byte)14),
+    /**
+     * 网信账单
+     */
+    BILL_WANGXIN_CLEAN("BILL_WANGXIN_CLEAN", (byte)15);
 
     private String text;
     private Byte code;
