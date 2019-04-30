@@ -38,7 +38,7 @@ public class RedisDaoImpl implements RedisDao {
     private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate redisTemplate;
 
     @Override
     public String get(String key) {
