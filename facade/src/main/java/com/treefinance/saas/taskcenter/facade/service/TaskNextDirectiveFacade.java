@@ -3,6 +3,7 @@ package com.treefinance.saas.taskcenter.facade.service;
 import com.treefinance.saas.taskcenter.facade.request.TaskNextDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.DirectiveDTO;
+import com.treefinance.saas.taskcenter.facade.result.SimpleDirectiveDTO;
 import com.treefinance.saas.taskcenter.facade.result.TaskNextDirectiveRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 
@@ -24,6 +25,14 @@ public interface TaskNextDirectiveFacade {
     TaskResult<Void> deleteNextDirective(Long taskId);
 
     TaskResult<Void> deleteNextDirective(Long taskId, String directive);
+
+    /**
+     * 获取全部的指令信息
+     * 
+     * @param taskId 任务ID
+     * @return a list of {@link SimpleDirectiveDTO}
+     */
+    TaskResponse<List<SimpleDirectiveDTO>> queryDirectivesByTaskId(Long taskId);
 
     /**
      * 获取当前最新的指令信息，并以json格式返回
