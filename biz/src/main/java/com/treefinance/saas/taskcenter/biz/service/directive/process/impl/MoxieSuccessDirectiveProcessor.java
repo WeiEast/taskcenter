@@ -49,8 +49,10 @@ public class MoxieSuccessDirectiveProcessor extends AbstractCallbackDirectivePro
         if (result == 0 || result == 1) {
             context.updateTaskStatus(ETaskStatus.SUCCESS);
         } else {
-            // 指令发生变更 ： task_success -> callback_fail
-            taskNextDirectiveService.insert(taskId, context.getDirectiveString());
+            /*  指令发生变更 ： task_success -> temporary_success(过渡) -> callback_fail
+                有风险，尝试用临时成功转移的状态
+                taskNextDirectiveService.insert(taskId, context.getDirectiveString());*/
+            taskNextDirectiveService.insert(taskId, EDirective.TEMPORARY_SUCCESS);
 
             context.updateTaskStatus(ETaskStatus.FAIL);
 

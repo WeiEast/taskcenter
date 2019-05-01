@@ -1,22 +1,31 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.google.common.collect.Maps;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
+import com.treefinance.saas.taskcenter.facade.request.AttributeBatchQueryRequest;
+import com.treefinance.saas.taskcenter.facade.request.MultiAttributeQueryRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
+import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
+import com.treefinance.saas.taskcenter.facade.result.AttributeDTO;
 import com.treefinance.saas.taskcenter.facade.result.TaskAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskAttributeFacade;
+import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author guoguoyun
@@ -24,8 +33,6 @@ import java.util.Map;
  */
 @Component("taskAttributeFacade")
 public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttributeFacade {
-
-    private static final Logger logger = LoggerFactory.getLogger(TaskAttributeFacade.class);
 
     @Autowired
     private TaskAttributeService taskAttributeService;
@@ -113,5 +120,100 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
         List<TaskAttribute> taskAttributeList = taskAttributeService.listAttributesByTaskId(taskId);
         List<TaskAttributeRO> taskAttributeROList = convert(taskAttributeList, TaskAttributeRO.class);
         return TaskResult.wrapSuccessfulResult(taskAttributeROList);
+    }
+
+    @Override
+    public TaskResponse<List<AttributeDTO>> batchQueryAttribute(AttributeBatchQueryRequest request) {
+        List<TaskAttribute> attributes = queryAttributesInTaskIdsAndByName(request);
+
+        List<AttributeDTO> result = convert(attributes, AttributeDTO.class);
+
+        return TaskResponse.success(result);
+    }
+
+    private List<TaskAttribute> queryAttributesInTaskIdsAndByName(AttributeBatchQueryRequest request) {
+        Preconditions.notNull("request", request);
+        Preconditions.notEmpty("request.taskIds", request.getTaskIds());
+        Preconditions.notEmpty("request.name", request.getName());
+        return taskAttributeService.listAttributesInTaskIdsAndByName(request.getTaskIds(), request.getName(), request.isSensitive());
+    }
+
+    @Override
+    public TaskResponse<Map<Long, String>> batchQueryAttributeAsMap(AttributeBatchQueryRequest request) {
+        List<TaskAttribute> attributes = queryAttributesInTaskIdsAndByName(request);
+        Map<Long, String> result;
+        if (CollectionUtils.isNotEmpty(attributes)) {
+            result = attributes.stream().collect(Collectors.toMap(TaskAttribute::getTaskId, TaskAttribute::getValue, (a, b) -> b));
+        } else {
+            result = Collections.emptyMap();
+        }
+        return TaskResponse.success(result);
+    }
+
+    @Override
+    public TaskResponse<Map<String, String>> queryAttributesAsMap(Long taskId, String... names) {
+        Map<String, String> result = taskAttributeService.getAttributeMapByTaskIdAndInNames(taskId, names, false);
+
+        return TaskResponse.success(result);
+    }
+
+    @Override
+    public TaskResponse<Map<String, String>> queryAttributesAsMap(MultiAttributeQueryRequest request) {
+        Preconditions.notNull("request", request);
+        Preconditions.notNull("request.taskId", request.getTaskId());
+        Preconditions.notEmpty("request.nameCondition", request.getNameCondition());
+        Map<String, Boolean> nameCondition = request.getNameCondition();
+        Map<Boolean, Set<String>> conditions =
+            nameCondition.entrySet().stream().collect(Collectors.groupingBy(Entry::getValue, Collectors.mapping(Entry::getKey, Collectors.toSet())));
+
+        Map<String, String> result = new HashMap<>(nameCondition.size());
+        conditions.forEach((sensitive, names) -> {
+            List<TaskAttribute> attributes = taskAttributeService.listAttributesByTaskIdAndInNames(request.getTaskId(), names.toArray(new String[0]), sensitive);
+            if (CollectionUtils.isNotEmpty(attributes)) {
+                for (TaskAttribute attribute : attributes) {
+                    result.put(attribute.getName(), attribute.getValue());
+                }
+            }
+        });
+
+        return TaskResponse.success(result);
+    }
+
+    @Override
+    public TaskResponse<String> queryAttributeValue(Long taskId, String name, boolean sensitive) {
+        Preconditions.notNull("taskId", taskId);
+        String value = null;
+        if (StringUtils.isNotEmpty(name)) {
+            TaskAttribute taskAttribute = taskAttributeService.queryAttributeByTaskIdAndName(taskId, name, sensitive);
+            value = taskAttribute != null ? taskAttribute.getValue() : null;
+        }
+        return TaskResponse.success(value);
+    }
+
+    @Override
+    public TaskResponse<Void> saveAttribute(Long taskId, String name, String value, boolean sensitive) {
+        Preconditions.notNull("taskId", taskId);
+        if (StringUtils.isNotEmpty(name)) {
+            taskAttributeService.insertOrUpdate(taskId, name, value, sensitive);
+        }
+        return TaskResponse.success(null);
+    }
+
+    @Override
+    public TaskResponse<Void> saveLoginTime(Long taskId, Date date) {
+        Preconditions.notNull("taskId", taskId);
+        if (date != null) {
+            taskAttributeService.saveLoginTime(taskId, date);
+        }
+        return TaskResponse.success(null);
+    }
+
+    @Override
+    public TaskResponse<Date> queryLoginTime(Long taskId) {
+        Preconditions.notNull("taskId", taskId);
+
+        Date loginTime = taskAttributeService.queryLoginTime(taskId);
+
+        return TaskResponse.success(loginTime);
     }
 }

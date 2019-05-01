@@ -69,6 +69,8 @@ public interface TaskAttributeService {
 
     List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name);
 
+    List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name, boolean decrypt);
+
     List<TaskAttribute> queryAttributes(@Nonnull TaskAttributeQuery query);
 
     /**

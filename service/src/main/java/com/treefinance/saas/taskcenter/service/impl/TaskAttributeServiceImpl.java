@@ -92,6 +92,11 @@ public class TaskAttributeServiceImpl implements TaskAttributeService {
     }
 
     @Override
+    public List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name, boolean decrypt) {
+        return taskAttributeRepository.listAttributesInTaskIdsAndByName(taskIds, name, decrypt);
+    }
+
+    @Override
     public List<TaskAttribute> queryAttributes(@Nonnull TaskAttributeQuery query) {
         return taskAttributeRepository.queryAttributes(query);
     }

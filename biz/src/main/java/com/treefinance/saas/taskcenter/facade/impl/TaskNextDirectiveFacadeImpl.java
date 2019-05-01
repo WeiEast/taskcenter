@@ -3,9 +3,12 @@ package com.treefinance.saas.taskcenter.facade.impl;
 import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
 import com.treefinance.saas.taskcenter.facade.request.TaskNextDirectiveRequest;
+import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
+import com.treefinance.saas.taskcenter.facade.result.DirectiveDTO;
 import com.treefinance.saas.taskcenter.facade.result.TaskNextDirectiveRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskNextDirectiveFacade;
+import com.treefinance.saas.taskcenter.service.domain.DirectiveEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,5 +49,30 @@ public class TaskNextDirectiveFacadeImpl extends AbstractFacade implements TaskN
     public TaskResult<Void> deleteNextDirective(Long taskId, String directive) {
         taskNextDirectiveService.compareAndEnd(taskId, directive);
         return TaskResult.wrapSuccessfulResult(null);
+    }
+
+    @Override
+    public TaskResponse<String> queryPresentDirectiveAsJson(Long taskId) {
+        final String json = taskNextDirectiveService.queryPresentDirectiveAsJson(taskId);
+        return TaskResponse.success(json);
+    }
+
+    @Override
+    public TaskResponse<DirectiveDTO> queryPresentDirective(Long taskId) {
+        final DirectiveEntity directiveEntity = taskNextDirectiveService.queryPresentDirective(taskId);
+        final DirectiveDTO directive = convert(directiveEntity, DirectiveDTO.class);
+        return TaskResponse.success(directive);
+    }
+
+    @Override
+    public TaskResponse<Void> awaitNext(Long taskId) {
+        taskNextDirectiveService.awaitNext(taskId);
+        return TaskResponse.success(null);
+    }
+
+    @Override
+    public TaskResponse<Void> compareAndEnd(Long taskId, String directive) {
+        taskNextDirectiveService.compareAndEnd(taskId, directive);
+        return TaskResponse.success(null);
     }
 }
