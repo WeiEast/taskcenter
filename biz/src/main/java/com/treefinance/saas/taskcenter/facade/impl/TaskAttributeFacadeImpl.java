@@ -8,6 +8,7 @@ import com.treefinance.saas.taskcenter.facade.request.MultiAttributeQueryRequest
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.AttributeDTO;
+import com.treefinance.saas.taskcenter.facade.result.SimpleAttributeDTO;
 import com.treefinance.saas.taskcenter.facade.result.TaskAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskAttributeFacade;
@@ -18,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -151,8 +153,67 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
     }
 
     @Override
+    public TaskResponse<List<SimpleAttributeDTO>> queryAttributes(Long taskId, String... names) {
+        Preconditions.notNull("taskId", taskId);
+        Preconditions.notEmpty("names", names);
+        final List<TaskAttribute> attributes = taskAttributeService.listAttributesByTaskIdAndInNames(taskId, names, false);
+
+        List<SimpleAttributeDTO> result = convert(attributes, SimpleAttributeDTO.class);
+
+        return TaskResponse.success(result);
+    }
+
+    @Override
+    public TaskResponse<List<SimpleAttributeDTO>> querySensitiveAttributes(Long taskId, String... names) {
+        Preconditions.notNull("taskId", taskId);
+        Preconditions.notEmpty("names", names);
+        final List<TaskAttribute> attributes = taskAttributeService.listAttributesByTaskIdAndInNames(taskId, names, true);
+
+        List<SimpleAttributeDTO> result = convert(attributes, SimpleAttributeDTO.class);
+
+        return TaskResponse.success(result);
+    }
+
+    @Override
+    public TaskResponse<List<SimpleAttributeDTO>> queryAttributes(MultiAttributeQueryRequest request) {
+        Preconditions.notNull("request", request);
+        Preconditions.notNull("request.taskId", request.getTaskId());
+        Preconditions.notEmpty("request.nameCondition", request.getNameCondition());
+        Map<String, Boolean> nameCondition = request.getNameCondition();
+        Map<Boolean, Set<String>> conditions =
+            nameCondition.entrySet().stream().collect(Collectors.groupingBy(Entry::getValue, Collectors.mapping(Entry::getKey, Collectors.toSet())));
+
+        List<SimpleAttributeDTO> result = new ArrayList<>(nameCondition.size());
+        conditions.forEach((sensitive, names) -> {
+            List<TaskAttribute> attributes = taskAttributeService.listAttributesByTaskIdAndInNames(request.getTaskId(), names.toArray(new String[0]), sensitive);
+            if (CollectionUtils.isNotEmpty(attributes)) {
+                SimpleAttributeDTO item;
+                for (TaskAttribute attribute : attributes) {
+                    item = convert(attribute, SimpleAttributeDTO.class);
+                    if (item != null) {
+                        result.add(item);
+                    }
+                }
+            }
+        });
+
+        return TaskResponse.success(result);
+    }
+
+    @Override
     public TaskResponse<Map<String, String>> queryAttributesAsMap(Long taskId, String... names) {
+        Preconditions.notNull("taskId", taskId);
+        Preconditions.notEmpty("names", names);
         Map<String, String> result = taskAttributeService.getAttributeMapByTaskIdAndInNames(taskId, names, false);
+
+        return TaskResponse.success(result);
+    }
+
+    @Override
+    public TaskResponse<Map<String, String>> querySensitiveAttributesAsMap(Long taskId, String... names) {
+        Preconditions.notNull("taskId", taskId);
+        Preconditions.notEmpty("names", names);
+        Map<String, String> result = taskAttributeService.getAttributeMapByTaskIdAndInNames(taskId, names, true);
 
         return TaskResponse.success(result);
     }

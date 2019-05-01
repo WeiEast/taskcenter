@@ -5,6 +5,7 @@ import com.treefinance.saas.taskcenter.facade.request.MultiAttributeQueryRequest
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
 import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.AttributeDTO;
+import com.treefinance.saas.taskcenter.facade.result.SimpleAttributeDTO;
 import com.treefinance.saas.taskcenter.facade.result.TaskAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 
@@ -45,6 +46,9 @@ public interface TaskAttributeFacade {
     @Deprecated
     TaskResult<Long> insert(Long taskId, String name, String value, boolean sensitive);
 
+    /**
+     * @deprecated use {@link #saveAttribute(Long, String, String, boolean)} instead
+     */
     @Deprecated
     TaskResult<Void> insertOrUpdateSelective(Long taskId, String name, String value);
 
@@ -75,9 +79,44 @@ public interface TaskAttributeFacade {
      *
      * @param taskId 任务ID
      * @param names 查询的属性名
+     * @return a list of {@link SimpleAttributeDTO}
+     */
+    TaskResponse<List<SimpleAttributeDTO>> queryAttributes(Long taskId, String... names);
+
+    /**
+     * 查询单任务的多个属性值。注意：查询属性为敏感字段，需要加解密。
+     *
+     * @param taskId 任务ID
+     * @param names 查询的属性名
+     * @return a list of {@link SimpleAttributeDTO}
+     */
+    TaskResponse<List<SimpleAttributeDTO>> querySensitiveAttributes(Long taskId, String... names);
+
+    /**
+     * 查询单任务的多个属性值
+     *
+     * @param request 查询条件
+     * @return a list of {@link SimpleAttributeDTO}
+     */
+    TaskResponse<List<SimpleAttributeDTO>> queryAttributes(MultiAttributeQueryRequest request);
+
+    /**
+     * 查询单任务的多个属性值。注意：查询属性为非敏感字段，不作任何加解密。
+     *
+     * @param taskId 任务ID
+     * @param names 查询的属性名
      * @return a map like "Attribute:name":"Attribute:value"
      */
     TaskResponse<Map<String, String>> queryAttributesAsMap(Long taskId, String... names);
+
+    /**
+     * 查询单任务的多个属性值。注意：查询属性为敏感字段，需要加解密。
+     *
+     * @param taskId 任务ID
+     * @param names 查询的属性名
+     * @return a map like "Attribute:name":"Attribute:value"
+     */
+    TaskResponse<Map<String, String>> querySensitiveAttributesAsMap(Long taskId, String... names);
 
     /**
      * 查询单任务的多个属性值

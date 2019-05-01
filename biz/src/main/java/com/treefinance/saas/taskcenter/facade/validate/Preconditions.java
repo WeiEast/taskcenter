@@ -14,9 +14,9 @@
 package com.treefinance.saas.taskcenter.facade.validate;
 
 import com.treefinance.saas.taskcenter.exception.IllegalParameterException;
-import com.treefinance.toolkit.util.Assert;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
@@ -53,8 +53,6 @@ public final class Preconditions {
 
     /**
      * check if {@code object} is not null.
-     *
-     * @see Assert#notNull(Object, String)
      */
     public static void notNull(final String name, final Object object) {
         if (object == null) {
@@ -64,8 +62,6 @@ public final class Preconditions {
 
     /**
      * check if {@code text} is not blank.
-     *
-     * @see Assert#notBlank(String, String)
      */
     public static void notBlank(final String name, final String text) {
         if (StringUtils.isBlank(text)) {
@@ -75,8 +71,6 @@ public final class Preconditions {
 
     /**
      * check if {@code text} is not null or not empty.
-     *
-     * @see Assert#notEmpty(String, String)
      */
     public static void notEmpty(final String name, final String text) {
         if (StringUtils.isEmpty(text)) {
@@ -86,8 +80,6 @@ public final class Preconditions {
 
     /**
      * check if {@code collection} is not null or not empty.
-     *
-     * @see Assert#notEmpty(String, String)
      */
     public static void notEmpty(final String name, final Collection<?> collection) {
         if (CollectionUtils.isEmpty(collection)) {
@@ -97,11 +89,18 @@ public final class Preconditions {
 
     /**
      * check if {@code map} is not null or not empty.
-     *
-     * @see Assert#notEmpty(String, String)
      */
     public static void notEmpty(final String name, final Map<?,?> map) {
         if (MapUtils.isEmpty(map)) {
+            throw new IllegalParameterException("参数[" + name + "]不能为空！");
+        }
+    }
+
+    /**
+     * check if {@code array} is not null or not empty.
+     */
+    public static void notEmpty(final String name, final Object[] array) {
+        if (ArrayUtils.isEmpty(array)) {
             throw new IllegalParameterException("参数[" + name + "]不能为空！");
         }
     }
