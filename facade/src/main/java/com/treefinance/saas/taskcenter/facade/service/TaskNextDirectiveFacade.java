@@ -22,8 +22,14 @@ public interface TaskNextDirectiveFacade {
      */
     TaskResult<String> getNextDirective(Long taskId);
 
+    /**
+     * @deprecated use {@link #awaitNext(Long)} instead
+     */
     TaskResult<Void> deleteNextDirective(Long taskId);
 
+    /**
+     * @deprecated use {@link #compareAndEnd(Long, String)} instead
+     */
     TaskResult<Void> deleteNextDirective(Long taskId, String directive);
 
     /**
