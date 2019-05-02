@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.service;
+package com.treefinance.saas.taskcenter.facade.request;
 
-import com.treefinance.saas.taskcenter.dao.entity.TaskSupport;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.util.List;
+import java.io.Serializable;
 
 /**
  * @author Jerry
- * @date 2018/11/21 01:07
+ * @date 2019-05-02 21:31
  */
-public interface TaskSupportService {
-
-    List<TaskSupport> getSupportedList(String supportType, Integer id, String type);
+@Getter
+@Setter
+@ToString
+public class TaskSupportQueryRequest implements Serializable {
+    private String category;
+    private String type;
+    private Integer id;
 }

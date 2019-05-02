@@ -261,10 +261,10 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
     }
 
     @Override
-    public TaskResponse<Void> saveLoginTime(Long taskId, Date date) {
+    public TaskResponse<Void> saveLoginTime(Long taskId, Date loginTime) {
         Preconditions.notNull("taskId", taskId);
-        if (date != null) {
-            taskAttributeService.saveLoginTime(taskId, date);
+        if (loginTime != null) {
+            taskAttributeService.saveLoginTime(taskId, loginTime);
         }
         return TaskResponse.success(null);
     }

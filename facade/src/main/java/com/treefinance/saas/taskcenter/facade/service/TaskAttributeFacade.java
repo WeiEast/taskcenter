@@ -151,10 +151,10 @@ public interface TaskAttributeFacade {
      * 保存任务登录时间
      *
      * @param taskId 任务ID
-     * @param date 登录时间
+     * @param loginTime 登录时间
      * @return Void
      */
-    TaskResponse<Void> saveLoginTime(Long taskId, Date date);
+    TaskResponse<Void> saveLoginTime(Long taskId, Date loginTime);
 
     /**
      * 查询登录时间

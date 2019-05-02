@@ -2,6 +2,7 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.treefinance.saas.taskcenter.biz.schedule.detector.TaskAliveTimeDetector;
 import com.treefinance.saas.taskcenter.biz.schedule.detector.TaskTimeoutDetector;
+import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskTimeFacade;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
@@ -46,7 +47,7 @@ public class TaskTimeFacadeImpl implements TaskTimeFacade {
 
     @Override
     public TaskResult<Void> handleTaskTimeout(Long taskId) {
-        LOGGER.info("任务抓取超时异步处理:taskId={}", taskId);
+        LOGGER.info("异步检测超时任务并处理 >>> taskId: {}", taskId);
         threadPoolExecutor.execute(() -> {
             try {
                 taskTimeoutDetector.detect(taskId);
@@ -68,5 +69,18 @@ public class TaskTimeFacadeImpl implements TaskTimeFacade {
             }
         });
         return TaskResult.wrapSuccessfulResult(null);
+    }
+
+    @Override
+    public TaskResponse<Void> processTaskIfTimeout(Long taskId) {
+        LOGGER.info("异步检测超时任务并处理 >>> taskId: {}", taskId);
+        threadPoolExecutor.execute(() -> {
+            try {
+                taskTimeoutDetector.detect(taskId);
+            } catch (InterruptedException e) {
+                LOGGER.error("Task's timeout detector interrupted!", e);
+            }
+        });
+        return TaskResponse.success(null);
     }
 }
