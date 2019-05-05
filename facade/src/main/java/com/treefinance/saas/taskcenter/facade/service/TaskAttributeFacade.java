@@ -3,6 +3,7 @@ package com.treefinance.saas.taskcenter.facade.service;
 import com.treefinance.saas.taskcenter.facade.request.AttributeBatchQueryRequest;
 import com.treefinance.saas.taskcenter.facade.request.MultiAttributeQueryRequest;
 import com.treefinance.saas.taskcenter.facade.request.TaskAttributeRequest;
+import com.treefinance.saas.taskcenter.facade.request.TaskAttributesSaveRequest;
 import com.treefinance.saas.taskcenter.facade.response.TaskResponse;
 import com.treefinance.saas.taskcenter.facade.result.AttributeDTO;
 import com.treefinance.saas.taskcenter.facade.result.SimpleAttributeDTO;
@@ -146,6 +147,14 @@ public interface TaskAttributeFacade {
      * @return Void
      */
     TaskResponse<Void> saveAttribute(Long taskId, String name, String value, boolean sensitive);
+
+    /**
+     * 保存多个属性
+     * 
+     * @param request 保存参数，包含任务ID和保存的属性列表
+     * @return Void
+     */
+    TaskResponse<Void> saveAttributes(TaskAttributesSaveRequest request);
 
     /**
      * 保存任务登录时间
