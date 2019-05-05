@@ -13,7 +13,6 @@
 
 package com.treefinance.saas.taskcenter.facade.result;
 
-import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -22,28 +21,36 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 纯task表数据
  * @author Jerry
- * @date 2018/12/13 21:12
+ * @date 2019-05-02 00:14
  */
 @Getter
 @Setter
 @ToString
-public class SimpleTaskDTO implements Serializable {
+public class SimpleDirectiveDTO implements Serializable {
 
+    /**
+     * 主键ID
+     */
     private Long id;
-    private String appId;
-    private String uniqueId;
-    private String accountNo;
-    private Byte bizType;
-    private String webSite;
-    private String stepCode;
-    private Byte saasEnv;
-    private Byte status;
+    /**
+     * 任务ID
+     */
+    private Long taskId;
+    /**
+     * 指令编码
+     */
+    private String directive;
+    /**
+     * 备注信息
+     */
+    private String remark;
+    /**
+     * 创建时间
+     */
     private Date createTime;
+    /**
+     * 更新时间
+     */
     private Date lastUpdateTime;
-
-    public String getBizTypeName() {
-        return EBizType.getName(bizType);
-    }
 }

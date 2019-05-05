@@ -11,39 +11,39 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.facade.result;
+package com.treefinance.saas.taskcenter.facade.request;
 
-import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * 纯task表数据
  * @author Jerry
- * @date 2018/12/13 21:12
+ * @date 2019-03-11 01:36
  */
 @Getter
 @Setter
 @ToString
-public class SimpleTaskDTO implements Serializable {
+public class MultiAttributeQueryRequest implements Serializable {
+    private Long taskId;
+    private Map<String, Boolean> nameCondition = new HashMap<>();
 
-    private Long id;
-    private String appId;
-    private String uniqueId;
-    private String accountNo;
-    private Byte bizType;
-    private String webSite;
-    private String stepCode;
-    private Byte saasEnv;
-    private Byte status;
-    private Date createTime;
-    private Date lastUpdateTime;
+    public void addName(String name, boolean sensitive) {
+        if (StringUtils.isEmpty(name)) {
+            return;
+        }
+        if (nameCondition == null) {
+            this.nameCondition = new HashMap<>(16);
+        }
+        this.nameCondition.put(name, sensitive);
+    }
 
-    public String getBizTypeName() {
-        return EBizType.getName(bizType);
+    public void addName(String name) {
+        this.addName(name, false);
     }
 }

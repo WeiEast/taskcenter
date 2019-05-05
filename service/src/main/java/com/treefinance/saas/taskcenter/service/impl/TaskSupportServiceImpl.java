@@ -35,8 +35,8 @@ public class TaskSupportServiceImpl implements TaskSupportService {
     private TaskSupportRepository taskSupportRepository;
 
     @Override
-    public List<TaskSupport> getSupportedList(String supportType, Integer id, String name) {
-        return taskSupportRepository.queryEnabledASCWithSort(supportType, id, name);
+    public List<TaskSupport> getSupportedList(String supportType, Integer id, String type) {
+        return taskSupportRepository.queryEnabledASCWithSort(supportType, id, type);
     }
 
 }

@@ -68,16 +68,20 @@ public enum ETaskAttribute {
      */
     SOURCE_ID("sourceId", "APP区分");
 
-    private final String attribute;
+    private final String value;
     private final String desc;
 
-    ETaskAttribute(String attribute, String desc) {
+    ETaskAttribute(String value, String desc) {
+        this.value = value;
         this.desc = desc;
-        this.attribute = attribute;
+    }
+
+    public String value() {
+        return value;
     }
 
     public String getAttribute() {
-        return attribute;
+        return value();
     }
 
     public String getDesc() {

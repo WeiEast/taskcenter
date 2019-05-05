@@ -53,7 +53,7 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
 
     @Override
     public Map<String, String> getAttributeMapByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt) {
-        List<TaskAttribute> attributes = listAttributesByTaskIdAndInNames(taskId, names);
+        List<TaskAttribute> attributes = this.listAttributesByTaskIdAndInNames(taskId, names);
 
         return toMap(attributes, decrypt);
     }
@@ -72,7 +72,7 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
 
     @Override
     public TaskAttribute queryAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name, boolean decrypt) {
-        TaskAttribute attribute = queryAttributeByTaskIdAndName(taskId, name);
+        TaskAttribute attribute = this.queryAttributeByTaskIdAndName(taskId, name);
         if (decrypt && attribute != null) {
             attribute.setValue(decryptNormal(attribute.getValue()));
         }
@@ -82,13 +82,13 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
 
     @Override
     public TaskAttribute queryAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name) {
-        List<TaskAttribute> attributes = listAttributesByTaskIdAndName(taskId, name);
+        List<TaskAttribute> attributes = this.listAttributesByTaskIdAndName(taskId, name);
         return CollectionUtils.isEmpty(attributes) ? null : attributes.get(0);
     }
 
     @Override
     public TaskAttribute queryAttributeByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt) {
-        List<TaskAttribute> attributes = listAttributesByNameAndValue(name, value, encrypt);
+        List<TaskAttribute> attributes = this.listAttributesByNameAndValue(name, value, encrypt);
 
         return CollectionUtils.isEmpty(attributes) ? null : attributes.get(0);
     }
@@ -124,7 +124,7 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
 
     @Override
     public List<TaskAttribute> listAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt) {
-        List<TaskAttribute> attributes = listAttributesByTaskIdAndInNames(taskId, names);
+        List<TaskAttribute> attributes = this.listAttributesByTaskIdAndInNames(taskId, names);
         if (decrypt && CollectionUtils.isNotEmpty(attributes)) {
             for (TaskAttribute attribute : attributes) {
                 attribute.setValue(decryptNormal(attribute.getValue()));
@@ -140,6 +140,18 @@ public class TaskAttributeRepositoryImpl extends AbstractRepository implements T
         taskAttributeCriteria.createCriteria().andTaskIdIn(taskIds).andNameEqualTo(name);
 
         return taskAttributeMapper.selectByExample(taskAttributeCriteria);
+    }
+
+    @Override
+    public List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name, boolean decrypt) {
+        List<TaskAttribute> attributes = this.listAttributesInTaskIdsAndByName(taskIds, name);
+        if (decrypt && CollectionUtils.isNotEmpty(attributes)) {
+            for (TaskAttribute attribute : attributes) {
+                attribute.setValue(decryptNormal(attribute.getValue()));
+            }
+        }
+
+        return attributes;
     }
 
     @Override

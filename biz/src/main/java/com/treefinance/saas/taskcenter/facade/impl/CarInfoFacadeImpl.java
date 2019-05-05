@@ -28,15 +28,7 @@ public class CarInfoFacadeImpl extends AbstractFacade implements CarInfoFacade {
         Preconditions.notNull("taskId", taskId);
 
         if(CollectionUtils.isNotEmpty(logList)){
-            List<TaskStepLogObject> logs = logList.stream().map(dto -> {
-                TaskStepLogObject obj = new TaskStepLogObject();
-                obj.setStepMsg(dto.getMsg());
-                obj.setErrorMsg(dto.getErrorMsg());
-                obj.setOccurTime(dto.getOccurTime());
-
-                return obj;
-
-            }).collect(Collectors.toList());
+            List<TaskStepLogObject> logs = logList.stream().map(dto -> new TaskStepLogObject(dto.getMsg(), dto.getErrorMsg(), dto.getOccurTime())).collect(Collectors.toList());
 
             taskService.completeTaskAndMonitoring(taskId, logs);
         }

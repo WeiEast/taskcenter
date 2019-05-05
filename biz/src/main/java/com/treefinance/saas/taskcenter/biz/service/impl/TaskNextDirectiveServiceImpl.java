@@ -161,7 +161,7 @@ public class TaskNextDirectiveServiceImpl implements TaskNextDirectiveService {
         logger.info("新增过渡指令 >> {}, taskId: {}", EDirective.WAITING, taskId);
         DirectiveEntity directiveEntity = new DirectiveEntity();
         directiveEntity.setTaskId(taskId);
-        directiveEntity.setDirective(EDirective.WAITING.getText());
+        directiveEntity.setDirective(EDirective.WAITING.value());
         directiveEntity.setRemark("请等待");
 
         this.saveDirective(directiveEntity);

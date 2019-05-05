@@ -128,7 +128,7 @@ public class DirectiveContext implements Serializable {
      * @return 指令的字符表示
      */
     public String getDirectiveString() {
-        return directive == null ? "" : directive.getText();
+        return directive == null ? "" : directive.value();
     }
 
     /**

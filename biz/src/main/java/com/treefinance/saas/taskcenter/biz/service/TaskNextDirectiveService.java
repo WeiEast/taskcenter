@@ -13,6 +13,7 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
 import com.treefinance.saas.taskcenter.service.domain.DirectiveEntity;
 
@@ -54,6 +55,18 @@ public interface TaskNextDirectiveService {
     /**
      * 添加一条指令记录
      *
+     * @param taskId 任务ID
+     * @param directive 指令
+     * @return the id of {@link TaskNextDirective}
+     * @see #insert(Long, String, String)
+     */
+    default Long insert(Long taskId, EDirective directive) {
+        return this.insert(taskId, directive.value());
+    }
+
+    /**
+     * 添加一条指令记录
+     *
      * @param directiveEntity 指令信息
      * @return the id of {@link TaskNextDirective}
      * @see #insert(Long, String, String)
@@ -66,6 +79,26 @@ public interface TaskNextDirectiveService {
         return this.insert(taskId, directive, remark);
     }
 
+    /**
+     * 保存指令并添加到缓存中
+     *
+     * @param taskId 任务ID
+     * @param directive 指令信息
+     * @see #saveDirective(DirectiveEntity)
+     */
+    default void saveDirective(Long taskId, EDirective directive) {
+        DirectiveEntity directiveObject = new DirectiveEntity();
+        directiveObject.setTaskId(taskId);
+        directiveObject.setDirective(directive.value());
+
+        saveDirective(directiveObject);
+    }
+
+    /**
+     * 保存指令并添加到缓存中
+     *
+     * @param directive 指令信息
+     */
     void saveDirective(@Nonnull DirectiveEntity directive);
 
     /**
@@ -85,11 +118,19 @@ public interface TaskNextDirectiveService {
     String queryPresentDirectiveAsJson(@Nonnull Long taskId);
 
     /**
-     * 删除指令。注意：数据库中的指令是只插入的,所以这里的删除指插入waiting指令
+     * 结束当前指令并等待下一个
+     * <p/>
+     * 注意：结束指令实指插入waiting指令
      *
      * @param taskId 任务ID
      */
     void awaitNext(@Nonnull Long taskId);
 
+    /**
+     * 对比并结束给定的指令，等待下一个
+     *
+     * @param taskId 任务ID
+     * @see #awaitNext(Long)
+     */
     void compareAndEnd(@Nonnull Long taskId, @Nullable String directive);
 }

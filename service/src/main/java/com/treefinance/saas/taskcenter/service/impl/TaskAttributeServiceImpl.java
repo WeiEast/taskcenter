@@ -21,14 +21,17 @@ import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskAttributeRepository;
 import com.treefinance.saas.taskcenter.exception.UnexpectedException;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.param.TaskAttributeSaveParams;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisKeyUtils;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedissonLocks;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -92,6 +95,11 @@ public class TaskAttributeServiceImpl implements TaskAttributeService {
     }
 
     @Override
+    public List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name, boolean decrypt) {
+        return taskAttributeRepository.listAttributesInTaskIdsAndByName(taskIds, name, decrypt);
+    }
+
+    @Override
     public List<TaskAttribute> queryAttributes(@Nonnull TaskAttributeQuery query) {
         return taskAttributeRepository.queryAttributes(query);
     }
@@ -107,8 +115,18 @@ public class TaskAttributeServiceImpl implements TaskAttributeService {
     }
 
     @Override
-    public void deleteAttributeByTaskIdAndName(Long taskId, String name) {
+    public void deleteAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name) {
         taskAttributeRepository.deleteAttributeByTaskIdAndName(taskId, name);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void saveAttributes(@Nonnull Long taskId, @Nonnull List<TaskAttributeSaveParams> attributes) {
+        if (CollectionUtils.isNotEmpty(attributes)) {
+            for (TaskAttributeSaveParams attribute : attributes) {
+                taskAttributeRepository.insertOrUpdateAttribute(taskId, attribute.getName(), attribute.getValue(), attribute.isSensitive());
+            }
+        }
     }
 
     @Override

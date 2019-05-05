@@ -42,4 +42,11 @@ public class TaskStepLogObject implements Serializable {
     private String errorMsg;
     private Date occurTime;
 
+    public TaskStepLogObject() {}
+
+    public TaskStepLogObject(String stepMsg, String errorMsg, Date occurTime) {
+        this.stepMsg = stepMsg;
+        this.errorMsg = errorMsg;
+        this.occurTime = occurTime;
+    }
 }

@@ -11,39 +11,46 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.facade.result;
+package com.treefinance.saas.taskcenter.facade.request;
 
-import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * 纯task表数据
  * @author Jerry
- * @date 2018/12/13 21:12
+ * @date 2019-05-03 23:17
  */
 @Getter
 @Setter
 @ToString
-public class SimpleTaskDTO implements Serializable {
+public class TaskAttributesSaveRequest implements Serializable {
 
-    private Long id;
-    private String appId;
-    private String uniqueId;
-    private String accountNo;
-    private Byte bizType;
-    private String webSite;
-    private String stepCode;
-    private Byte saasEnv;
-    private Byte status;
-    private Date createTime;
-    private Date lastUpdateTime;
+    /**
+     * 任务ID
+     */
+    private Long taskId;
+    /**
+     * 保存的属性列表
+     */
+    private List<SavedTaskAttribute> attributes;
 
-    public String getBizTypeName() {
-        return EBizType.getName(bizType);
+    public void addAttribute(String name, String value, boolean sensitive) {
+        if (attributes == null) {
+            attributes = new LinkedList<>();
+        }
+        attributes.add(new SavedTaskAttribute(name, value, sensitive));
+    }
+
+    public void addAttribute(String name, String value) {
+        addAttribute(name, value, false);
+    }
+
+    public boolean isEmpty() {
+        return attributes == null || attributes.isEmpty();
     }
 }

@@ -14,17 +14,36 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.service;
+package com.treefinance.saas.taskcenter.facade.result;
 
-import com.treefinance.saas.taskcenter.dao.entity.TaskSupport;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.util.List;
+import java.io.Serializable;
 
 /**
  * @author Jerry
- * @date 2018/11/21 01:07
+ * @date 2019-04-30 16:34
  */
-public interface TaskSupportService {
-
-    List<TaskSupport> getSupportedList(String supportType, Integer id, String type);
+@Getter
+@Setter
+@ToString
+public class DirectiveDTO implements Serializable {
+    /**
+     * 指令
+     */
+    private String directive;
+    /**
+     * 指令ID
+     */
+    private String directiveId;
+    /**
+     * 任务ID
+     */
+    private Long taskId;
+    /**
+     * 指令扩展信息：json格式
+     */
+    private String remark;
 }

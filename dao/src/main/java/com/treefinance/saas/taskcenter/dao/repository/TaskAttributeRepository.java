@@ -58,6 +58,9 @@ public interface TaskAttributeRepository {
 
     List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name);
 
+    List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name,
+        boolean decrypt);
+
     List<TaskAttribute> queryAttributes(@Nonnull TaskAttributeQuery query);
 
     Long insertAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt);

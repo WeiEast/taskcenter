@@ -5,6 +5,7 @@ import com.treefinance.saas.taskcenter.dto.moxie.MoxieTaskEventNoticeDTO;
 import com.treefinance.saas.taskcenter.facade.request.MoxieTaskEventNoticeRequest;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.MoxieTaskEventNoticeFacade;
+import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,29 +20,33 @@ public class MoxieTaskEventNoticeFacadeImpl extends AbstractFacade implements Mo
     private MoxieBusinessService moxieBusinessService;
 
     @Override
-    public TaskResult<Void> loginSuccess(MoxieTaskEventNoticeRequest eventNoticeRequest) {
-        MoxieTaskEventNoticeDTO moxieTaskEventNoticeDTO = convert(eventNoticeRequest, MoxieTaskEventNoticeDTO.class);
+    public TaskResult<Void> loginSuccess(MoxieTaskEventNoticeRequest request) {
+        Preconditions.notNull("request", request);
+        MoxieTaskEventNoticeDTO moxieTaskEventNoticeDTO = convertStrict(request, MoxieTaskEventNoticeDTO.class);
         moxieBusinessService.loginSuccess(moxieTaskEventNoticeDTO);
         return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override
-    public TaskResult<Void> loginFail(MoxieTaskEventNoticeRequest eventNoticeRequest) {
-        MoxieTaskEventNoticeDTO moxieTaskEventNoticeDTO = convert(eventNoticeRequest, MoxieTaskEventNoticeDTO.class);
+    public TaskResult<Void> loginFail(MoxieTaskEventNoticeRequest request) {
+        Preconditions.notNull("request", request);
+        MoxieTaskEventNoticeDTO moxieTaskEventNoticeDTO = convertStrict(request, MoxieTaskEventNoticeDTO.class);
         moxieBusinessService.loginFail(moxieTaskEventNoticeDTO);
         return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override
-    public TaskResult<Void> grabFail(MoxieTaskEventNoticeRequest eventNoticeRequest) {
-        MoxieTaskEventNoticeDTO moxieTaskEventNoticeDTO = convert(eventNoticeRequest, MoxieTaskEventNoticeDTO.class);
+    public TaskResult<Void> grabFail(MoxieTaskEventNoticeRequest request) {
+        Preconditions.notNull("request", request);
+        MoxieTaskEventNoticeDTO moxieTaskEventNoticeDTO = convertStrict(request, MoxieTaskEventNoticeDTO.class);
         moxieBusinessService.grabFail(moxieTaskEventNoticeDTO);
         return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override
-    public TaskResult<Void> bill(MoxieTaskEventNoticeRequest eventNoticeRequest) {
-        MoxieTaskEventNoticeDTO moxieTaskEventNoticeDTO = convert(eventNoticeRequest, MoxieTaskEventNoticeDTO.class);
+    public TaskResult<Void> bill(MoxieTaskEventNoticeRequest request) {
+        Preconditions.notNull("request", request);
+        MoxieTaskEventNoticeDTO moxieTaskEventNoticeDTO = convertStrict(request, MoxieTaskEventNoticeDTO.class);
         moxieBusinessService.bill(moxieTaskEventNoticeDTO);
         return TaskResult.wrapSuccessfulResult(null);
     }

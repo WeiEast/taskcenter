@@ -51,7 +51,7 @@ public final class DirectiveHelper {
     public static DirectiveEntity buildDirectiveEntity(Long taskId, EDirective directive) {
         DirectiveEntity directiveEntity = new DirectiveEntity();
         directiveEntity.setTaskId(taskId);
-        directiveEntity.setDirective(directive.getText());
+        directiveEntity.setDirective(directive.value());
 
         return directiveEntity;
     }

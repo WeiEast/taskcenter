@@ -18,6 +18,7 @@ package com.treefinance.saas.taskcenter.service;
 
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
+import com.treefinance.saas.taskcenter.service.param.TaskAttributeSaveParams;
 import com.treefinance.toolkit.util.DateUtils;
 
 import javax.annotation.Nonnull;
@@ -69,6 +70,8 @@ public interface TaskAttributeService {
 
     List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name);
 
+    List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name, boolean decrypt);
+
     List<TaskAttribute> queryAttributes(@Nonnull TaskAttributeQuery query);
 
     /**
@@ -114,7 +117,9 @@ public interface TaskAttributeService {
      * @param taskId 任务ID
      * @param name 属性名
      */
-    void deleteAttributeByTaskIdAndName(Long taskId, String name);
+    void deleteAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name);
+
+     void saveAttributes(@Nonnull Long taskId, @Nonnull List<TaskAttributeSaveParams> attributes);
 
     /**
      * 查询登录时间
