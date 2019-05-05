@@ -58,7 +58,7 @@ public class TaskTimeoutDetectorImpl implements TaskTimeoutDetector {
 
     @Override
     public void detect(@Nonnull Long taskId) throws InterruptedException {
-        LOGGER.info("任务抓取超时异步处理:taskId={}", taskId);
+        LOGGER.info("超时任务检测 >>> taskId={}", taskId);
         String lockKey = RedisKeyUtils.genRedisLockKey("task_timeout_check_job", Constants.SAAS_ENV_VALUE, String.valueOf(taskId));
         redissonLocks.tryLock(lockKey, 10, 180, TimeUnit.SECONDS, () -> {
             Task task = taskService.getTaskById(taskId);

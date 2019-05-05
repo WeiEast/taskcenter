@@ -17,24 +17,24 @@
 package com.treefinance.saas.taskcenter.biz.service;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.treefinance.saas.assistant.model.Constants;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
+import com.treefinance.saas.taskcenter.biz.service.directive.MoxieDirectivePacket;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
+import com.treefinance.saas.taskcenter.dao.repository.TaskAttributeRepository;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
-import com.treefinance.saas.taskcenter.biz.service.directive.MoxieDirectivePacket;
+import com.treefinance.saas.taskcenter.exception.UnexpectedException;
 import com.treefinance.saas.taskcenter.interation.manager.BizTypeManager;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
+import com.treefinance.saas.taskcenter.share.cache.redis.RedisKeyUtils;
+import com.treefinance.saas.taskcenter.share.cache.redis.RedissonLocks;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +47,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,19 +57,13 @@ public class MoxieTimeoutService {
 
     private static final Logger logger = LoggerFactory.getLogger(MoxieTimeoutService.class);
 
-    private static String LOGIN_TIME_PREFIX = "saas-grap-server-moxie-login-time:";
+    private static String LOGIN_TIME_PREFIX = "saas_moxie_task_login_time:";
+    private static String LOCK_KEY_PREFIX = "saas_moxie_task_login_time_update_lock:";
 
     @Autowired
     private TaskRepository taskRepository;
-    /**
-     * 本地任务缓存
-     */
-    private final LoadingCache<Long, Task> cache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).maximumSize(20000).build(new CacheLoader<Long, Task>() {
-        @Override
-        public Task load(Long taskId) throws Exception {
-            return taskRepository.getTaskById(taskId);
-        }
-    });
+    @Autowired
+    private TaskAttributeRepository taskAttributeRepository;
     @Autowired
     private BizTypeManager bizTypeManager;
     @Autowired
@@ -78,9 +71,9 @@ public class MoxieTimeoutService {
     @Autowired
     private DirectiveService directiveService;
     @Autowired
-    private TaskAttributeService taskAttributeService;
-    @Autowired
     private RedisDao redisDao;
+    @Autowired
+    private RedissonLocks redissonLocks;
 
     /**
      * 记录魔蝎任务创建时间,即开始登录时间.
@@ -88,16 +81,23 @@ public class MoxieTimeoutService {
      * @param taskId
      */
     public void logLoginTime(Long taskId) {
-        String now = SystemUtils.nowDateTimeStr();
-        taskAttributeService.insertOrUpdate(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), now);
-
-        String key = LOGIN_TIME_PREFIX + taskId;
-        redisDao.setEx(key, now, 10, TimeUnit.MINUTES);
+        this.logLoginTime(taskId, SystemUtils.now());
     }
 
     public void logLoginTime(Long taskId, Date date) {
-        taskAttributeService.insertOrUpdate(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), date);
+        try {
+            String lockKey = getLoginTimeUpdateLockKey(taskId);
+            redissonLocks.tryLock(lockKey, 5, 60, TimeUnit.SECONDS, () -> {
+                taskAttributeRepository.insertOrUpdateAttribute(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), date);
 
+                cacheLoginTime(taskId, date);
+            });
+        } catch (InterruptedException e) {
+            throw new UnexpectedException("Thread interrupted when saving moxie-task's login-time! - taskId: " + taskId, e);
+        }
+    }
+
+    private void cacheLoginTime(Long taskId, Date date) {
         String key = LOGIN_TIME_PREFIX + taskId;
         redisDao.setEx(key, DateUtils.format(date), 10, TimeUnit.MINUTES);
     }
@@ -110,78 +110,82 @@ public class MoxieTimeoutService {
      */
     public Date getLoginTime(Long taskId) {
         String key = LOGIN_TIME_PREFIX + taskId;
-        String value = redisDao.get(key);
-        if (StringUtils.isNotBlank(value)) {
+        String value = StringUtils.trim(redisDao.get(key));
+        if (StringUtils.isNotEmpty(value)) {
             return DateUtils.parse(value);
-        } else {
-            TaskAttribute taskAttribute = taskAttributeService.queryAttributeByTaskIdAndName(taskId, ETaskAttribute.LOGIN_TIME.getAttribute(), false);
-            if (taskAttribute == null) {
-                logger.info("公积金登录超时,taskId={}登录时间记录key={}已失效,需检查魔蝎登录状态回调接口是否异常", taskId, key);
-                return null;
-            }
-            value = taskAttribute.getValue();
-            Date date = DateUtils.parse(value);
-            // 重新set redis
-            this.logLoginTime(taskId, date);
-            return date;
+        }
+
+        final String lockKey = getLoginTimeUpdateLockKey(taskId);
+        try {
+            return redissonLocks.tryLock(lockKey, 5, 60, TimeUnit.SECONDS, isLock -> {
+                Date date = taskAttributeRepository.queryAttributeValueAsDate(taskId, ETaskAttribute.LOGIN_TIME.getAttribute());
+                if (date != null && isLock) {
+                    this.cacheLoginTime(taskId, date);
+                } else {
+                    logger.info("获取魔蝎任务登录时间时,未查询到任务登录时间,任务未登录.taskId={}", taskId);
+                }
+                return date;
+            });
+        } catch (InterruptedException e) {
+            throw new UnexpectedException("Thread interrupted when querying moxie-task's login-time! - taskId: " + taskId, e);
         }
     }
 
-    /**
-     * 前端收到登录超时后,重置登录时间
-     *
-     * @param taskId
-     */
-    public void resetLoginTaskTimeOut(Long taskId) {
-        this.logLoginTime(taskId);
+    private String getLoginTimeUpdateLockKey(Long taskId) {
+        return LOCK_KEY_PREFIX + taskId;
     }
 
     public void handleTaskTimeout(Long taskId) {
-        Task task;
+        logger.info("魔蝎超时任务检测 >>> taskId={}", taskId);
         try {
-            task = cache.get(taskId);
-        } catch (ExecutionException e) {
-            logger.error("taskId={} is not exists...", taskId, e);
-            return;
-        }
-        logger.info("handleTaskTimeout async : taskId={}, task={}", taskId, JSON.toJSONString(task));
+            String lockKey = RedisKeyUtils.genRedisLockKey("moxie_task_timeout_check", Constants.SAAS_ENV_VALUE, String.valueOf(taskId));
+            redissonLocks.tryLock(lockKey, 10, 180, TimeUnit.SECONDS, () -> {
+                Task task = taskRepository.getTaskById(taskId);
+                logger.info("handleTaskTimeout async : taskId={}, task={}", taskId, JSON.toJSONString(task));
 
-        Byte taskStatus = task.getStatus();
-        if (ETaskStatus.CANCEL.getStatus().equals(taskStatus) || ETaskStatus.SUCCESS.getStatus().equals(taskStatus) || ETaskStatus.FAIL.getStatus().equals(taskStatus)) {
-            logger.info("handleTaskTimeout error : the task is completed: {}", JSON.toJSONString(task));
-            return;
-        }
-        Integer timeout = bizTypeManager.getBizTimeout(task.getBizType());
-        if(timeout == null){
-            return;
-        }
-        // 任务超时: 当前时间-登录时间>超时时间
-        Date currentTime = new Date();
-        Date loginTime = getLoginTime(taskId);
-        Date timeoutDate = DateUtils.plusSeconds(loginTime, timeout);
-        logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
-        if (timeoutDate.before(currentTime)) {
-            // 增加日志：任务超时
-            String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss") + ") - 登录时间(" + DateFormatUtils.format(loginTime, "yyyy-MM-dd HH:mm:ss")
-                + ")> 超时时间(" + timeout + "秒)";
+                Byte taskStatus = task.getStatus();
+                if (!ETaskStatus.RUNNING.getStatus().equals(taskStatus)) {
+                    logger.info("handleTaskTimeout error : the task is completed: {}", JSON.toJSONString(task));
+                    return;
+                }
+                Integer timeout = bizTypeManager.getBizTimeout(task.getBizType());
+                if (timeout == null) {
+                    return;
+                }
+                Date loginTime = getLoginTime(taskId);
+                if (loginTime == null) {
+                    return;
+                }
+                // 任务超时: 当前时间-登录时间>超时时间
+                Date currentTime = new Date();
+                Date timeoutDate = DateUtils.plusSeconds(loginTime, timeout);
+                logger.info("moxie isTaskTimeout: taskid={}，loginTime={},current={},timeout={}", taskId, DateUtils.format(loginTime), DateUtils.format(currentTime), timeout);
+                if (!timeoutDate.after(currentTime)) {
+                    // 增加日志：任务超时
+                    String errorMessage = "任务超时：当前时间(" + DateFormatUtils.format(currentTime, "yyyy-MM-dd HH:mm:ss") + ") - 登录时间("
+                        + DateFormatUtils.format(loginTime, "yyyy-MM-dd HH:mm:ss") + ")> 超时时间(" + timeout + "秒)";
 
-            taskLogService.log(task.getId(), TaskStatusMsgEnum.TIMEOUT_MSG, errorMessage);
+                    taskLogService.log(task.getId(), TaskStatusMsgEnum.TIMEOUT_MSG, errorMessage);
 
-            // 超时处理：任务更新为失败
-            MoxieDirectivePacket directivePacket = new MoxieDirectivePacket(EDirective.TASK_FAIL);
-            directivePacket.setTaskId(task.getId());
-            directivePacket.setRemark(JSON.toJSONString(ImmutableMap.of("taskErrorMsg", errorMessage)));
-            directiveService.process(directivePacket);
+                    // 超时处理：任务更新为失败
+                    MoxieDirectivePacket directivePacket = new MoxieDirectivePacket(EDirective.TASK_FAIL);
+                    directivePacket.setTaskId(task.getId());
+                    directivePacket.setRemark(JSON.toJSONString(ImmutableMap.of("taskErrorMsg", errorMessage)));
+                    directiveService.process(directivePacket);
+                }
+            });
+        } catch (InterruptedException e) {
+            throw new UnexpectedException("Thread interrupted when checking moxie's timeout task! - taskId:" + " " + taskId, e);
         }
     }
 
     @Transactional
     public void handleLoginTimeout(Long taskId, String moxieTaskId) {
-        // 重置登录时间
-        this.resetLoginTaskTimeOut(taskId);
+        // 前端收到登录超时后,重置登录时间
+        this.logLoginTime(taskId);
 
         // 登录失败(如用户名密码错误),需删除task_attribute中此taskId对应的moxieTaskId,重新登录时,可正常轮询/login/submit接口
-        taskAttributeService.insertOrUpdate(taskId, ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), "");
+        taskAttributeRepository.insertOrUpdateAttribute(taskId, ETaskAttribute.FUND_MOXIE_TASKID.getAttribute(), "");
 
         // 记录登录超时日志
         Map<String, Object> map = Maps.newHashMap();
