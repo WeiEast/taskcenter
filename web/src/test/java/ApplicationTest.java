@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.treefinance.saas.merchant.facade.service.MerchantBaseInfoFacade;
 import com.treefinance.saas.taskcenter.interation.manager.CallbackConfigManager;
 import com.treefinance.saas.taskcenter.web.TaskCenterApplication;
 import org.junit.Test;
@@ -33,12 +32,9 @@ public class ApplicationTest {
 
     @Autowired
     private CallbackConfigManager callbackConfigManager;
-    @Autowired
-    private MerchantBaseInfoFacade merchantBaseInfoFacade;
 
     @Test
     public void testDubbo() {
         callbackConfigManager.getAllCallbackConfigs();
-        merchantBaseInfoFacade.queryValidMerchantByBizType((byte)3);
     }
 }
