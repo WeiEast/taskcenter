@@ -33,19 +33,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * hessian反序列化过程中一些特殊参数的适配和修正
+ * hessian序列化和反序列化过程中一些特殊参数的适配和修正
  * <p>
- * 比如Byte,Short类型利用序列化整型处理，针对list<Byte>类型参数会被反序列化成List<Integer>
+ * 比如Byte,Short类型序列化当成整型处理，针对list<Byte>类型参数会被反序列化成List<Integer>
  * </p>
  *
  * @author Jerry
  * @date 2018/12/17 16:08
  */
-@Activate(group = Constants.PROVIDER, order = Integer.MAX_VALUE)
+@Activate(group = {Constants.PROVIDER, Constants.CONSUMER}, order = Integer.MAX_VALUE)
 public class ParameterAdaptFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(ParameterAdaptFilter.class);
 
-    private static final String CUSTOM_BEAN_PACKAGE = "com.treefinance.saas.taskcenter.facade.request";
+    private static final String CUSTOM_BEAN_PACKAGE = "com.treefinance.saas.taskcenter.facade";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -54,38 +54,52 @@ public class ParameterAdaptFilter implements Filter {
             if (ArrayUtils.isNotEmpty(parameterTypes)) {
                 Object[] arguments = invocation.getArguments();
                 for (int i = 0; i < parameterTypes.length; i++) {
-                    if (arguments[i] == null) {
+                    final Object argument = arguments[i];
+                    if (argument == null) {
                         continue;
                     }
 
-                    try {
-                        Package pkg = parameterTypes[i].getPackage();
-                        if (pkg != null && CUSTOM_BEAN_PACKAGE.equals(pkg.getName())) {
-                            List<Field> fields = Reflections.getFields(parameterTypes[i]);
-                            for (Field field : fields) {
-                                if (field.getType() == List.class) {
-                                    Type genericType = field.getGenericType();
-                                    if (genericType instanceof ParameterizedType && ((ParameterizedType)genericType).getActualTypeArguments()[0] == Byte.class) {
-                                        field.setAccessible(true);
-                                        List<Integer> list = (List<Integer>)field.get(arguments[i]);
-                                        if (CollectionUtils.isNotEmpty(list)) {
-                                            List<Byte> result = list.stream().map(Integer::byteValue).collect(Collectors.toList());
-                                            field.set(arguments[i], result);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
-                        LOGGER.warn("Error reading and adapt field in special parameter! parameterType: {}, value: {}", parameterTypes[i], arguments[i], e);
-                    }
+                    final Class<?> parameterType = parameterTypes[i];
+                    fixFieldValueWithByteList(argument, parameterType);
                 }
             }
         } catch (Exception e) {
             LOGGER.error("[dubbo] Parameter adapt error! invocation: {}, invoker: {}", invocation, invoker, e);
         }
 
-        return invoker.invoke(invocation);
+        final Result result = invoker.invoke(invocation);
+
+        final Object value = result.getValue();
+        if (value != null) {
+            fixFieldValueWithByteList(value, value.getClass());
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void fixFieldValueWithByteList(Object argument, Class<?> parameterType) {
+        try {
+            Package pkg = parameterType.getPackage();
+            if (pkg != null && pkg.getName().startsWith(CUSTOM_BEAN_PACKAGE)) {
+                List<Field> fields = Reflections.getFields(parameterType);
+                for (Field field : fields) {
+                    if (field.getType() == List.class) {
+                        Type genericType = field.getGenericType();
+                        if (genericType instanceof ParameterizedType && ((ParameterizedType)genericType).getActualTypeArguments()[0] == Byte.class) {
+                            field.setAccessible(true);
+                            List<Integer> list = (List<Integer>)field.get(argument);
+                            if (CollectionUtils.isNotEmpty(list)) {
+                                List<Byte> result = list.stream().map(Integer::byteValue).collect(Collectors.toList());
+                                field.set(argument, result);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            LOGGER.warn("Error reading and adapt field in special parameter! parameterType: {}, value: {}", parameterType, argument, e);
+        }
     }
 
 }

@@ -63,7 +63,7 @@ public class AppCallbackConfigServiceImpl extends AbstractService implements App
 
     @Override
     public List<CallbackConfigBO> queryConfigsByAppIdAndBizType(String appId, @Nonnull Byte bizType, @Nonnull EDataType dataType) {
-        logger.info("从本地缓存中获取appId={}的回调配置,bizType={},dataType={}", appId, bizType, dataType.getType());
+        logger.info("查询商户的回调配置 >>> appId={},bizType={},dataType={}", appId, bizType, dataType.getType());
         // 查询所有回调
         if (StringUtils.isEmpty(appId)) {
             return Collections.emptyList();
