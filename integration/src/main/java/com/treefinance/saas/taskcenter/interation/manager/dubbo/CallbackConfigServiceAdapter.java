@@ -50,7 +50,7 @@ public class CallbackConfigServiceAdapter extends AbstractMerchantServiceAdapter
 
         validateResponse(response, RpcActionEnum.QUERY_APP_CALLBACK_CONFIG_BY_APP_ID, ImmutableMap.of("appId", appId));
 
-        return convert(response.getEntity(), CallbackConfigBO.class);
+        return transform(response);
     }
 
     @Override
@@ -61,6 +61,10 @@ public class CallbackConfigServiceAdapter extends AbstractMerchantServiceAdapter
 
         validateResponse(response, RpcActionEnum.QUERY_APP_CALLBACK_CONFIG_ALL);
 
+        return transform(response);
+    }
+
+    private List<CallbackConfigBO> transform(MerchantResponse<List<CallbackConfigDTO>> response) {
         final List<CallbackConfigDTO> list = response.getEntity();
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
