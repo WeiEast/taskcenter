@@ -80,6 +80,7 @@ public class ParameterAdaptFilter implements Filter {
 
     @SuppressWarnings("unchecked")
     private void fixFieldValueWithByteList(Object argument, Class<?> parameterType) {
+        LOGGER.info("检查dubbo序列化对象 >> {}", parameterType);
         try {
             Package pkg = parameterType.getPackage();
             if (pkg != null && CUSTOM_BEAN_PACKAGE_PATTERN.matcher(pkg.getName()).matches()) {
@@ -88,6 +89,7 @@ public class ParameterAdaptFilter implements Filter {
                     if (field.getType() == List.class) {
                         Type genericType = field.getGenericType();
                         if (genericType instanceof ParameterizedType && ((ParameterizedType)genericType).getActualTypeArguments()[0] == Byte.class) {
+                            LOGGER.info("重置dubbo序列化对象字段 >> {}, 类型：List<Byte>", field.getName());
                             field.setAccessible(true);
                             List<Integer> list = (List<Integer>)field.get(argument);
                             if (CollectionUtils.isNotEmpty(list)) {
