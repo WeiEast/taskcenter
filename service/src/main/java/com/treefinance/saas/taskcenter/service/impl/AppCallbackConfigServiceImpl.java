@@ -63,6 +63,7 @@ public class AppCallbackConfigServiceImpl extends AbstractService implements App
 
     @Override
     public List<CallbackConfigBO> queryConfigsByAppIdAndBizType(String appId, @Nonnull Byte bizType, @Nonnull EDataType dataType) {
+        logger.info("从本地缓存中获取appId={}的回调配置,bizType={},dataType={}", appId, bizType, dataType.getType());
         // 查询所有回调
         if (StringUtils.isEmpty(appId)) {
             return Collections.emptyList();
@@ -78,7 +79,7 @@ public class AppCallbackConfigServiceImpl extends AbstractService implements App
         // 过滤data_type
         configs = configs.stream().filter(Objects::nonNull).filter(config -> dataType.getType().equals(config.getDataType())).collect(Collectors.toList());
 
-        logger.info("根据数据类型匹配回调配置结果:dataType={},dataConfigs={}", dataType.getType(), JSON.toJSONString(stream));
+        logger.info("根据数据类型匹配回调配置结果:dataType={},dataConfigs={}", dataType.getType(), JSON.toJSONString(configs));
 
         // 根据业务类型匹配：如果存在此类型回调则使用，不存在则使用默认
         List<CallbackConfigBO> list = configs.stream().filter(config -> config.getBizTypes().contains(bizType)).collect(Collectors.toList());
