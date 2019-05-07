@@ -20,7 +20,6 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
-import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * hessian序列化和反序列化过程中一些特殊参数的适配和修正
@@ -31,30 +30,19 @@ import org.apache.commons.lang3.ArrayUtils;
  * @author Jerry
  * @date 2018/12/17 16:08
  */
-@Activate(group = {Constants.PROVIDER}, order = Integer.MAX_VALUE)
-public class ParameterAdaptFilter extends AbstractValueAdapterFilter implements Filter {
+@Activate(group = {Constants.CONSUMER}, order = Integer.MAX_VALUE)
+public class ResultAdaptFilter extends AbstractValueAdapterFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        try {
-            Class<?>[] parameterTypes = invocation.getParameterTypes();
-            if (ArrayUtils.isNotEmpty(parameterTypes)) {
-                Object[] arguments = invocation.getArguments();
-                for (int i = 0; i < parameterTypes.length; i++) {
-                    final Object argument = arguments[i];
-                    if (argument == null) {
-                        continue;
-                    }
+        final Result result = invoker.invoke(invocation);
 
-                    final Class<?> parameterType = parameterTypes[i];
-                    fixFieldValueWithByteList(argument, parameterType);
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("[dubbo] Parameter adapt error! invocation: {}, invoker: {}", invocation, invoker, e);
+        final Object value = result.getValue();
+        if (value != null) {
+            fixFieldValueWithByteList(value, value.getClass());
         }
 
-        return invoker.invoke(invocation);
+        return result;
     }
 
 }

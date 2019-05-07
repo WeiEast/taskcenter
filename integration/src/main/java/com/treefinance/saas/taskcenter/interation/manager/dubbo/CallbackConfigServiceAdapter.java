@@ -20,11 +20,14 @@ import com.treefinance.saas.merchant.facade.service.AppCallbackConfigFacade;
 import com.treefinance.saas.taskcenter.interation.manager.CallbackConfigManager;
 import com.treefinance.saas.taskcenter.interation.manager.RpcActionEnum;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Jerry
@@ -58,6 +61,31 @@ public class CallbackConfigServiceAdapter extends AbstractMerchantServiceAdapter
 
         validateResponse(response, RpcActionEnum.QUERY_APP_CALLBACK_CONFIG_ALL);
 
-        return convert(response.getEntity(), CallbackConfigBO.class);
+        final List<CallbackConfigDTO> list = response.getEntity();
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        return list.stream().map(dto -> {
+            final CallbackConfigBO bo = new CallbackConfigBO();
+            bo.setId(dto.getId());
+            bo.setAppId(dto.getAppId());
+            bo.setReceiver(dto.getReceiver());
+            bo.setVersion(dto.getVersion());
+            bo.setIsNewKey(dto.getIsNewKey());
+            bo.setUrl(dto.getUrl());
+            bo.setRetryTimes(dto.getRetryTimes());
+            bo.setTimeOut(dto.getTimeOut());
+            bo.setRemark(dto.getRemark());
+            bo.setIsNotifyCancel(dto.getIsNotifyCancel());
+            bo.setIsNotifyFailure(dto.getIsNotifyFailure());
+            bo.setIsNotifySuccess(dto.getIsNotifySuccess());
+            bo.setNotifyModel(dto.getNotifyModel());
+            bo.setDataType(dto.getDataType());
+            final List<Integer> bizTypes = dto.getBizTypes();
+            if (CollectionUtils.isNotEmpty(bizTypes)) {
+                bo.setBizTypes(bizTypes.stream().map(Integer::byteValue).collect(Collectors.toList()));
+            }
+            return bo;
+        }).collect(Collectors.toList());
     }
 }
