@@ -30,6 +30,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
 public class ParameterAdaptFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(ParameterAdaptFilter.class);
 
-    private static final String CUSTOM_BEAN_PACKAGE = "com.treefinance.saas.taskcenter.facade";
+    private static final Pattern CUSTOM_BEAN_PACKAGE_PATTERN = Pattern.compile("^com\\.(treefinance|datatrees|treefintech)\\.saas\\..*");
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -81,7 +82,7 @@ public class ParameterAdaptFilter implements Filter {
     private void fixFieldValueWithByteList(Object argument, Class<?> parameterType) {
         try {
             Package pkg = parameterType.getPackage();
-            if (pkg != null && pkg.getName().startsWith(CUSTOM_BEAN_PACKAGE)) {
+            if (pkg != null && CUSTOM_BEAN_PACKAGE_PATTERN.matcher(pkg.getName()).matches()) {
                 List<Field> fields = Reflections.getFields(parameterType);
                 for (Field field : fields) {
                     if (field.getType() == List.class) {
