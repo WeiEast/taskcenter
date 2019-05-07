@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by luoyihua on 2017/5/11.
@@ -76,14 +75,15 @@ public class AppCallbackConfigServiceImpl extends AbstractService implements App
             return Collections.emptyList();
         }
 
-        Stream<CallbackConfigBO> stream = configs.stream().filter(Objects::nonNull).filter(config -> dataType.getType().equals(config.getDataType()));
+        // 过滤data_type
+        configs = configs.stream().filter(Objects::nonNull).filter(config -> dataType.getType().equals(config.getDataType())).collect(Collectors.toList());
 
         logger.info("根据数据类型匹配回调配置结果:dataType={},dataConfigs={}", dataType.getType(), JSON.toJSONString(stream));
 
         // 根据业务类型匹配：如果存在此类型回调则使用，不存在则使用默认
-        List<CallbackConfigBO> list = stream.filter(config -> config.getBizTypes().contains(bizType)).collect(Collectors.toList());
+        List<CallbackConfigBO> list = configs.stream().filter(config -> config.getBizTypes().contains(bizType)).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(list)) {
-            list = stream.filter(config -> config.getBizTypes().contains(AppConsts.DEFAULT_BIZ_TYPE)).collect(Collectors.toList());
+            list = configs.stream().filter(config -> config.getBizTypes().contains(AppConsts.DEFAULT_BIZ_TYPE)).collect(Collectors.toList());
         }
 
         logger.info("根据业务类型匹配回调配置结果:bizType={},bizConfigs={}", bizType, JSON.toJSONString(list));
