@@ -21,10 +21,12 @@ import com.treefinance.saas.taskcenter.interation.manager.CallbackConfigManager;
 import com.treefinance.saas.taskcenter.interation.manager.RpcActionEnum;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,24 +72,10 @@ public class CallbackConfigServiceAdapter extends AbstractMerchantServiceAdapter
             return Collections.emptyList();
         }
         return list.stream().map(dto -> {
-            final CallbackConfigBO bo = new CallbackConfigBO();
-            bo.setId(dto.getId());
-            bo.setAppId(dto.getAppId());
-            bo.setReceiver(dto.getReceiver());
-            bo.setVersion(dto.getVersion());
-            bo.setIsNewKey(dto.getIsNewKey());
-            bo.setUrl(dto.getUrl());
-            bo.setRetryTimes(dto.getRetryTimes());
-            bo.setTimeOut(dto.getTimeOut());
-            bo.setRemark(dto.getRemark());
-            bo.setIsNotifyCancel(dto.getIsNotifyCancel());
-            bo.setIsNotifyFailure(dto.getIsNotifyFailure());
-            bo.setIsNotifySuccess(dto.getIsNotifySuccess());
-            bo.setNotifyModel(dto.getNotifyModel());
-            bo.setDataType(dto.getDataType());
-            final List<Integer> bizTypes = dto.getBizTypes();
-            if (CollectionUtils.isNotEmpty(bizTypes)) {
-                bo.setBizTypes(bizTypes.stream().map(Integer::byteValue).collect(Collectors.toList()));
+            CallbackConfigBO bo = convertStrict(dto, CallbackConfigBO.class);
+            final Byte[] bizTypes = dto.getBizTypes();
+            if (ArrayUtils.isNotEmpty(bizTypes)) {
+                bo.setBizTypes(Arrays.asList(bizTypes));
             }
             return bo;
         }).collect(Collectors.toList());
