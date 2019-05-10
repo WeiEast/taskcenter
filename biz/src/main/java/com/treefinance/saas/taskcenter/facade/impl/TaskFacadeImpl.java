@@ -2,9 +2,6 @@ package com.treefinance.saas.taskcenter.facade.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.treefinance.saas.taskcenter.service.domain.TaskUpdateResult;
-import com.treefinance.saas.taskcenter.service.param.TaskCreateObject;
-import com.treefinance.saas.taskcenter.service.param.TaskUpdateObject;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
@@ -26,17 +23,25 @@ import com.treefinance.saas.taskcenter.facade.result.SimpleTaskDTO;
 import com.treefinance.saas.taskcenter.facade.result.TaskAndAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskUpdateStatusDTO;
+import com.treefinance.saas.taskcenter.facade.result.TaskingMerchantBaseDTO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskFacade;
 import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
+import com.treefinance.saas.taskcenter.interation.manager.MerchantInfoManager;
+import com.treefinance.saas.taskcenter.interation.manager.domain.MerchantBaseBO;
+import com.treefinance.saas.taskcenter.service.domain.TaskUpdateResult;
+import com.treefinance.saas.taskcenter.service.param.TaskCreateObject;
 import com.treefinance.saas.taskcenter.service.param.TaskStepLogObject;
+import com.treefinance.saas.taskcenter.service.param.TaskUpdateObject;
 import com.treefinance.toolkit.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.validation.constraints.NotNull;
 
 import java.util.Collections;
 import java.util.Date;
@@ -53,6 +58,8 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
 
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private MerchantInfoManager merchantInfoManager;
 
     @Override
     public TaskResult<List<TaskRO>> queryTask(TaskRequest request) {
@@ -518,5 +525,19 @@ public class TaskFacadeImpl extends AbstractFacade implements TaskFacade {
         }
 
         return TaskResponse.success(null);
+    }
+
+    @Override
+    public TaskResponse<TaskingMerchantBaseDTO> queryTaskingMerchantByTaskId(@NotNull Long taskId) {
+        Preconditions.notNull("taskId", taskId);
+        Task task = taskService.getTaskById(taskId);
+
+        MerchantBaseBO merchantBase = merchantInfoManager.getMerchantBaseByAppId(task.getAppId());
+
+        TaskingMerchantBaseDTO dto = this.convertStrict(merchantBase, TaskingMerchantBaseDTO.class);
+        dto.setUniqueId(task.getUniqueId());
+        logger.info("通过taskId={}查询商户基本信息result={}", taskId, JSON.toJSONString(dto));
+
+        return TaskResponse.success(dto);
     }
 }

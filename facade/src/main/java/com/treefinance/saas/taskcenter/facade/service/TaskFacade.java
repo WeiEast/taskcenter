@@ -15,8 +15,11 @@ import com.treefinance.saas.taskcenter.facade.result.SimpleTaskDTO;
 import com.treefinance.saas.taskcenter.facade.result.TaskAndAttributeRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskRO;
 import com.treefinance.saas.taskcenter.facade.result.TaskUpdateStatusDTO;
+import com.treefinance.saas.taskcenter.facade.result.TaskingMerchantBaseDTO;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskPagingResult;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
+
+import javax.validation.constraints.NotNull;
 
 import java.util.Date;
 import java.util.List;
@@ -253,4 +256,12 @@ public interface TaskFacade {
      * @return Void
      */
     TaskResponse<Void> completeTaskAndMonitoring(Long taskId, List<TaskStepLogRequest> logList);
+
+    /**
+     * 根据任务ID查询该任务对应的商户信息
+     * 
+     * @param taskId 任务ID
+     * @return 任务对应的商户信息
+     */
+    TaskResponse<TaskingMerchantBaseDTO> queryTaskingMerchantByTaskId(@NotNull Long taskId);
 }

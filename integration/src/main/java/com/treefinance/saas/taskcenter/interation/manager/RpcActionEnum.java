@@ -105,6 +105,10 @@ public enum RpcActionEnum {
     /**
      * 根appId查询商户的一些功能配置，比如埋点同步配置等等
      */
-    QUERY_MERCHANT_FUNCTION_BY_APP_ID
+    QUERY_MERCHANT_FUNCTION_BY_APP_ID,
+    /**
+     * 根据appId查询激活商户的基本信息
+     */
+    QUERY_ACTIVE_MERCHANT_BASE_BY_APP_ID;
 
 }

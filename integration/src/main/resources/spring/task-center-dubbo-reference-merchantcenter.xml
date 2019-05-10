@@ -16,6 +16,9 @@
 
     <dubbo:reference id="merchantFunctionFacade"
                      interface="com.treefinance.saas.merchant.facade.service.MerchantFunctionFacade" version="1.0.0"/>
+
+    <dubbo:reference id="merchantBaseFacade" interface="com.treefinance.saas.merchant.facade.service.MerchantBaseFacade"
+      version="1.0"/>
 </beans>
 
 
