@@ -76,6 +76,8 @@ public class CallbackConfigServiceAdapter extends AbstractMerchantServiceAdapter
             final Byte[] bizTypes = dto.getBizTypes();
             if (ArrayUtils.isNotEmpty(bizTypes)) {
                 bo.setBizTypes(Arrays.asList(bizTypes));
+            } else {
+                bo.setBizTypes(Collections.emptyList());
             }
             return bo;
         }).collect(Collectors.toList());
