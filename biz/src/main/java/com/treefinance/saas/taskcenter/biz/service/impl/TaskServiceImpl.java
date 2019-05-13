@@ -59,6 +59,7 @@ import javax.validation.ValidationException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author haojiahong
@@ -67,8 +68,8 @@ import java.util.Map;
 @Service
 public class TaskServiceImpl extends AbstractService implements TaskService {
 
+    private static final Logger logger = LoggerFactory.getLogger(TaskServiceImpl.class);
     private static final Byte[] DONE_STATUSES = {ETaskStatus.CANCEL.getStatus(), ETaskStatus.SUCCESS.getStatus(), ETaskStatus.FAIL.getStatus()};
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private TaskAttributeService taskAttributeService;
@@ -221,24 +222,85 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         TaskParams params = convertStrict(object, TaskParams.class);
         Task task = taskRepository.insertTask(params);
 
-        Long id = task.getId();
-        String extra = object.getExtra();
-        if (StringUtils.isNotBlank(extra)) {
-            JSONObject jsonObject = JSON.parseObject(extra);
+        Long taskId = task.getId();
+        // 保存额外信息
+        saveExtraParams(taskId, object);
+
+        // 记录创建日志
+        taskLogService.log(taskId, TaskStatusMsgEnum.CREATE_MSG);
+
+        return taskId;
+    }
+
+    private void saveExtraParams(@Nonnull Long id, @Nonnull TaskCreateObject object) {
+        // 保存source参数
+        String source = StringUtils.trim(object.getSource());
+        if (StringUtils.isNotEmpty(source)) {
+             taskAttributeService.insert(id, ETaskAttribute.SOURCE_TYPE.getAttribute(), source, false);
+        }
+
+        // 保存extra参数，extra正常是json格式，若是非法格式忽略不计
+        String extra = StringUtils.trim(object.getExtra());
+        if (StringUtils.isNotEmpty(extra)) {
+            JSONObject jsonObject = null;
+            try {
+                jsonObject = JSON.parseObject(extra);
+            } catch (Exception e) {
+                logger.warn("非法参数extra,解析失败!", e);
+            }
             if (MapUtils.isNotEmpty(jsonObject)) {
-                setAttribute(id, jsonObject);
+                saveExtra2Attributes(id, jsonObject);
+            }
+        }
+    }
+
+    private void saveExtra2Attributes(Long taskId, JSONObject json) {
+        // 检查手机号并保存到附加属性表
+        final String attrName = ETaskAttribute.MOBILE.getAttribute();
+        final Object mobileObj = json.remove(attrName);
+        if (mobileObj != null) {
+            final String mobile = StringUtils.trim(mobileObj.toString());
+            if (StringUtils.isNotEmpty(mobile)) {
+                boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
+                if (!b) {
+                    throw new ValidationException(String.format("the mobile number is illegal! mobile=%s", mobile));
+                }
+
+                logger.info("Save attribute >> {} : {}", attrName, mobile);
+                taskAttributeService.insert(taskId, attrName, mobile, true);
             }
         }
 
-        String source = object.getSource();
-        if (StringUtils.isNotEmpty(source)) {
-            taskAttributeService.insert(id, ETaskAttribute.SOURCE_TYPE.getAttribute(), source, false);
+        if (!json.isEmpty()) {
+            // extra中的参数都会持久化
+            for (Entry<String, Object> entry : json.entrySet()) {
+                final Object value = entry.getValue();
+                if (value != null) {
+                    String val = value.toString();
+
+                    final String key = entry.getKey();
+                    // if key was <code>ETaskAttribute.NAME</code> or <code>ETaskAttribute.ID_CARD</code> or
+                    // <code>ETaskAttribute.SOURCE_ID</code>, do trim operation with the value
+                    if (isSpecial(key)) {
+                        val = StringUtils.trim(val);
+                    }
+
+                    if (StringUtils.isNotEmpty(val)) {
+                        // if key was <code>ETaskAttribute.NAME</code> or <code>ETaskAttribute.ID_CARD</code>, do
+                        // secure operation.
+                        taskAttributeService.insert(taskId, key, val, isSafely(key));
+                    }
+                }
+            }
         }
+    }
 
-        // 记录创建日志
-        taskLogService.log(id, TaskStatusMsgEnum.CREATE_MSG);
+    private static boolean isSafely(@Nonnull String key) {
+        return ETaskAttribute.NAME.getAttribute().equals(key) || ETaskAttribute.ID_CARD.getAttribute().equals(key);
+    }
 
-        return id;
+    private static boolean isSpecial(@Nonnull String key) {
+        return ETaskAttribute.NAME.getAttribute().equals(key) || ETaskAttribute.ID_CARD.getAttribute().equals(key) || ETaskAttribute.SOURCE_ID.getAttribute().equals(key);
     }
 
     @Override
@@ -355,37 +417,6 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
             taskLogService.insertTaskLog(taskId, stepMsg, log.getOccurTime(), log.getErrorMsg());
         }
         monitorService.sendMonitorMessage(taskId);
-    }
-
-    private void setAttribute(Long taskId, Map map) {
-        String mobileAttribute = ETaskAttribute.MOBILE.getAttribute();
-        String nameAttribute = ETaskAttribute.NAME.getAttribute();
-        String idCardAttribute = ETaskAttribute.ID_CARD.getAttribute();
-        String sourceIdAttribute = ETaskAttribute.SOURCE_ID.getAttribute();
-
-
-        String mobile = map.get(mobileAttribute) == null ? "" : String.valueOf(map.get(mobileAttribute));
-        if (StringUtils.isNotBlank(mobile)) {
-            boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
-            if (!b) {
-                throw new ValidationException(String.format("the mobile number is illegal! mobile=%s", mobile));
-            }
-
-            taskAttributeService.insert(taskId, mobileAttribute, mobile, true);
-        }
-        String name = map.get(nameAttribute) == null ? "" : String.valueOf(map.get(nameAttribute));
-        if (StringUtils.isNotBlank(name)) {
-            taskAttributeService.insert(taskId, nameAttribute, name, true);
-        }
-        String idCard = map.get(idCardAttribute) == null ? "" : String.valueOf(map.get(idCardAttribute));
-        if (StringUtils.isNotBlank(idCard)) {
-            taskAttributeService.insert(taskId, idCardAttribute, idCard, true);
-        }
-
-        String sourceId = map.get(sourceIdAttribute) == null ? "" : String.valueOf(map.get(sourceIdAttribute));
-        if (StringUtils.isNotBlank(sourceId)) {
-            taskAttributeService.insert(taskId, sourceIdAttribute, sourceId, false);
-        }
     }
 
     private int updateProcessingTaskById(TaskParams params, Long id) {
