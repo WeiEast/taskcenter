@@ -14,7 +14,7 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
+import com.treefinance.saas.taskcenter.context.enums.EGrabStatus;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -51,28 +51,28 @@ public class CallbackEntity extends HashMap<String, Object> {
         this.put("taskErrorMsg", msg);
     }
 
-    public void setStatus(@Nonnull EGrapStatus status, String msg) {
+    public void setStatus(@Nonnull EGrabStatus status, String msg) {
         this.setStatus(status.getCode(), msg);
     }
 
-    public void setStatus(@Nonnull EGrapStatus status) {
+    public void setStatus(@Nonnull EGrabStatus status) {
         this.setStatus(status.getCode(), status.getName());
     }
 
     public void success() {
-        setStatus(EGrapStatus.SUCCESS, StringUtils.EMPTY);
+        setStatus(EGrabStatus.SUCCESS, StringUtils.EMPTY);
     }
 
     public void failure(String msg) {
-        setStatus(EGrapStatus.FAIL, msg);
+        setStatus(EGrabStatus.FAIL, msg);
     }
 
     public void cancel(String msg) {
-        setStatus(EGrapStatus.CANCEL, msg);
+        setStatus(EGrabStatus.CANCEL, msg);
     }
 
     public void emptyData() {
-        this.setStatus(EGrapStatus.RESULT_EMPTY);
+        this.setStatus(EGrabStatus.RESULT_EMPTY);
         this.setData(StringUtils.EMPTY);
     }
 

@@ -13,7 +13,7 @@ import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
-import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
+import com.treefinance.saas.taskcenter.context.enums.EGrabStatus;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.exception.CryptoException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
@@ -195,7 +195,7 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
         } else if (ETaskStatus.FAIL.getStatus().equals(status)) {
             // 任务失败消息
             TaskLog log = taskLogService.queryLastErrorLog(context.getTaskId());
-            entity.failure(log != null ? log.getMsg() : EGrapStatus.FAIL.getName());
+            entity.failure(log != null ? log.getMsg() : EGrabStatus.FAIL.getName());
         } else if (ETaskStatus.CANCEL.getStatus().equals(status)) {
             entity.cancel("用户取消");
         } else {
@@ -435,7 +435,7 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
         // 此时针对工商无需爬取时处理
         if (callbackEntity.getCrawlerStatus()) {
             logger.info("工商回调，回调code设置为005，taskId={}", context.getTaskId());
-            callbackEntity.setStatus(EGrapStatus.NO_NEED_CRAWLER, "");
+            callbackEntity.setStatus(EGrabStatus.NO_NEED_CRAWLER, "");
         }
 
         // 如果是运营商数据

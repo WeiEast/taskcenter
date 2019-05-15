@@ -19,7 +19,7 @@ import com.treefinance.b2b.saas.util.DataUtils;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
-import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
+import com.treefinance.saas.taskcenter.context.enums.EGrabStatus;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
@@ -93,7 +93,7 @@ public class AsyncGrabDataHandlerImpl implements AsyncGrabDataHandler {
         Map<String, Object> dataMap = Maps.newHashMap();
         // 填充uniqueId、taskId、taskStatus
         dataMap.put("taskId", task.getId());
-        dataMap.put("taskStatus", EGrapStatus.SUCCESS.getCode());
+        dataMap.put("taskStatus", EGrabStatus.SUCCESS.getCode());
         dataMap.put("taskErrorMsg", "");
         dataMap.put("uniqueId", task.getUniqueId());
         dataMap.put("dataUrl", message.getDataUrl());
@@ -106,12 +106,12 @@ public class AsyncGrabDataHandlerImpl implements AsyncGrabDataHandler {
         boolean isSuccess = Integer.valueOf(1).equals(message.getStatus());
         if (isSuccess) {
             if (StringUtils.isEmpty(message.getDataUrl())) {
-                dataMap.put("taskStatus", EGrapStatus.RESULT_EMPTY.getCode());
-                dataMap.put("taskErrorMsg", EGrapStatus.RESULT_EMPTY.getName());
+                dataMap.put("taskStatus", EGrabStatus.RESULT_EMPTY.getCode());
+                dataMap.put("taskErrorMsg", EGrabStatus.RESULT_EMPTY.getName());
             }
         } else {
-            dataMap.put("taskStatus", EGrapStatus.FAIL.getCode());
-            dataMap.put("taskErrorMsg", EGrapStatus.FAIL.getName());
+            dataMap.put("taskStatus", EGrabStatus.FAIL.getCode());
+            dataMap.put("taskErrorMsg", EGrabStatus.FAIL.getName());
         }
         if (logger.isDebugEnabled()) {
             logger.debug("{} callback : generate dataMap  {} ", dataType.name(), JSON.toJSONString(dataMap));
