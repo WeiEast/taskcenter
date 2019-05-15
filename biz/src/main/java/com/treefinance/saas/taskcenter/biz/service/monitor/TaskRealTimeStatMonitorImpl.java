@@ -1,16 +1,13 @@
 package com.treefinance.saas.taskcenter.biz.service.monitor;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskRealTimeMonitorMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
-import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.context.enums.ETaskStatLink;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import com.treefinance.saas.taskcenter.dao.entity.Task;
+import com.treefinance.saas.taskcenter.dao.repository.TaskAttributeRepository;
+import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
 import com.treefinance.toolkit.util.DateUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +31,9 @@ public class TaskRealTimeStatMonitorImpl implements TaskRealTimeStatMonitor{
      */
     private static List<String> logLinkList = ETaskStatLink.getStepCodeListBySource("task_log");
     @Autowired
-    private TaskService taskService;
+    private TaskRepository taskRepository;
     @Autowired
-    private TaskAttributeService taskAttributeService;
+    private TaskAttributeRepository taskAttributeRepository;
     @Autowired
     private MonitorMessageProducer monitorMessageProducer;
 
@@ -51,7 +48,7 @@ public class TaskRealTimeStatMonitorImpl implements TaskRealTimeStatMonitor{
             logger.error("任务实时监控日志环节处理,需统计的任务环节未在枚举定义中找到,taskId={},code={}", taskId, code);
             return;
         }
-        TaskInfo task = taskService.getTaskInfoById(taskId);
+        Task task = taskRepository.getTaskById(taskId);
         if (task == null) {
             return;
         }
@@ -72,11 +69,7 @@ public class TaskRealTimeStatMonitorImpl implements TaskRealTimeStatMonitor{
         message.setStatName(taskLinkStatName);
 
         // 获取任务属性
-        List<TaskAttribute> attributeList = taskAttributeService.listAttributesByTaskId(taskId);
-        Map<String, String> attributeMap = Maps.newHashMap();
-        if (CollectionUtils.isNotEmpty(attributeList)) {
-            attributeList.forEach(taskAttribute -> attributeMap.put(taskAttribute.getName(), taskAttribute.getValue()));
-        }
+        Map<String, String> attributeMap = taskAttributeRepository.getAttributeMapByTaskId(taskId, false);
         message.setTaskAttributes(attributeMap);
         monitorMessageProducer.send(message);
         logger.info("任务实时监控日志环节处理,发送消息,taskId={},code={},message={}", taskId, code, JSON.toJSONString(message));

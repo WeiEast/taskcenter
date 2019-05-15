@@ -21,6 +21,8 @@ import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.toolkit.util.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Jerry
  * @date 2019-03-06 12:35
@@ -28,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 abstract class AbstractBusinessMonitor<T extends MonitorMessage> extends AbstractService implements BusinessMonitor {
 
     @Override
-    public final void sendMessage(TaskInfo task) {
+    public final void sendMessage(@Nonnull TaskInfo task) {
         logger.info("sendMonitorMessage: task={}", task);
 
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -53,12 +55,12 @@ abstract class AbstractBusinessMonitor<T extends MonitorMessage> extends Abstrac
      * @param task 任务
      * @return 监控消息
      */
-    protected abstract T buildMonitorMessage(TaskInfo task);
+    protected abstract T buildMonitorMessage(@Nonnull TaskInfo task);
 
     /**
      * 发生监控消息
      * 
      * @param message 监控消息
      */
-    protected abstract void doSending(T message);
+    protected abstract void doSending(@Nonnull T message);
 }

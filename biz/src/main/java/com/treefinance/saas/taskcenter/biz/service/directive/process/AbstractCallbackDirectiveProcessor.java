@@ -6,7 +6,7 @@ import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
 import com.treefinance.saas.taskcenter.biz.service.MonitorService;
-import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
+import com.treefinance.saas.taskcenter.service.TaskPointService;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;

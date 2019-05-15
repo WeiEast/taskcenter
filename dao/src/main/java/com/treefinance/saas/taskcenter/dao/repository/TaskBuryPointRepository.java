@@ -18,6 +18,7 @@ import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,6 +28,12 @@ import java.util.List;
 public interface TaskBuryPointRepository {
 
     List<TaskBuryPointLog> queryTaskBuryPointLogsByTaskIdAndInCodes(@Nonnull Long taskId, @Nullable List<String> codes);
+
+    long countTaskBuryPointLogsByTaskIdAndInCodes(@Nonnull Long taskId, @Nullable List<String> codes);
+
+    default boolean doesAnyExist(@Nonnull Long taskId, @Nonnull String... codes) {
+        return countTaskBuryPointLogsByTaskIdAndInCodes(taskId, Arrays.asList(codes)) > 0;
+    }
 
     List<TaskBuryPointLog> queryTaskBuryPointLogs(Long id, String appId, Long taskId, String code, String order);
 

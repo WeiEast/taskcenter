@@ -5,25 +5,22 @@ import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskOperatorMonitorMessage;
 import com.treefinance.saas.assistant.model.TaskStep;
 import com.treefinance.saas.assistant.plugin.TaskOperatorMonitorPlugin;
-import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
-import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
-import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
-import com.treefinance.saas.taskcenter.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.service.TaskBuryPointLogService;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.context.enums.EProcessStep;
+import com.treefinance.saas.taskcenter.dao.repository.TaskAttributeRepository;
+import com.treefinance.saas.taskcenter.dao.repository.TaskBuryPointRepository;
+import com.treefinance.saas.taskcenter.dao.repository.TaskLogRepository;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
+
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Buddha Bless , No Bug !
@@ -36,13 +33,13 @@ import java.util.stream.Collectors;
 public class OperatorMonitor extends AbstractBusinessMonitor<TaskOperatorMonitorMessage> {
 
     @Autowired
+    private TaskAttributeRepository taskAttributeRepository;
+    @Autowired
+    private TaskLogRepository taskLogRepository;
+    @Autowired
     private TaskOperatorMonitorPlugin taskOperatorMonitorPlugin;
     @Autowired
-    private TaskAttributeService taskAttributeService;
-    @Autowired
-    private TaskBuryPointLogService taskBuryPointLogService;
-    @Autowired
-    private TaskLogService taskLogService;
+    private TaskBuryPointRepository taskBuryPointRepository;
 
     @Override
     public boolean support(EBizType bizType) {
@@ -50,37 +47,31 @@ public class OperatorMonitor extends AbstractBusinessMonitor<TaskOperatorMonitor
     }
 
     @Override
-    protected TaskOperatorMonitorMessage buildMonitorMessage(TaskInfo task) {
+    protected TaskOperatorMonitorMessage buildMonitorMessage(@Nonnull TaskInfo task) {
         Long taskId = task.getId();
-        TaskOperatorMonitorMessage message = convert(task, TaskOperatorMonitorMessage.class);
-        message.setTaskId(task.getId());
+        TaskOperatorMonitorMessage message = convertStrict(task, TaskOperatorMonitorMessage.class);
+        message.setTaskId(taskId);
         message.setSaasEnv(String.valueOf(task.getSaasEnv()));
         // 1.获取任务属性
-        List<TaskAttribute> attributeList = taskAttributeService.listAttributesByTaskId(taskId);
-        Map<String, String> attributeMap = Maps.newHashMap();
-        if (CollectionUtils.isNotEmpty(attributeList)) {
-            attributeList.forEach(taskAttribute -> attributeMap.put(taskAttribute.getName(), taskAttribute.getValue()));
-        }
+        Map<String, String> attributeMap = taskAttributeRepository.getAttributeMapByTaskId(taskId, false);
         message.setTaskAttributes(attributeMap);
 
         // 2.获取任务步骤
-        List<TaskStep> taskSteps = Lists.newArrayList();
         Map<Integer, TaskStep> taskStepMap = Maps.newHashMap();
-        List<TaskLog> taskLogs = taskLogService.queryTaskLogsByTaskIdAndInSteps(taskId, ETaskStep.TASK_CREATE, ETaskStep.LOGIN_SUCCESS, ETaskStep.CRAWL_SUCCESS,
-            ETaskStep.DATA_SAVE_SUCCESS, ETaskStep.CALLBACK_SUCCESS);
-        List<String> taskLogMsgs = taskLogs.stream().map(TaskLog::getMsg).collect(Collectors.toList());
+
+        List<String> taskLogMsgs = taskLogRepository.queryTaskLogMsgListByTaskIdAndInMsgs(taskId, ETaskStep.TASK_CREATE.getText(), ETaskStep.LOGIN_SUCCESS.getText(),
+            ETaskStep.CRAWL_SUCCESS.getText(), ETaskStep.DATA_SAVE_SUCCESS.getText(), ETaskStep.CALLBACK_SUCCESS.getText());
+
         // 任务创建
         if (taskLogMsgs.contains(ETaskStep.TASK_CREATE.getText())) {
             taskStepMap.put(1, new TaskStep(1, EProcessStep.CREATE.getCode(), EProcessStep.CREATE.getName()));
         }
         // 确认手机号
-        List<TaskBuryPointLog> confirmMobileList = taskBuryPointLogService.queryTaskBuryPointLogByCode(taskId, "300502");
-        if (CollectionUtils.isNotEmpty(confirmMobileList)) {
+        if (taskBuryPointRepository.doesAnyExist(taskId, "300502")) {
             taskStepMap.put(2, new TaskStep(2, EProcessStep.CONFIRM_MOBILE.getCode(), EProcessStep.CONFIRM_MOBILE.getName()));
         }
         // 开始登陆
-        List<TaskBuryPointLog> startLoginList = taskBuryPointLogService.queryTaskBuryPointLogByCode(taskId, "300701");
-        if (CollectionUtils.isNotEmpty(startLoginList)) {
+        if (taskBuryPointRepository.doesAnyExist(taskId, "300701")) {
             taskStepMap.put(3, new TaskStep(3, EProcessStep.CONFIRM_LOGIN.getCode(), EProcessStep.CONFIRM_LOGIN.getName()));
         }
         // 登录成功
@@ -100,6 +91,7 @@ public class OperatorMonitor extends AbstractBusinessMonitor<TaskOperatorMonitor
             taskStepMap.put(7, new TaskStep(7, EProcessStep.CALLBACK.getCode(), EProcessStep.CALLBACK.getName()));
         }
         // 3.判断任务步骤是否正确或有遗漏
+        List<TaskStep> taskSteps = Lists.newArrayList();
         for (int i = 1; i <= 7; i++) {
             if (!taskStepMap.keySet().contains(i)) {
                 break;
@@ -112,7 +104,7 @@ public class OperatorMonitor extends AbstractBusinessMonitor<TaskOperatorMonitor
     }
 
     @Override
-    protected void doSending(TaskOperatorMonitorMessage message) {
+    protected void doSending(@Nonnull TaskOperatorMonitorMessage message) {
         taskOperatorMonitorPlugin.sendMessage(message);
     }
 

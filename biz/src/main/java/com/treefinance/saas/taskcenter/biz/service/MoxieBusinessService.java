@@ -20,7 +20,7 @@ import com.treefinance.saas.taskcenter.biz.service.directive.MoxieDirectivePacke
 import com.treefinance.saas.taskcenter.biz.service.impl.TaskServiceImpl;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
-import com.treefinance.saas.taskcenter.dto.moxie.MoxieTaskEventNoticeDTO;
+import com.treefinance.saas.taskcenter.dto.moxie.MoxieTaskEventNoticeMessage;
 import com.treefinance.saas.taskcenter.interation.manager.FundManager;
 import com.treefinance.saas.taskcenter.interation.manager.FundMoxieManager;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
@@ -55,24 +55,22 @@ public class MoxieBusinessService {
     /**
      * 魔蝎任务采集失败业务处理
      *
-     * @param eventNoticeDTO
+     * @param noticeMessage
      */
-    public void grabFail(MoxieTaskEventNoticeDTO eventNoticeDTO) {
-        String moxieTaskId = eventNoticeDTO.getMoxieTaskId();
-        String message = eventNoticeDTO.getMessage();
-
+    public void grabFail(MoxieTaskEventNoticeMessage noticeMessage) {
+        String moxieTaskId = noticeMessage.getMoxieTaskId();
         Long taskId = taskAttributeService.findTaskIdByMoxieTid(moxieTaskId);
         if (taskId == null) {
-            logger.error("handle moxie business error: moxieTaskId={} doesn't have taskId matched in task_attribute", moxieTaskId);
+            logger.warn("handle moxie business error: moxieTaskId={} doesn't have taskId matched in task_attribute", moxieTaskId);
             return;
         }
 
         // 任务已经完成,不再继续后续处理.(当任务超时时,会发生魔蝎回调接口重试)
-        boolean flag = taskService.isTaskCompleted(taskId);
-        if (flag) {
+        if (taskService.isTaskCompleted(taskId)) {
             return;
         }
         // 1.记录采集失败日志
+        String message = noticeMessage.getMessage();
         taskLogService.insertTaskLog(taskId, ETaskStep.CRAWL_FAIL.getText(), new Date(), message);
         // 2.发送任务失败指令
         MoxieDirectivePacket directivePacket = new MoxieDirectivePacket(EDirective.TASK_FAIL);
@@ -83,27 +81,27 @@ public class MoxieBusinessService {
 
     }
 
-    public void loginSuccess(MoxieTaskEventNoticeDTO eventNoticeDTO) {
+    public void loginSuccess(MoxieTaskEventNoticeMessage noticeMessage) {
         MoxieDirectivePacket directivePacket = new MoxieDirectivePacket(EDirective.LOGIN_SUCCESS);
-        directivePacket.setMoxieTaskId(eventNoticeDTO.getMoxieTaskId());
+        directivePacket.setMoxieTaskId(noticeMessage.getMoxieTaskId());
         directiveService.process(directivePacket);
     }
 
-    public void loginFail(MoxieTaskEventNoticeDTO eventNoticeDTO) {
+    public void loginFail(MoxieTaskEventNoticeMessage noticeMessage) {
         MoxieDirectivePacket directivePacket = new MoxieDirectivePacket(EDirective.LOGIN_FAIL);
-        directivePacket.setMoxieTaskId(eventNoticeDTO.getMoxieTaskId());
-        directivePacket.setRemark(eventNoticeDTO.getMessage());
+        directivePacket.setMoxieTaskId(noticeMessage.getMoxieTaskId());
+        directivePacket.setRemark(noticeMessage.getMessage());
         directiveService.process(directivePacket);
     }
 
     /**
      * 魔蝎账单通知业务处理
      *
-     * @param eventNoticeDTO
+     * @param noticeMessage
      */
     @Transactional(rollbackFor = Exception.class)
-    public void bill(MoxieTaskEventNoticeDTO eventNoticeDTO) {
-        String moxieTaskId = eventNoticeDTO.getMoxieTaskId();
+    public void bill(MoxieTaskEventNoticeMessage noticeMessage) {
+        String moxieTaskId = noticeMessage.getMoxieTaskId();
 
         Long taskId = taskAttributeService.findTaskIdByMoxieTid(moxieTaskId);
         if (taskId == null) {
@@ -112,8 +110,7 @@ public class MoxieBusinessService {
         }
 
         // 任务已经完成,不再继续后续处理.(当任务超时时,会发生魔蝎回调接口重试)
-        boolean flag = taskService.isTaskCompleted(taskId);
-        if (flag) {
+        if (taskService.isTaskCompleted(taskId)) {
             return;
         }
 

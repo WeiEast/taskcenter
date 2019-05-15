@@ -16,23 +16,35 @@
 
 package com.treefinance.saas.taskcenter.service;
 
-import com.treefinance.saas.taskcenter.dao.entity.TaskBuryPointLog;
-
-import javax.annotation.Nonnull;
-
-import java.util.List;
+import com.treefinance.saas.taskcenter.service.param.TaskPointCreateObject;
 
 /**
- * @author Jerry
- * @date 2018/11/21 16:48
+ * @author 张琰佳
+ * @since 8:38 PM 2019/1/24
  */
-public interface TaskBuryPointLogService {
+public interface TaskPointService {
 
-    void pushTaskBuryPointLog(Long taskId, String appId, String code);
+    /**
+     * 添加系统埋点
+     * 
+     * @param taskId 任务ID
+     * @param pointCode 埋点编号
+     */
+    void addTaskPoint(Long taskId, String pointCode);
 
-    List<TaskBuryPointLog> queryTaskBuryPointLogs(Long id, String appId, Long taskId, String code, String order);
+    /**
+     * 添加系统埋点
+     * 
+     * @param taskId 任务ID
+     * @param pointCode 埋点编号
+     * @param ip IP
+     */
+    void addTaskPoint(Long taskId, String pointCode, String ip);
 
-    List<TaskBuryPointLog> listTaskBuryPointLogsDescWithCreateTimeByTaskId(@Nonnull Long taskId);
-
-    void logTaskOperatorMaintainUser(Long taskId, String appId, String extra);
+    /**
+     * 添加埋点
+     *
+     * @param createObject 埋点参数
+     */
+    void addTaskPoint(TaskPointCreateObject createObject);
 }

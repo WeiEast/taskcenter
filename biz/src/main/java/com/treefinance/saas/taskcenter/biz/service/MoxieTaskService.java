@@ -16,11 +16,32 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
+import java.util.Date;
+
 /**
  * @author Jerry
  * @date 2019-04-19 00:29
  */
 public interface MoxieTaskService {
 
+    /**
+     * 记录魔蝎任务创建时间,即开始登录时间.
+     *
+     * @param taskId 任务ID
+     */
+    void logLoginTime(Long taskId);
 
+    void logLoginTime(Long taskId, Date date);
+
+    /**
+     * 查询登录时间
+     *
+     * @param taskId 任务ID
+     * @return 登录时间
+     */
+    Date queryLoginTime(Long taskId);
+
+    void handleIfTaskTimeout(Long taskId);
+
+    void handleAfterLoginTimeout(Long taskId, String moxieTaskId);
 }

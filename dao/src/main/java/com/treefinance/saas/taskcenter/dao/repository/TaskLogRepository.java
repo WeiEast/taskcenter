@@ -18,8 +18,10 @@ import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Jerry
@@ -34,6 +36,16 @@ public interface TaskLogRepository {
     List<TaskLog> listTaskLogsDescWithOccurTimeInTaskIds(@Nonnull List<Long> taskIds);
 
     List<TaskLog> queryTaskLogsByTaskIdAndInMsgs(@Nonnull Long taskId, @Nullable List<String> msgs);
+
+    default List<TaskLog> queryTaskLogsByTaskIdAndInMsgs(@Nonnull Long taskId, @Nonnull String... msgs) {
+        return queryTaskLogsByTaskIdAndInMsgs(taskId, Arrays.asList(msgs));
+    }
+
+    default List<String> queryTaskLogMsgListByTaskIdAndInMsgs(@Nonnull Long taskId, @Nonnull String... msgs) {
+        final List<TaskLog> taskLogs = queryTaskLogsByTaskIdAndInMsgs(taskId, msgs);
+
+        return taskLogs.stream().map(TaskLog::getMsg).collect(Collectors.toList());
+    }
 
     List<TaskLog> queryTaskLogs(Long id, List<Long> taskIds, String msg, String stepCode, String errorMsg, Date occurTime, String order);
 

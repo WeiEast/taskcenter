@@ -13,7 +13,6 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
-import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 
@@ -60,8 +59,6 @@ public interface TaskLogService {
     List<TaskLog> listTaskLogsByTaskIdAndMsg(Long taskId, String msg);
 
     List<TaskLog> listTaskLogsDescWithOccurTimeInTaskIds(@Nonnull List<Long> taskIds);
-
-    List<TaskLog> queryTaskLogsByTaskIdAndInSteps(@Nonnull Long taskId, ETaskStep... steps);
 
     Long log(Long taskId, TaskStatusMsgEnum msgEnum);
 

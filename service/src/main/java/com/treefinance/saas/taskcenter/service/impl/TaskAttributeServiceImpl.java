@@ -21,7 +21,7 @@ import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskAttributeRepository;
 import com.treefinance.saas.taskcenter.exception.UnexpectedException;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.service.param.TaskAttributeSaveParams;
+import com.treefinance.saas.taskcenter.service.param.TaskAttributeSaveObject;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisKeyUtils;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedissonLocks;
@@ -121,9 +121,9 @@ public class TaskAttributeServiceImpl implements TaskAttributeService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void saveAttributes(@Nonnull Long taskId, @Nonnull List<TaskAttributeSaveParams> attributes) {
+    public void saveAttributes(@Nonnull Long taskId, @Nonnull List<TaskAttributeSaveObject> attributes) {
         if (CollectionUtils.isNotEmpty(attributes)) {
-            for (TaskAttributeSaveParams attribute : attributes) {
+            for (TaskAttributeSaveObject attribute : attributes) {
                 taskAttributeRepository.insertOrUpdateAttribute(taskId, attribute.getName(), attribute.getValue(), attribute.isSensitive());
             }
         }

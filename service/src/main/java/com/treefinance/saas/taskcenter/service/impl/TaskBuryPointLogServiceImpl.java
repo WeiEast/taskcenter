@@ -34,7 +34,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nonnull;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -85,11 +84,6 @@ public class TaskBuryPointLogServiceImpl implements TaskBuryPointLogService {
         log.setAppId(appId);
         log.setCode(code);
         logQueue.offer(log);
-    }
-
-    @Override
-    public List<TaskBuryPointLog> queryTaskBuryPointLogByCode(Long taskId, String... codes) {
-        return taskBuryPointRepository.queryTaskBuryPointLogsByTaskIdAndInCodes(taskId, codes == null ? null : Arrays.asList(codes));
     }
 
     @Override

@@ -1,18 +1,33 @@
-package com.treefinance.saas.taskcenter.biz.service.impl;
+/*
+ * Copyright © 2015 - 2017 杭州大树网络技术有限公司. All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import com.treefinance.commonservice.uid.UidService;
-import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
+package com.treefinance.saas.taskcenter.service.impl;
+
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskPoint;
-import com.treefinance.saas.taskcenter.dao.mapper.TaskPointMapper;
+import com.treefinance.saas.taskcenter.dao.param.TaskPointInsertParams;
 import com.treefinance.saas.taskcenter.dao.repository.TaskAttributeRepository;
+import com.treefinance.saas.taskcenter.dao.repository.TaskPointRepository;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
-import com.treefinance.saas.taskcenter.facade.request.TaskPointRequest;
-import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
 import com.treefinance.saas.taskcenter.interation.manager.MerchantFunctionManager;
 import com.treefinance.saas.taskcenter.interation.manager.domain.MerchantFunctionBO;
+import com.treefinance.saas.taskcenter.service.TaskPointService;
+import com.treefinance.saas.taskcenter.service.param.TaskPointCreateObject;
 import com.treefinance.saas.taskcenter.share.cache.redis.RedisDao;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.toolkit.util.net.NetUtils;
@@ -55,12 +70,9 @@ public class TaskPointServiceImpl implements TaskPointService {
     @Autowired
     private TaskAttributeRepository taskAttributeRepository;
     @Autowired
-    private TaskPointMapper taskPointMapper;
+    private TaskPointRepository taskPointRepository;
     @Autowired
     private RedisDao redisDao;
-    @Autowired
-    private UidService uidService;
-
     @Autowired
     private MerchantFunctionManager merchantFunctionManager;
 
@@ -78,7 +90,7 @@ public class TaskPointServiceImpl implements TaskPointService {
 
     @Override
     public void addTaskPoint(Long taskId, String pointCode, String ip) {
-        TaskPointRequest taskPointRequest = new TaskPointRequest();
+        TaskPointCreateObject taskPointRequest = new TaskPointCreateObject();
         taskPointRequest.setTaskId(taskId);
         taskPointRequest.setType((byte)1);
         taskPointRequest.setCode(pointCode);
@@ -87,31 +99,27 @@ public class TaskPointServiceImpl implements TaskPointService {
     }
 
     @Override
-    public void addTaskPoint(TaskPointRequest taskPointRequest) {
+    public void addTaskPoint(TaskPointCreateObject createObject) {
         try {
-            Preconditions.notNull("request", taskPointRequest);
-            Preconditions.notBlank("request.code", taskPointRequest.getCode());
+            TaskPointInner info = this.readTaskPointInner(createObject.getTaskId());
 
-            TaskPointInner info = this.readTaskPointInner(taskPointRequest.getTaskId());
+            TaskPointInsertParams params = new TaskPointInsertParams();
+            BeanUtils.copyProperties(createObject, params);
+            params.setOccurTime(new Date());
+            params.setAppId(info.getAppId());
+            params.setUniqueId(info.getUniqueId());
+            params.setBizType(info.getBizType());
 
-            TaskPoint taskPoint = new TaskPoint();
-            BeanUtils.copyProperties(taskPointRequest, taskPoint);
-            taskPoint.setId(uidService.getId());
-            taskPoint.setOccurTime(new Date());
-            taskPoint.setAppId(info.getAppId());
-            taskPoint.setUniqueId(info.getUniqueId());
-            taskPoint.setBizType(info.getBizType());
-
-            int bizType = taskPoint.getBizType();
-            if (taskPoint.getType() == 1) {
-                taskPoint.setCode(createSystemTaskPointCode(bizType, taskPoint.getCode()));
+            int bizType = params.getBizType();
+            if (params.getType() == 1) {
+                params.setCode(createSystemTaskPointCode(bizType, params.getCode()));
             }
-            taskPoint.setStep(getStep(taskPoint.getCode()));
-            taskPoint.setSubStep(getSubStep(taskPoint.getCode()));
-            taskPoint.setMsg(getMsg(taskPoint.getCode()));
+            params.setStep(getStep(params.getCode()));
+            params.setSubStep(getSubStep(params.getCode()));
+            params.setMsg(getMsg(params.getCode()));
 
-            int i = taskPointMapper.insertSelective(taskPoint);
-            if (i > 0 && supportNotifyBizType(bizType)) {
+            TaskPoint taskPoint = taskPointRepository.insert(params);
+            if (supportNotifyBizType(bizType)) {
                 MerchantFunctionBO function = null;
                 try {
                     function = merchantFunctionManager.getMerchantFunctionByAppId(taskPoint.getAppId());
@@ -123,7 +131,7 @@ public class TaskPointServiceImpl implements TaskPointService {
                 }
             }
         } catch (Exception e) {
-            logger.error("埋点通知商户异常，taskId={}", taskPointRequest.getTaskId(), e);
+            logger.error("埋点通知商户异常，taskId={}", createObject.getTaskId(), e);
         }
     }
 

@@ -1,6 +1,6 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.MoxieTimeoutService;
+import com.treefinance.saas.taskcenter.biz.service.MoxieTaskService;
 import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.MoxieTimeoutFacade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +16,11 @@ import java.util.Date;
 public class MoxieTimeoutFacadeImpl implements MoxieTimeoutFacade {
 
     @Autowired
-    private MoxieTimeoutService moxieTimeoutService;
+    private MoxieTaskService moxieTimeoutService;
 
     @Override
     public TaskResult<Date> getLoginTime(Long taskId) {
-        Date date = moxieTimeoutService.getLoginTime(taskId);
+        Date date = moxieTimeoutService.queryLoginTime(taskId);
         return TaskResult.wrapSuccessfulResult(date);
     }
 
@@ -38,13 +38,13 @@ public class MoxieTimeoutFacadeImpl implements MoxieTimeoutFacade {
 
     @Override
     public TaskResult<Void> handleTaskTimeout(Long taskId) {
-        moxieTimeoutService.handleTaskTimeout(taskId);
+        moxieTimeoutService.handleIfTaskTimeout(taskId);
         return TaskResult.wrapSuccessfulResult(null);
     }
 
     @Override
     public TaskResult<Void> handleLoginTimeout(Long taskId, String moxieTaskId) {
-        moxieTimeoutService.handleLoginTimeout(taskId, moxieTaskId);
+        moxieTimeoutService.handleAfterLoginTimeout(taskId, moxieTaskId);
         return TaskResult.wrapSuccessfulResult(null);
     }
 }

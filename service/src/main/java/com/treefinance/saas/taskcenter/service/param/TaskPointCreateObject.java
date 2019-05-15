@@ -11,31 +11,46 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service.monitor;
+package com.treefinance.saas.taskcenter.service.param;
 
-import com.treefinance.saas.taskcenter.common.enums.EBizType;
-import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author Jerry
- * @date 2019-03-06 03:15
+ * @date 2019/05/15
  */
-public interface BusinessMonitor {
+@Getter
+@Setter
+@ToString
+public class TaskPointCreateObject implements Serializable {
 
-    /**
-     * 是否支持该业务
-     * 
-     * @param bizType 业务类型
-     * @return true if supported <code>bizType</code>
-     */
-    boolean support(EBizType bizType);
+    private Long taskId;
 
-    /**
-     * 发送监控消息
-     *
-     * @param task 任务
-     */
-    void sendMessage(@Nonnull TaskInfo task);
+    private String appId;
+
+    private String uniqueId;
+
+    private Byte type;
+
+    private String code;
+
+    private String step;
+
+    private String subStep;
+
+    private String msg;
+
+    private String remake;
+
+    private String ip;
+
+    private Date occurTime;
+
+    private String extra;
+
 }

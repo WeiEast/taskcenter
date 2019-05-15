@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * Created by haojiahong on 2017/9/21.
  */
-public class MoxieTaskEventNoticeDTO implements Serializable {
+public class MoxieTaskEventNoticeMessage implements Serializable {
     private static final long serialVersionUID = 3646957264685997957L;
 
     /**

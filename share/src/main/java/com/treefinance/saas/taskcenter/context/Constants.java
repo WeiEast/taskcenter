@@ -41,5 +41,9 @@ public final class Constants {
 
     public static final Byte DATA_TYPE_0 = Byte.valueOf("0");
 
+    public static final String SOURCE_TYPE_SDK = "1";
+    
+    public static final String SOURCE_TYPE_H5 = "2";
+
     private Constants() {}
 }

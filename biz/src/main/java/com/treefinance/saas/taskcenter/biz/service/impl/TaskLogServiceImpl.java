@@ -21,7 +21,6 @@ import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dao.repository.TaskLogRepository;
 import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +29,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by luoyihua on 2017/4/26.
@@ -83,16 +80,6 @@ public class TaskLogServiceImpl implements TaskLogService {
     @Override
     public List<TaskLog> listTaskLogsDescWithOccurTimeInTaskIds(@Nonnull List<Long> taskIds) {
         return taskLogRepository.listTaskLogsDescWithOccurTimeInTaskIds(taskIds);
-    }
-
-    @Override
-    public List<TaskLog> queryTaskLogsByTaskIdAndInSteps(@Nonnull Long taskId, ETaskStep... steps) {
-        List<String> msgs = null;
-        if (ArrayUtils.isNotEmpty(steps)) {
-            msgs = Arrays.stream(steps).map(ETaskStep::getText).collect(Collectors.toList());
-        }
-
-        return taskLogRepository.queryTaskLogsByTaskIdAndInMsgs(taskId, msgs);
     }
 
     @Override

@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.biz.service.monitor;
+package com.treefinance.saas.taskcenter.service.param;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.io.Serializable;
 
 /**
  * @author Jerry
- * @date 2019-05-15 14:57
+ * @date 2019-05-03 23:56
  */
-public interface TaskCallbackMsgMonitor {
-
-    /**
-     * 发送消息
-     *
-     * @param taskId
-     * @param httpCode
-     * @param result
-     * @param isCallback
-     */
-    void sendMessage(Long taskId, Integer httpCode, String result, Boolean isCallback);
+@Getter
+@Setter
+@ToString
+public class TaskAttributeSaveObject implements Serializable {
+    private String name;
+    private String value;
+    private boolean sensitive;
 }

@@ -13,13 +13,15 @@
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
+import com.treefinance.b2b.saas.util.BeanUtils;
 import com.treefinance.saas.taskcenter.biz.service.MonitorService;
-import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.biz.service.monitor.BusinessMonitor;
 import com.treefinance.saas.taskcenter.biz.service.monitor.BusinessMonitorManager;
 import com.treefinance.saas.taskcenter.biz.service.monitor.TaskCallbackMsgMonitor;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.dao.entity.Task;
+import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -46,9 +48,9 @@ public class MonitorServiceImpl implements MonitorService {
     @Autowired
     private ThreadPoolTaskExecutor threadPoolExecutor;
     @Autowired
-    private TaskService taskService;
-    @Autowired
     private BusinessMonitorManager businessMonitorManager;
+    @Autowired
+    private TaskRepository taskRepository;
 
     @Override
     public void sendMonitorMessage(Long taskId) {
@@ -89,7 +91,7 @@ public class MonitorServiceImpl implements MonitorService {
 
         @Override
         public void run() {
-            TaskInfo task = taskService.getTaskInfoById(taskId);
+            Task task = taskRepository.getTaskById(taskId);
             Byte status = task.getStatus();
             // 仅成功、失败、取消发送任务
             if (!ETaskStatus.SUCCESS.getStatus().equals(status) && !ETaskStatus.FAIL.getStatus().equals(status) && !ETaskStatus.CANCEL.getStatus().equals(status)) {
@@ -100,8 +102,9 @@ public class MonitorServiceImpl implements MonitorService {
             EBizType bizType = EBizType.of(task.getBizType());
             List<BusinessMonitor> monitors = businessMonitorManager.getMonitors(bizType);
             if (CollectionUtils.isNotEmpty(monitors)) {
+                final TaskInfo taskInfo = BeanUtils.convertStrict(task, TaskInfo.class);
                 for (BusinessMonitor monitor : monitors) {
-                    monitor.sendMessage(task);
+                    monitor.sendMessage(taskInfo);
                 }
             }
         }

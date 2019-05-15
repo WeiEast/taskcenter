@@ -52,7 +52,7 @@ import java.util.Map;
 public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     private static final Logger logger = LoggerFactory.getLogger(DeliveryAddressServiceImpl.class);
     @Autowired
-    protected TaskCallbackLogService taskCallbackLogService;
+    private TaskCallbackLogService taskCallbackLogService;
     @Autowired
     private TaskService taskService;
     @Autowired

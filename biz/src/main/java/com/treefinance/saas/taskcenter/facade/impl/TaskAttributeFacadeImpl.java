@@ -16,7 +16,7 @@ import com.treefinance.saas.taskcenter.facade.result.common.TaskResult;
 import com.treefinance.saas.taskcenter.facade.service.TaskAttributeFacade;
 import com.treefinance.saas.taskcenter.facade.validate.Preconditions;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
-import com.treefinance.saas.taskcenter.service.param.TaskAttributeSaveParams;
+import com.treefinance.saas.taskcenter.service.param.TaskAttributeSaveObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -270,7 +270,7 @@ public class TaskAttributeFacadeImpl extends AbstractFacade implements TaskAttri
 
         if (!request.isEmpty()) {
             final List<SavedTaskAttribute> attributes = request.getAttributes();
-            taskAttributeService.saveAttributes(request.getTaskId(), convert(attributes, TaskAttributeSaveParams.class));
+            taskAttributeService.saveAttributes(request.getTaskId(), convert(attributes, TaskAttributeSaveObject.class));
         }
 
         return TaskResponse.success(null);

@@ -1,6 +1,6 @@
 package com.treefinance.saas.taskcenter.facade.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.TaskNextDirectiveService;
+import com.treefinance.saas.taskcenter.service.TaskNextDirectiveService;
 import com.treefinance.saas.taskcenter.dao.entity.TaskNextDirective;
 import com.treefinance.saas.taskcenter.facade.request.TaskNextDirectiveRequest;
 import com.treefinance.saas.taskcenter.facade.response.TaskResponse;

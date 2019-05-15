@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
-package com.treefinance.saas.taskcenter.service.param;
+package com.treefinance.saas.taskcenter.dao.repository;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.treefinance.saas.taskcenter.dao.entity.TaskPoint;
+import com.treefinance.saas.taskcenter.dao.param.TaskPointInsertParams;
 
-import java.io.Serializable;
+import javax.annotation.Nonnull;
 
 /**
  * @author Jerry
- * @date 2019-05-03 23:56
+ * @date 2019-05-15 16:11
  */
-@Getter
-@Setter
-@ToString
-public class TaskAttributeSaveParams implements Serializable {
-    private String name;
-    private String value;
-    private boolean sensitive;
+public interface TaskPointRepository {
+
+    TaskPoint insert(@Nonnull TaskPointInsertParams params);
 }

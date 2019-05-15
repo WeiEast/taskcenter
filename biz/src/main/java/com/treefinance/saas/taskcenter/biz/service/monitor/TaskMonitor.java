@@ -9,6 +9,8 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
+
 /**
  * Created by yh-treefinance on 2017/6/20.
  */
@@ -25,7 +27,7 @@ public class TaskMonitor extends AbstractBusinessMonitor<TaskMonitorMessage> {
     }
 
     @Override
-    protected TaskMonitorMessage buildMonitorMessage(TaskInfo task) {
+    protected TaskMonitorMessage buildMonitorMessage(@Nonnull TaskInfo task) {
         TaskMonitorMessage message = new TaskMonitorMessage();
         message.setTaskId(task.getId());
         message.setAccountNo(task.getAccountNo());
@@ -41,7 +43,7 @@ public class TaskMonitor extends AbstractBusinessMonitor<TaskMonitorMessage> {
     }
 
     @Override
-    protected void doSending(TaskMonitorMessage message) {
+    protected void doSending(@Nonnull TaskMonitorMessage message) {
         taskMonitorPlugin.sendMessage(message);
     }
 
