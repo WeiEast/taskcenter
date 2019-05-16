@@ -13,6 +13,8 @@
 
 package com.treefinance.saas.taskcenter.biz.callback;
 
+import com.alibaba.fastjson.JSON;
+
 import java.io.Serializable;
 
 /**
@@ -111,5 +113,10 @@ public class AsyncGrabMessage implements Serializable {
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 }

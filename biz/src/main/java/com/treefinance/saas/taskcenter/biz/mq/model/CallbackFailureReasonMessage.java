@@ -16,6 +16,8 @@
 
 package com.treefinance.saas.taskcenter.biz.mq.model;
 
+import com.alibaba.fastjson.JSON;
+
 import java.io.Serializable;
 
 /**
@@ -56,5 +58,10 @@ public class CallbackFailureReasonMessage implements Serializable {
 
     public void setCallbackConfigId(Long callbackConfigId) {
         this.callbackConfigId = callbackConfigId;
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 }

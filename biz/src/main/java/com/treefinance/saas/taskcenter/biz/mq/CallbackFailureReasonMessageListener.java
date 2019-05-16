@@ -3,16 +3,17 @@ package com.treefinance.saas.taskcenter.biz.mq;
 import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.assistant.model.TaskCallbackFailureReasonMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
-import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
 import com.treefinance.saas.taskcenter.biz.mq.model.CallbackFailureReasonMessage;
+import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
+import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
 
 import java.util.Map;
 
@@ -25,7 +26,7 @@ import java.util.Map;
  * @date 2018/6/11
  */
 @Component
-public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessageListener {
+public class CallbackFailureReasonMessageListener extends AbstractJsonMessageListener<CallbackFailureReasonMessage> {
 
     @Autowired
     private TaskCallbackLogRepository taskCallbackLogRepository;
@@ -47,22 +48,17 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
     }
 
     @Override
-    protected void handleMessage(String msgBody) {
-        if (StringUtils.isBlank(msgBody)) {
-            logger.error("接收爬数发送的回调失败具体原因为空,message={}", msgBody);
-            return;
-        }
-        CallbackFailureReasonMessage failureReasonMessage = JSON.parseObject(msgBody, CallbackFailureReasonMessage.class);
-        Long taskId = failureReasonMessage.getTaskId();
-        Long callbackConfigId = failureReasonMessage.getCallbackConfigId();
-        Byte failureReason = failureReasonMessage.getFailureReason();
+    protected void processMessage(@Nonnull CallbackFailureReasonMessage message) {
+        Long taskId = message.getTaskId();
+        Long callbackConfigId = message.getCallbackConfigId();
+        Byte failureReason = message.getFailureReason();
         // 更新回调日志表
         taskCallbackLogRepository.insertOrUpdateLog(taskId, callbackConfigId, failureReason);
 
         // 发送监控消息
         TaskInfo task = taskService.getTaskInfoById(taskId);
         if (!EBizType.OPERATOR.getCode().equals(task.getBizType())) {
-            logger.info("接收爬数发送的回调失败具体原因,任务类型非运营商,暂不处理.message={},task={}", msgBody, JSON.toJSONString(task));
+            logger.warn("接收爬数发送的回调失败具体原因,任务类型非运营商,暂不处理.message={},task={}", message, task);
             return;
         }
 

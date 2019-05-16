@@ -6,7 +6,6 @@ import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
 import com.treefinance.saas.taskcenter.biz.service.MonitorService;
-import com.treefinance.saas.taskcenter.service.TaskPointService;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
@@ -20,6 +19,7 @@ import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
 import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
+import com.treefinance.saas.taskcenter.service.TaskPointService;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
@@ -195,7 +195,11 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
         } else if (ETaskStatus.FAIL.getStatus().equals(status)) {
             // 任务失败消息
             TaskLog log = taskLogService.queryLastErrorLog(context.getTaskId());
-            entity.failure(log != null ? log.getMsg() : EGrabStatus.FAIL.getName());
+            if (log != null) {
+                entity.failure(log.getMsg());
+            } else {
+                entity.failure();
+            }
         } else if (ETaskStatus.CANCEL.getStatus().equals(status)) {
             entity.cancel("用户取消");
         } else {

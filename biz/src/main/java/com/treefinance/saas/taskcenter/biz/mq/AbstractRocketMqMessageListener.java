@@ -5,6 +5,9 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.treefinance.saas.taskcenter.service.impl.AbstractService;
 import com.treefinance.saas.taskcenter.share.mq.BizMqMessageListener;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nonnull;
 
 import java.util.List;
 
@@ -24,7 +27,12 @@ public abstract class AbstractRocketMqMessageListener extends AbstractService im
         MessageExt msg = msgs.get(0);
         String message = new String(msg.getBody());
         try {
-            handleMessage(message);
+            logger.info("收到消息数据==>{}", message);
+            if (StringUtils.isNotEmpty(message)) {
+                handleMessage(message);
+            } else {
+                logger.warn("空消息，跳过消费处理，message={}", message);
+            }
             return CONSUME_SUCCESS;
         } catch (Throwable cause) {
             if (msg.getReconsumeTimes() > 0) {
@@ -43,5 +51,5 @@ public abstract class AbstractRocketMqMessageListener extends AbstractService im
      *
      * @param msgBody mq消息内容
      */
-    protected abstract void handleMessage(String msgBody);
+    protected abstract void handleMessage(@Nonnull String msgBody);
 }

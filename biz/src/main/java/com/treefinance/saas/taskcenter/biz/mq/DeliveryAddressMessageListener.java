@@ -1,17 +1,18 @@
 package com.treefinance.saas.taskcenter.biz.mq;
 
-import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.mq.model.DeliveryAddressMessage;
 import com.treefinance.saas.taskcenter.biz.service.DeliveryAddressService;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
+
 /**
  * Created by luoyihua on 2017/4/26.
  */
 @Service
-public class DeliveryAddressMessageListener extends AbstractRocketMqMessageListener {
+public class DeliveryAddressMessageListener extends AbstractJsonMessageListener<DeliveryAddressMessage> {
 
     @Autowired
     private DeliveryAddressService deliveryAddressService;
@@ -27,9 +28,7 @@ public class DeliveryAddressMessageListener extends AbstractRocketMqMessageListe
     }
 
     @Override
-    protected void handleMessage(String msgBody) {
-        logger.info("消费收货地址消息数据==>{}", msgBody);
-        DeliveryAddressMessage addressMessage = JSON.parseObject(msgBody, DeliveryAddressMessage.class);
-        deliveryAddressService.callback(addressMessage);
+    protected void processMessage(@Nonnull DeliveryAddressMessage message) {
+        deliveryAddressService.callback(message);
     }
 }

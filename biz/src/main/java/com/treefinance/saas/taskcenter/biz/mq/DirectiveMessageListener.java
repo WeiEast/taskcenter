@@ -1,20 +1,21 @@
 package com.treefinance.saas.taskcenter.biz.mq;
 
-import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.mq.model.DirectiveMessage;
+import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.config.MqConfig;
-import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nonnull;
 
 /**
  * Created by luoyihua on 2017/4/26.
  */
 @Service
-public class DirectiveMessageListener extends AbstractRocketMqMessageListener {
+public class DirectiveMessageListener extends AbstractJsonMessageListener<DirectiveMessage> {
 
     @Autowired
     private MqConfig mqConfig;
@@ -32,10 +33,7 @@ public class DirectiveMessageListener extends AbstractRocketMqMessageListener {
     }
 
     @Override
-    protected void handleMessage(String msgBody) {
-        logger.info("消费指令消息数据==>{}", msgBody);
-        DirectiveMessage message = JSON.parseObject(msgBody, DirectiveMessage.class);
-
+    protected void processMessage(@Nonnull DirectiveMessage message) {
         DirectivePacket directivePacket = new DirectivePacket();
         directivePacket.setDirective(EDirective.directiveOf(message.getDirective()));
         directivePacket.setDirectiveId(message.getDirectiveId());

@@ -63,6 +63,10 @@ public class CallbackEntity extends HashMap<String, Object> {
         setStatus(EGrabStatus.SUCCESS, StringUtils.EMPTY);
     }
 
+    public void failure() {
+        setStatus(EGrabStatus.FAIL);
+    }
+
     public void failure(String msg) {
         setStatus(EGrabStatus.FAIL, msg);
     }
