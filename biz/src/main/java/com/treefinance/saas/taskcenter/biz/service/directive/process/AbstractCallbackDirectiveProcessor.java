@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
 import com.treefinance.saas.taskcenter.biz.service.MonitorService;
-import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackResponse.CallbackData;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
@@ -12,13 +11,14 @@ import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
-import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
+import com.treefinance.saas.taskcenter.context.enums.EGrabStatus;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.exception.CryptoException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
 import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
+import com.treefinance.saas.taskcenter.service.TaskPointService;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject;
 import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject.CallbackResult;
@@ -87,13 +87,13 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
         if (ETaskStatus.FAIL.getStatus().equals(status)) {
             // 任务失败消息
             TaskLog log = taskLogService.queryLastErrorLog(context.getTaskId());
-            entity.failure(log != null ? log.getMsg() : EGrapStatus.FAIL.getName());
+            entity.failure(log != null ? log.getMsg() : EGrabStatus.FAIL.getName());
         } else if (ETaskStatus.CANCEL.getStatus().equals(status)) {
             entity.cancel("用户取消");
         } else if (entity.getCrawlerStatus()) {
             // 此时针对工商无需爬取时处理
             logger.info("工商回调，回调code设置为005，taskId={}", context.getTaskId());
-            entity.setStatus(EGrapStatus.NO_NEED_CRAWLER, "");
+            entity.setStatus(EGrabStatus.NO_NEED_CRAWLER, "");
         } else {
             entity.success();
         }
