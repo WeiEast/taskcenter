@@ -41,5 +41,15 @@ public final class Constants {
 
     public static final Byte DATA_TYPE_0 = Byte.valueOf("0");
 
+    /**
+     * 回调类型：后端回调
+     */
+    public static final Byte CALLBACK_TYPE_BACKEND = Byte.valueOf("1");
+
+    /**
+     * 回调类型：前端回调
+     */
+    public static final Byte CALLBACK_TYPE_FRONTEND = Byte.valueOf("2");
+
     private Constants() {}
 }

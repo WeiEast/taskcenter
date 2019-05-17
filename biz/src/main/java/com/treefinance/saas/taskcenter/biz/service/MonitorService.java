@@ -13,6 +13,9 @@
 
 package com.treefinance.saas.taskcenter.biz.service;
 
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject;
+
 /**
  * @author Jerry
  * @date 2019-04-18 17:36
@@ -29,10 +32,8 @@ public interface MonitorService {
     /**
      * 发送回调信息监控消息(异步调用)
      *
-     * @param taskId 任务ID
-     * @param httpCode 回调响应状态码
-     * @param result 回调结果
-     * @param isCallback 是否回调
+     * @param task 任务
+     * @param callbackRecord 回调记录
      */
-    void sendTaskCallbackMsgMonitorMessage(Long taskId, Integer httpCode, String result, Boolean isCallback);
+    void sendTaskCallbackMsgMonitorMessage(TaskInfo task, CallbackRecordObject callbackRecord);
 }

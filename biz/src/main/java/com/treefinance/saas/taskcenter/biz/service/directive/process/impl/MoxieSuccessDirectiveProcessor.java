@@ -41,8 +41,7 @@ public class MoxieSuccessDirectiveProcessor extends AbstractCallbackDirectivePro
 
         // 生成数据map
         CallbackEntity callbackEntity = buildCallbackEntity(context);
-        // 回调之前预处理
-        precallback(callbackEntity, context);
+
         // 触发回调: 0-无需回调，1-回调成功，-1-回调失败
         int result = callback(callbackEntity, context);
 
@@ -62,6 +61,7 @@ public class MoxieSuccessDirectiveProcessor extends AbstractCallbackDirectivePro
         String stepCode = taskService.updateStatusIfDone(taskId, context.getTaskStatus());
         context.updateStepCode(stepCode);
 
+        context.backupCallbackEntity(callbackEntity);
     }
 
 }

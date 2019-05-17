@@ -1,17 +1,21 @@
 package com.treefinance.saas.taskcenter.biz.service.monitor;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskCallbackMsgMonitorMessage;
 import com.treefinance.saas.assistant.plugin.TaskCallbackMsgMonitorPlugin;
-import com.treefinance.saas.taskcenter.biz.service.TaskService;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject.CallbackResult;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import java.util.Map;
 
@@ -26,25 +30,17 @@ public class TaskCallbackMsgMonitor {
     private static final Logger logger = LoggerFactory.getLogger(TaskCallbackMsgMonitor.class);
 
     @Autowired
-    private TaskService taskService;
-    @Autowired
     private TaskCallbackMsgMonitorPlugin taskCallbackMsgMonitorPlugin;
 
     /**
      * 发送消息
-     *
-     * @param taskId
-     * @param httpCode
-     * @param result
-     * @param isCallback
+     * 
+     * @param task 任务
+     * @param callbackRecord 回调记录
      */
-    public void sendMessage(Long taskId, Integer httpCode, String result, Boolean isCallback) {
-        TaskInfo task = taskService.getTaskInfoById(taskId);
-        if (task == null) {
-            return;
-        }
+    public void sendMessage(@Nonnull TaskInfo task, @Nullable CallbackRecordObject callbackRecord) {
         TaskCallbackMsgMonitorMessage message = new TaskCallbackMsgMonitorMessage();
-        message.setTaskId(taskId);
+        message.setTaskId(task.getId());
         message.setAccountNo(task.getAccountNo());
         message.setAppId(task.getAppId());
         message.setBizType(task.getBizType());
@@ -53,26 +49,30 @@ public class TaskCallbackMsgMonitor {
         message.setUniqueId(task.getUniqueId());
         message.setSaasEnv(String.valueOf(task.getSaasEnv()));
         // 有回调
-        if (isCallback) {
+        if (callbackRecord != null) {
             Map<String, Object> attributeMap = Maps.newHashMap();
-            attributeMap.put("callbackHttpCode", httpCode);
-            if (httpCode == 200) {
-                attributeMap.put("callbackCode", 200);
+            final int responseStatusCode = callbackRecord.getResponseStatusCode();
+            attributeMap.put("callbackHttpCode", responseStatusCode);
+            if (responseStatusCode == HttpStatus.SC_OK) {
+                attributeMap.put("callbackCode", 0);
                 attributeMap.put("callbackMsg", "回调成功");
+            } else if (responseStatusCode == 0) {
+                final Throwable exception = callbackRecord.getException();
+                attributeMap.put("callbackMsg", exception == null ? "回调执行错误" : "回调执行失败：" + exception.getMessage());
             } else {
-                try {
-                    JSONObject jsonObject = JSON.parseObject(result);
-                    String errorMsg = jsonObject.getString("errorMsg");
-                    String errorCode = jsonObject.getString("code");
-                    attributeMap.put("callbackCode", errorCode);
-                    if (StringUtils.isNotBlank(errorMsg)) {
-                        attributeMap.put("callbackMsg", errorMsg);
-                    } else {
-                        attributeMap.put("callbackMsg", "回调错误信息为空");
+                final CallbackResult callbackResult = callbackRecord.getCallbackResult();
+                if (callbackResult != null) {
+                    String callbackCode = callbackResult.getCode();
+                    String callbackMsg = callbackResult.getErrorMsg();
+                    if (StringUtils.isBlank(callbackMsg)) {
+                        callbackMsg = "回调错误信息为空";
                     }
-                } catch (Exception e) {
-                    logger.error("记录回调错误信息:解析返回回调结果json有误,taskId={},回调返回结果result={}", taskId, result);
-                    attributeMap.put("callbackMsg", result.length() > 1000 ? result.substring(0, 100) + "..." : result);
+
+                    attributeMap.put("callbackCode", callbackCode);
+                    attributeMap.put("callbackMsg", callbackMsg);
+                } else {
+                    final String responseData = callbackRecord.getResponseData();
+                    attributeMap.put("callbackMsg", responseData.length() > 1000 ? responseData.substring(0, 1000) + "..." : responseData);
                 }
             }
             message.setAttributes(attributeMap);

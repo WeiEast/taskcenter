@@ -1,10 +1,13 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.AbstractCallbackDirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackEntity;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.context.Constants;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,14 +33,18 @@ public class SuccessDirectiveProcessor extends AbstractCallbackDirectiveProcesso
 
         // 生成数据map
         CallbackEntity callbackEntity = buildCallbackEntity(context);
-        // 回调之前预处理
-        precallback(callbackEntity, context);
 
         // 触发回调: 0-无需回调，1-回调成功，-1-回调失败
         int result = callback(callbackEntity, context);
         if (result == 0) {
             // 任务成功但是不需要回调(前端回调),仍需记录回调日志,获取dataUrl提供数据下载以及回调统计
-            this.saveCallbackLog((byte)2, null,0, 0,callbackEntity, null, context);
+            CallbackRecordObject callbackRecord = new CallbackRecordObject();
+            callbackRecord.setType(Constants.CALLBACK_TYPE_FRONTEND);
+            callbackRecord.setRequestParameters(JSON.toJSONString(callbackEntity));
+            callbackRecord.setResponseStatusCode(0);
+            callbackRecord.setCost(0L);
+            taskCallbackLogService.insert(context.getTaskId(), callbackRecord);
+
             this.saveTaskLog(taskId, "回调通知成功", null);
 
             context.updateTaskStatus(ETaskStatus.SUCCESS);
@@ -57,6 +64,7 @@ public class SuccessDirectiveProcessor extends AbstractCallbackDirectiveProcesso
         String stepCode = taskService.updateStatusIfDone(taskId, context.getTaskStatus());
         context.updateStepCode(stepCode);
 
+        context.backupCallbackEntity(callbackEntity);
     }
 
 }

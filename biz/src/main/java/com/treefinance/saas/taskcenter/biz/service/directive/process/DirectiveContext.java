@@ -15,12 +15,16 @@ package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.ImmutableMap;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.context.Constants;
+import com.treefinance.saas.taskcenter.exception.CryptoException;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
 import com.treefinance.saas.taskcenter.interation.manager.domain.AppLicense;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackLicense;
 import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
+import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
@@ -31,10 +35,12 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 
 import java.io.Serializable;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 指令处理上下文对象
@@ -108,6 +114,8 @@ public class DirectiveContext implements Serializable {
      * 初始化信息来源于remark的json解析
      */
     private Map<String, Object> attributes;
+
+    private String backup;
 
     private DirectiveContext(EDirective directive) {
         this.directive = Objects.requireNonNull(directive);
@@ -257,7 +265,7 @@ public class DirectiveContext implements Serializable {
             } catch (Exception e) {
                 LOGGER.error("不正确的json格式，解析remark失败！>> {}", remark, e);
             }
-            this.attributes = remarks == null ? new HashMap<>(16) : new HashMap<>(remarks);
+            this.attributes = remarks == null ? new ConcurrentHashMap<>(16) : new ConcurrentHashMap<>(remarks);
         }
 
         return this.attributes;
@@ -295,6 +303,52 @@ public class DirectiveContext implements Serializable {
             return this.remark;
         }
         return JSON.toJSONString(this.attributes);
+    }
+
+    public String getBackup() {
+        if (backup == null) {
+            return getAttributesAsString();
+        }
+
+        return backup;
+    }
+
+    public void backupCallbackEntity(CallbackEntity callbackEntity) {
+        // 使用商户密钥加密数据，返回给前端
+        try {
+            Map<String, Object> paramMap = new HashMap<>(2);
+            final Object attrValue = this.getAttributeValue(Constants.ERROR_MSG_NAME);
+            if (attrValue != null) {
+                paramMap.put(Constants.ERROR_MSG_NAME, attrValue);
+            }
+
+            String params = encryptByRSA(callbackEntity);
+            paramMap.put("params", params);
+            this.backup = JSON.toJSONString(paramMap);
+        } catch (Exception e) {
+            LOGGER.error("备份回调数据失败！", e);
+            this.backup = JSON.toJSONString(ImmutableMap.of(Constants.ERROR_MSG_NAME, "备份回调数据失败"));
+        }
+    }
+
+    /**
+     * RSA加密回调数据
+     *
+     * @param callbackEntity 回调数据实体
+     * @return 回调数据RSA加密后的字符串
+     * @throws CryptoException 加密异常
+     */
+    private String encryptByRSA(CallbackEntity callbackEntity) throws CryptoException {
+        // 获取商户密钥
+        String rsaPublicKey = this.getServerPublicKey();
+        try {
+            // 兼容老版本，使用RSA
+            String params = CallbackDataUtils.encryptByRSA(callbackEntity, rsaPublicKey);
+
+            return URLEncoder.encode(params, "utf-8");
+        } catch (Exception e) {
+            throw new CryptoException("加密回调数据失败！- data : " + callbackEntity + ", key=" + rsaPublicKey, e);
+        }
     }
 
     @Override

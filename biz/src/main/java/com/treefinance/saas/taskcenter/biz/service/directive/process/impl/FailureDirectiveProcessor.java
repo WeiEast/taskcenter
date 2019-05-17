@@ -29,27 +29,26 @@ public class FailureDirectiveProcessor extends AbstractCallbackDirectiveProcesso
 
     @Override
     protected void doProcess(DirectiveContext context) {
+        // 补充错误信息
+        appendFailureMessage(context);
+
         // 任务置为失败
         context.updateTaskStatus(ETaskStatus.FAIL);
 
-        Long taskId = context.getTaskId();
         // 更新任务状态
-        String errorCode = taskService.updateStatusIfDone(taskId, ETaskStatus.FAIL.getStatus());
+        String errorCode = taskService.updateStatusIfDone(context.getTaskId(), ETaskStatus.FAIL.getStatus());
         context.updateStepCode(errorCode);
 
         // 成数据map
         CallbackEntity callbackEntity = buildCallbackEntity(context);
-        // 回调之前预处理
-        precallback(callbackEntity, context);
 
         // 异步触发触发回调
         asyncExecutor.runAsync(context, ctx -> callback(callbackEntity, ctx));
+
+        context.backupCallbackEntity(callbackEntity);
     }
 
-    @Override
-    protected void precallback(CallbackEntity callbackEntity, DirectiveContext context) {
-        super.precallback(callbackEntity, context);
-
+    private void appendFailureMessage(DirectiveContext context) {
         // 处理返回到前端的消息
         try {
             Byte bizType = context.getBizType();

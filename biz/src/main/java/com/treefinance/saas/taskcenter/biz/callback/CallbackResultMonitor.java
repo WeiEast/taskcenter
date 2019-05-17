@@ -13,8 +13,8 @@
 
 package com.treefinance.saas.taskcenter.biz.callback;
 
-import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject;
 
 /**
  * @author Jerry
@@ -24,11 +24,9 @@ public interface CallbackResultMonitor {
 
     /**
      * send callback result to crawler-monitor
-     * 
+     *
      * @param task 任务
-     * @param result 结果
-     * @param config 回调配置
-     * @param httpCode 回调状态码
+     * @param callbackRecord 回调记录
      */
-    void sendMessage(TaskInfo task, String result, CallbackConfigBO config, int httpCode);
+    void sendMessage(TaskInfo task, CallbackRecordObject callbackRecord);
 }
