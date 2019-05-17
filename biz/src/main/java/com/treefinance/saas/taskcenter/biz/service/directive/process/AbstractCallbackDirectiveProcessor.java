@@ -1,25 +1,27 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.ImmutableMap;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
-import com.treefinance.saas.knife.result.SimpleResult;
 import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
 import com.treefinance.saas.taskcenter.biz.service.MonitorService;
+import com.treefinance.saas.taskcenter.biz.service.TaskPointService;
+import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackResponse.CallbackData;
 import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
-import com.treefinance.saas.taskcenter.context.enums.EGrabStatus;
+import com.treefinance.saas.taskcenter.context.enums.EGrapStatus;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.exception.CryptoException;
 import com.treefinance.saas.taskcenter.exception.RequestFailedException;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
 import com.treefinance.saas.taskcenter.service.AppCallbackConfigService;
 import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
-import com.treefinance.saas.taskcenter.service.TaskPointService;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject.CallbackResult;
 import com.treefinance.saas.taskcenter.util.CallbackDataUtils;
 import com.treefinance.saas.taskcenter.util.HttpClientUtils;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
@@ -27,6 +29,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URLEncoder;
@@ -52,20 +55,7 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
     @Autowired
     private TaskPointService taskPointService;
     @Autowired
-    private TaskCallbackLogService taskCallbackLogService;
-
-    /**
-     * 保存回调操作日志
-     * 
-     */
-    protected void saveCallbackLog(byte type, String result, int httpCode, long cost, CallbackEntity callbackEntity, CallbackConfigBO config, DirectiveContext context) {
-        final Long taskId = context.getTaskId();
-        try {
-            taskCallbackLogService.insert(config, taskId, type, JSON.toJSONString(callbackEntity), result, cost, httpCode);
-        } catch (Exception e) {
-            logger.warn("保存回调操作日志发生错误！- taskId：{}, type: {}", taskId, type, e);
-        }
-    }
+    protected TaskCallbackLogService taskCallbackLogService;
 
 
     @Override
@@ -74,102 +64,6 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
         if (!context.supportLicenseManager()) {
             throw new IllegalArgumentException("Not support license manager in directive context!");
         }
-    }
-
-    /**
-     * 回调前处理
-     *
-     * @param callbackEntity 回调数据
-     * @param context 指令处理上下文
-     */
-    protected void precallback(CallbackEntity callbackEntity, DirectiveContext context) {
-        // 使用商户密钥加密数据，返回给前端
-        Map<String, Object> paramMap = new HashMap<>(2);
-        final Object attrValue = context.getAttributeValue(Constants.ERROR_MSG_NAME);
-        if (attrValue != null) {
-            paramMap.put(Constants.ERROR_MSG_NAME, attrValue);
-        }
-
-        try {
-            String params = encryptByRSA(callbackEntity, context);
-            paramMap.put("params", params);
-            context.resetAttributes(paramMap);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            context.resetAttributes(ImmutableMap.of(Constants.ERROR_MSG_NAME, "指令信息处理失败"));
-        }
-    }
-
-    /**
-     * 执行回调(无需预处理)
-     *
-     * @param context 指令处理上下文
-     * @return
-     */
-    protected int callback(DirectiveContext context) {
-        CallbackEntity callbackEntity = this.buildCallbackEntity(context);
-
-        return callback(callbackEntity, context);
-    }
-
-    /**
-     * 执行回调
-     *
-     * @param callbackEntity 回调数据
-     * @param context 指令处理上下文
-     * @return 0-无需回调，1-回调成功，-1-回调失败
-     */
-    protected int callback(CallbackEntity callbackEntity, DirectiveContext context) {
-        Long taskId = context.getTaskId();
-
-        // 查询回调配置
-        List<CallbackConfigBO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(context.getAppId(), context.getBizType(), EDataType.MAIN_STREAM);
-        logger.info("根据业务类型匹配回调配置结果:taskId={}, configList={}", taskId, JSON.toJSONString(configList));
-        if (CollectionUtils.isEmpty(configList)) {
-            logger.info("callback exit: callback-config is empty, directive={}", context);
-            monitorService.sendTaskCallbackMsgMonitorMessage(taskId, null, null, false);
-            return 0;
-        }
-
-        // 校验是否需要回调
-        configList = configList.stream().filter(config -> needCallback(config, context)).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(configList)) {
-            logger.info("callback exit: the task no callback required, directive={}", JSON.toJSONString(context));
-            monitorService.sendTaskCallbackMsgMonitorMessage(taskId, null, null, false);
-            return 0;
-        }
-
-        // 埋点-开始回调
-        taskPointService.addTaskPoint(taskId, "900401");
-
-        // 执行回调，支持一个任务回调多方
-        int failure = 0;
-        for (CallbackConfigBO config : configList) {
-            try {
-                // 执行回调
-                doCallback(callbackEntity, config, context);
-            } catch (Exception e) {
-                failure++;
-                String errorMsg = "回调通知失败：" + e.getMessage();
-                logger.error(errorMsg + "，config=" + config, e);
-                this.saveTaskLog(taskId, "回调通知失败", errorMsg);
-            }
-        }
-        // 有回调失败的整个任务算失败
-        if (failure > 0) {
-            callbackEntity.failure("回调通知失败");
-            flushData(callbackEntity, context);
-            return -1;
-        }
-
-        callbackEntity.success();
-
-        // 埋点-回调成功
-        taskPointService.addTaskPoint(taskId, "900402");
-
-        this.saveTaskLog(taskId, "回调通知成功", null);
-
-        return 1;
     }
 
     /**
@@ -190,33 +84,104 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
 
         // 此次任务状态：001-抓取成功，002-抓取失败，003-抓取结果为空,004-任务取消
         final Byte status = context.getTaskStatus();
-        if (ETaskStatus.SUCCESS.getStatus().equals(status)) {
-            entity.success();
-        } else if (ETaskStatus.FAIL.getStatus().equals(status)) {
+        if (ETaskStatus.FAIL.getStatus().equals(status)) {
             // 任务失败消息
             TaskLog log = taskLogService.queryLastErrorLog(context.getTaskId());
-            if (log != null) {
-                entity.failure(log.getMsg());
-            } else {
-                entity.failure();
-            }
+            entity.failure(log != null ? log.getMsg() : EGrapStatus.FAIL.getName());
         } else if (ETaskStatus.CANCEL.getStatus().equals(status)) {
             entity.cancel("用户取消");
+        } else if (entity.getCrawlerStatus()) {
+            // 此时针对工商无需爬取时处理
+            logger.info("工商回调，回调code设置为005，taskId={}", context.getTaskId());
+            entity.setStatus(EGrapStatus.NO_NEED_CRAWLER, "");
         } else {
             entity.success();
         }
+
+        // 如果是运营商数据
+        if (EBizType.OPERATOR.getCode().equals(context.getBizType())) {
+            String groupCodeAttribute = ETaskAttribute.OPERATOR_GROUP_CODE.getAttribute();
+            String groupNameAttribute = ETaskAttribute.OPERATOR_GROUP_NAME.getAttribute();
+
+            Map<String, String> attributeMap =
+                taskAttributeService.getAttributeMapByTaskIdAndInNames(context.getTaskId(), new String[] {groupCodeAttribute, groupNameAttribute}, false);
+
+            entity.put(groupCodeAttribute, StringUtils.defaultString(attributeMap.get(groupCodeAttribute)));
+            entity.put(groupNameAttribute, StringUtils.defaultString(attributeMap.get(groupNameAttribute)));
+        }
+
         logger.info("回调数据生成 >> {}, directive={}", entity, context);
         return entity;
     }
 
     /**
-     * 刷新数据
+     * 执行回调(无需预处理)
      *
-     * @param callbackEntity
-     * @param context
+     * @param context 指令处理上下文
      */
-    private void flushData(CallbackEntity callbackEntity, DirectiveContext context) {
-        this.precallback(callbackEntity, context);
+    protected int callback(DirectiveContext context) {
+        CallbackEntity callbackEntity = this.buildCallbackEntity(context);
+
+        return callback(callbackEntity, context);
+    }
+
+    /**
+     * 执行回调
+     *
+     * @param callbackEntity 回调数据
+     * @param context 指令处理上下文
+     * @return 0-无需回调，1-回调成功，-1-回调失败
+     */
+    protected int callback(CallbackEntity callbackEntity, DirectiveContext context) {
+        Long taskId = context.getTaskId();
+
+        // 查询回调配置
+        List<CallbackConfigBO> configList = appCallbackConfigService.queryConfigsByAppIdAndBizType(context.getAppId(), context.getBizType(), EDataType.MAIN_STREAM);
+        logger.info("根据业务类型匹配回调配置结果:taskId={}, configList={}", taskId, configList);
+        if (CollectionUtils.isEmpty(configList)) {
+            logger.info("callback exit: callback config was empty. context={}", context);
+            monitorService.sendTaskCallbackMsgMonitorMessage(context.getTask(), null);
+            return 0;
+        }
+
+        // 校验是否需要回调
+        configList = configList.stream().filter(config -> needCallback(config, context)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(configList)) {
+            logger.info("callback exit: not found available callback config. context={}", context);
+            monitorService.sendTaskCallbackMsgMonitorMessage(context.getTask(), null);
+            return 0;
+        }
+
+        // 埋点-开始回调
+        taskPointService.addTaskPoint(taskId, "900401");
+
+        // 执行回调，支持一个任务回调多方
+        int failure = 0;
+        for (CallbackConfigBO config : configList) {
+            try {
+                // 执行回调
+                doCallback(callbackEntity, config, context);
+            } catch (Throwable e) {
+                failure++;
+                String errorMsg = "回调通知失败：" + e.getMessage();
+                logger.error(errorMsg + "，config=" + config, e);
+                this.saveTaskLog(taskId, "回调通知失败", errorMsg);
+            }
+        }
+        // 有回调失败的整个任务算失败
+        if (failure > 0) {
+            callbackEntity.failure("回调通知失败");
+            return -1;
+        }
+
+        callbackEntity.success();
+
+        // 埋点-回调成功
+        taskPointService.addTaskPoint(taskId, "900402");
+
+        this.saveTaskLog(taskId, "回调通知成功", null);
+
+        return 1;
     }
 
     /**
@@ -253,20 +218,77 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
     /**
      * 执行回调
      *
-     * @param callbackEntity 回调数据实体
+     * @param entity 回调数据实体
      * @param config 回调配置
      * @param context 指令处理上下文对象
      */
-    private void doCallback(CallbackEntity callbackEntity, CallbackConfigBO config, DirectiveContext context) throws Exception {
+    private void doCallback(CallbackEntity entity, CallbackConfigBO config, DirectiveContext context) throws Throwable {
         // 回调数据实体备份
-        CallbackEntity backupCallbackEntity = (CallbackEntity)callbackEntity.clone();
+        CallbackEntity callbackEntity = (CallbackEntity)entity.clone();
 
         // 准备回调数据
         this.prepareCallbackData(callbackEntity, config, context);
 
         long startTime = System.currentTimeMillis();
-        String result = "";
-        int httpCode = 200;
+        CallbackResponse response = null;
+        try {
+            response = this.sendCallbackRequest(callbackEntity, config, context);
+
+            // 处理回调结果
+            triggerAfterCallback(response, context);
+        } finally {
+            long consumeTime = System.currentTimeMillis() - startTime;
+            final CallbackRecordObject callbackRecord = new CallbackRecordObject();
+            callbackRecord.setCost(consumeTime);
+            callbackRecord.setType(Constants.CALLBACK_TYPE_BACKEND);
+            callbackRecord.setConfig(config);
+            callbackRecord.setRequestParameters(JSON.toJSONString(entity));
+            if (response == null) {
+                callbackRecord.setResponseStatusCode(0);
+                callbackRecord.setCallbackResult(new CallbackResult("", "回调执行错误"));
+            } else {
+                callbackRecord.setResponseStatusCode(response.getStatusCode());
+                callbackRecord.setResponseData(response.getData());
+                CallbackData callbackData = response.getResult();
+                if (callbackData != null) {
+                    callbackRecord.setCallbackResult(new CallbackResult(callbackData.getCode(), callbackData.getErrorMsg()));
+                }
+                callbackRecord.setException(response.getException());
+            }
+
+            // 记录回调日志
+            taskCallbackLogService.insert(context.getTaskId(), callbackRecord);
+            final TaskInfo task = context.getTask();
+            // 主流程回调做监控
+            if (Constants.DATA_TYPE_0.equals(config.getDataType())) {
+                monitorService.sendTaskCallbackMsgMonitorMessage(task, callbackRecord);
+            }
+            // 回调处理
+            callbackResultMonitor.sendMessage(task, callbackRecord);
+        }
+
+        final Throwable exception = response.getException();
+        if (exception != null) {
+            throw exception;
+        }
+    }
+
+    private void triggerAfterCallback(CallbackResponse response, DirectiveContext context) {
+        final int statusCode = response.getStatusCode();
+        if (statusCode != HttpStatus.SC_OK) {
+            if (statusCode == 0) {
+                context.putAttribute(Constants.ERROR_MSG_NAME, "回调执行错误");
+            } else {
+                final CallbackData result = response.getResult();
+                String errorMsg = result == null ? null : result.getErrorMsg();
+                if (StringUtils.isNotEmpty(errorMsg)) {
+                    context.putAttribute(Constants.ERROR_MSG_NAME, errorMsg);
+                }
+            }
+        }
+    }
+
+    private CallbackResponse sendCallbackRequest(CallbackEntity callbackEntity, CallbackConfigBO config, DirectiveContext context) {
         // 回调请求地址
         String callbackUrl = config.getUrl();
         // 超时时间（秒）
@@ -276,51 +298,19 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
         try {
             Map<String, Object> paramMap = this.buildCallbackRequestParameters(callbackEntity, config, context);
             logger.info("回调执行：taskId={}, callbackUrl={}, callbackEntity={}, params={}", context.getTaskId(), callbackUrl, callbackEntity, JSON.toJSONString(paramMap));
+            String result;
             if (SystemUtils.isDataNotifyModel(config.getNotifyModel())) {
                 result = HttpClientUtils.doPostWithTimeoutAndRetryTimes(callbackUrl, timeout, retryTimes, paramMap);
             } else {
                 result = HttpClientUtils.doGetWithTimeoutAndRetryTimes(callbackUrl, timeout, retryTimes, paramMap);
             }
+            return new CallbackResponse(result);
         } catch (RequestFailedException e) {
+            // e.statusCode可能为0,表示客户端错误
             logger.error("doCallback exception: callbackUrl={},callbackEntity={}", callbackUrl, callbackEntity, e);
-            result = e.getResult();
-            httpCode = e.getStatusCode();
-            throw e;
-        } finally {
-            // 处理返回结果
-            this.handleRequestResult(result, context);
-
-            long consumeTime = System.currentTimeMillis() - startTime;
-            // 记录回调日志
-            this.saveCallbackLog((byte)1, result, httpCode, consumeTime, backupCallbackEntity, config, context);
-            // 主流程回调做监控
-            if (Constants.DATA_TYPE_0.equals(config.getDataType())) {
-                monitorService.sendTaskCallbackMsgMonitorMessage(context.getTaskId(), httpCode, result, true);
-            }
-            // 回调处理
-            callbackResultMonitor.sendMessage(context.getTask(), result, config, httpCode);
-        }
-    }
-
-    /**
-     * 处理请求失败异常
-     *
-     * @param requestResult 回调请求结果
-     * @param context 指令处理上下文对象
-     */
-    private void handleRequestResult(String requestResult, DirectiveContext context) {
-        try {
-            String result = StringUtils.trimToEmpty(requestResult);
-            if (StringUtils.isNotEmpty(result) && result.startsWith("{") && result.endsWith("}")) {
-                logger.info("handle callback result : result={}, directiveContext={}", result, context);
-                SimpleResult simpleResult = JSON.parseObject(result, SimpleResult.class);
-                String errorMsg = simpleResult == null ? null : simpleResult.getErrorMsg();
-                if (StringUtils.isNotEmpty(errorMsg)) {
-                    context.putAttribute(Constants.ERROR_MSG_NAME, errorMsg);
-                }
-            }
-        } catch (Exception e) {
-            logger.error("handle result failed : directiveContext={}, result={}", context, requestResult, e);
+            return new CallbackResponse(e.getStatusCode(), e.getResult(), e);
+        } catch (Throwable e) {
+            return new CallbackResponse(0, StringUtils.EMPTY, e);
         }
     }
 
@@ -424,34 +414,14 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
                         callbackEntity.setData(downloadDataMap);
                     } else {
                         callbackEntity.emptyData();
-                        flushData(callbackEntity, context);
                     }
                 } else {
                     callbackEntity.put("dataUrl", dataUrlObj);
                     callbackEntity.failure("下载数据失败");
-                    flushData(callbackEntity, context);
                 }
             } else {
                 callbackEntity.setData(StringUtils.EMPTY);
             }
-        }
-
-        // 此时针对工商无需爬取时处理
-        if (callbackEntity.getCrawlerStatus()) {
-            logger.info("工商回调，回调code设置为005，taskId={}", context.getTaskId());
-            callbackEntity.setStatus(EGrabStatus.NO_NEED_CRAWLER, "");
-        }
-
-        // 如果是运营商数据
-        if (EBizType.OPERATOR.getCode().equals(context.getBizType())) {
-            String groupCodeAttribute = ETaskAttribute.OPERATOR_GROUP_CODE.getAttribute();
-            String groupNameAttribute = ETaskAttribute.OPERATOR_GROUP_NAME.getAttribute();
-
-            Map<String, String> attributeMap =
-                taskAttributeService.getAttributeMapByTaskIdAndInNames(context.getTaskId(), new String[] {groupCodeAttribute, groupNameAttribute}, false);
-
-            callbackEntity.put(groupCodeAttribute, StringUtils.defaultString(attributeMap.get(groupCodeAttribute)));
-            callbackEntity.put(groupNameAttribute, StringUtils.defaultString(attributeMap.get(groupNameAttribute)));
         }
     }
 }

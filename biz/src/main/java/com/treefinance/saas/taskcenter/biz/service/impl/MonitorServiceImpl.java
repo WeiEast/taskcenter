@@ -23,11 +23,11 @@ import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
 import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -65,13 +65,12 @@ public class MonitorServiceImpl implements MonitorService {
     }
 
     @Override
-    @Async
-    public void sendTaskCallbackMsgMonitorMessage(Long taskId, Integer httpCode, String result, Boolean isCallback) {
+    public void sendTaskCallbackMsgMonitorMessage(TaskInfo task, CallbackRecordObject callbackRecord) {
         try {
-            taskCallbackMsgMonitor.sendMessage(taskId, httpCode, result, isCallback);
-            logger.info("sent TaskCallbackMsgMonitorMessage >> taskId={},httpCode={},result={},isCallback={}", taskId, httpCode, result, isCallback);
+            taskCallbackMsgMonitor.sendMessage(task, callbackRecord);
+            logger.info("sent TaskCallbackMsgMonitorMessage >> taskId={}, callbackRecord={}", task.getId(), callbackRecord);
         } catch (Exception e) {
-            logger.error("Error sending TaskCallbackMsgMonitorMessage >> taskId={},httpCode={},result={},isCallback={}", taskId, httpCode, result, isCallback, e);
+            logger.error("Error sending TaskCallbackMsgMonitorMessage >> taskId={}, callbackRecord={}", task.getId(), callbackRecord, e);
         }
     }
 

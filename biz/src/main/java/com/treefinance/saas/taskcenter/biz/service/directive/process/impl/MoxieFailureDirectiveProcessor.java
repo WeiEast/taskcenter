@@ -52,10 +52,10 @@ public class MoxieFailureDirectiveProcessor extends AbstractCallbackDirectivePro
 
         // 成数据map,包装数据:任务失败后返回失败信息加密后通过指令传递给前端
         CallbackEntity callbackEntity = buildCallbackEntity(context);
-        // 回调之前预处理
-        precallback(callbackEntity, context);
+
         // 异步触发触发回调
         asyncExecutor.runAsync(context, ctx -> callback(callbackEntity, ctx));
 
+        context.backupCallbackEntity(callbackEntity);
     }
 }

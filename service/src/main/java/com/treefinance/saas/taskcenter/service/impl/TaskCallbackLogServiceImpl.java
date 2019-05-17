@@ -18,12 +18,16 @@ package com.treefinance.saas.taskcenter.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
+import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.dao.entity.TaskCallbackLog;
 import com.treefinance.saas.taskcenter.dao.param.TaskCallbackLogQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
 import com.treefinance.saas.taskcenter.interation.manager.domain.CallbackConfigBO;
+import com.treefinance.saas.taskcenter.service.TaskCallbackLogService;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject;
+import com.treefinance.saas.taskcenter.service.param.CallbackRecordObject.CallbackResult;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +46,8 @@ import java.util.List;
 public class TaskCallbackLogServiceImpl implements TaskCallbackLogService {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskCallbackLogServiceImpl.class);
+    private static final int CALLBACK_STRING_LENGTH_LIMIT = 1000;
+
     @Autowired
     private TaskCallbackLogRepository taskCallbackLogRepository;
 
@@ -72,6 +78,60 @@ public class TaskCallbackLogServiceImpl implements TaskCallbackLogService {
     @Override
     public List<TaskCallbackLog> queryTaskCallbackLogs(@Nonnull TaskCallbackLogQuery query) {
         return taskCallbackLogRepository.queryTaskCallbackLogs(query);
+    }
+
+    @Override
+    public void insert(@Nonnull Long taskId, @Nonnull CallbackRecordObject record) {
+        try {
+            final Byte type = record.getType();
+
+            String requestParam = StringUtils.trimToEmpty(record.getRequestParameters());
+            if (StringUtils.isNotEmpty(requestParam) && requestParam.length() > CALLBACK_STRING_LENGTH_LIMIT) {
+                requestParam = requestParam.substring(0, CALLBACK_STRING_LENGTH_LIMIT);
+            }
+
+            Long configId = 0L;
+            String url = null;
+            String responseData = null;
+            String callbackCode = null;
+            String callbackMsg = null;
+            int httpCode = 0;
+            if (Constants.CALLBACK_TYPE_BACKEND.equals(type)) {
+                final CallbackConfigBO config = record.getConfig();
+                if (config != null) {
+                    configId = Long.valueOf(config.getId());
+                    url = config.getUrl();
+                }
+
+                responseData = StringUtils.trimToEmpty(record.getResponseData());
+                if (responseData.length() > CALLBACK_STRING_LENGTH_LIMIT) {
+                    responseData = responseData.substring(0, CALLBACK_STRING_LENGTH_LIMIT) + "...";
+                }
+
+                if (record.getResponseStatusCode() == HttpStatus.SC_OK) {
+                    callbackMsg = "回调成功";
+                } else if (record.getResponseStatusCode() == 0) {
+                    final Throwable exception = record.getException();
+                    callbackMsg = exception == null ? "回调执行错误" : "回调执行失败：" + exception.getMessage();
+                } else {
+                    final CallbackResult callbackResult = record.getCallbackResult();
+                    if (callbackResult != null) {
+                        callbackCode = callbackResult.getCode();
+                        callbackMsg = callbackResult.getErrorMsg();
+                        if (StringUtils.isBlank(callbackMsg)) {
+                            callbackMsg = "回调错误信息为空";
+                        }
+                    }
+                }
+
+                httpCode = record.getResponseStatusCode();
+            }
+
+            final long consumeTime = record.getCost();
+            taskCallbackLogRepository.insertOrUpdateLog(taskId, type, configId, url, requestParam, responseData, httpCode, callbackCode, callbackMsg, (int)consumeTime);
+        } catch (Exception e) {
+            logger.warn("保存回调操作日志发生错误！- taskId：{}, callbackRecord: {}", taskId, record, e);
+        }
     }
 
     @Override
