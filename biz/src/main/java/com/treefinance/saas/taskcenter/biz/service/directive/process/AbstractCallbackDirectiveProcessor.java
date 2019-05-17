@@ -87,7 +87,11 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
         if (ETaskStatus.FAIL.getStatus().equals(status)) {
             // 任务失败消息
             TaskLog log = taskLogService.queryLastErrorLog(context.getTaskId());
-            entity.failure(log != null ? log.getMsg() : EGrabStatus.FAIL.getName());
+            if (log != null) {
+                entity.failure(log.getMsg());
+            } else {
+                entity.failure();
+            }
         } else if (ETaskStatus.CANCEL.getStatus().equals(status)) {
             entity.cancel("用户取消");
         } else if (entity.getCrawlerStatus()) {

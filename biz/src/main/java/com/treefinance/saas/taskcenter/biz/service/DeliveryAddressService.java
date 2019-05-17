@@ -15,11 +15,13 @@ package com.treefinance.saas.taskcenter.biz.service;
 
 import com.treefinance.saas.taskcenter.biz.mq.model.DeliveryAddressMessage;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Jerry
  * @date 2018/11/22 01:10
  */
 public interface DeliveryAddressService {
 
-    void callback(DeliveryAddressMessage message);
+    void callback(@Nonnull DeliveryAddressMessage message);
 }

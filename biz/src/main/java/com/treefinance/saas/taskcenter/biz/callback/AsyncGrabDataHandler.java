@@ -13,6 +13,8 @@
 
 package com.treefinance.saas.taskcenter.biz.callback;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Jerry
  * @date 2018/11/22 01:11
@@ -24,6 +26,6 @@ public interface AsyncGrabDataHandler {
      * 
      * @param message 数据处理消息
      */
-    void handle(AsyncGrabMessage message);
+    void handle(@Nonnull AsyncGrabMessage message);
 
 }
