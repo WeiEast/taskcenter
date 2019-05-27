@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSON;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 
@@ -33,6 +34,10 @@ public class DirectivePacket implements Serializable {
      * 指令
      */
     private EDirective directive;
+    /**
+     * 指令别名
+     */
+    private String alias;
     /**
      * 指令ID
      */
@@ -56,6 +61,11 @@ public class DirectivePacket implements Serializable {
     public DirectivePacket(EDirective directive, Long taskId) {
         this.directive = directive;
         this.taskId = taskId;
+    }
+
+    public DirectivePacket(String alias) {
+        this.alias = StringUtils.trim(alias);
+        this.directive = EDirective.directiveOf(this.alias);
     }
 
     @Override

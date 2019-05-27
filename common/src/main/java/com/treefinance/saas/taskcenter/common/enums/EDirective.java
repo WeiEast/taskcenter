@@ -24,6 +24,10 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum EDirective {
     /**
+     * 自定义
+     */
+    CUSTOM("custom", "自定义"),
+    /**
      * 等待中(过渡指令)
      */
     WAITING("waiting", "请等待"),
@@ -104,7 +108,7 @@ public enum EDirective {
                 }
             }
         }
-        return null;
+        return EDirective.CUSTOM;
     }
 
     public static boolean isTaskSuccess(String directive) {

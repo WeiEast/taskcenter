@@ -56,6 +56,9 @@ public class DirectiveContext implements Serializable {
      */
     @Getter
     private EDirective directive;
+    @Setter
+    @Getter
+    private String alias;
 
     /**
      * 指令ID
@@ -121,8 +124,17 @@ public class DirectiveContext implements Serializable {
         this.directive = Objects.requireNonNull(directive);
     }
 
+    private DirectiveContext(EDirective directive, String alias) {
+        this.directive = Objects.requireNonNull(directive);
+        this.alias = alias;
+    }
+
     public static DirectiveContext create(@Nonnull EDirective directive) {
         return new DirectiveContext(directive);
+    }
+
+    public static DirectiveContext create(@Nonnull EDirective directive, String alias) {
+        return new DirectiveContext(directive, alias);
     }
 
     public void putExtra(String key, Object value) {
@@ -136,7 +148,7 @@ public class DirectiveContext implements Serializable {
      * @return 指令的字符表示
      */
     public String getDirectiveString() {
-        return directive == null ? "" : directive.value();
+        return directive == null ? "" : directive.equals(EDirective.CUSTOM) ? alias : directive.value();
     }
 
     /**

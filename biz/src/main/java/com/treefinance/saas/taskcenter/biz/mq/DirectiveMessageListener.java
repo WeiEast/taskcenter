@@ -3,7 +3,6 @@ package com.treefinance.saas.taskcenter.biz.mq;
 import com.treefinance.saas.taskcenter.biz.mq.model.DirectiveMessage;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
-import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.context.config.MqConfig;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +33,7 @@ public class DirectiveMessageListener extends AbstractJsonMessageListener<Direct
 
     @Override
     protected void processMessage(@Nonnull DirectiveMessage message) {
-        DirectivePacket directivePacket = new DirectivePacket();
-        directivePacket.setDirective(EDirective.directiveOf(message.getDirective()));
+        DirectivePacket directivePacket = new DirectivePacket(message.getDirective());
         directivePacket.setDirectiveId(message.getDirectiveId());
         directivePacket.setTaskId(message.getTaskId());
         directivePacket.setRemark(message.getRemark());

@@ -1,15 +1,15 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
+import com.treefinance.saas.taskcenter.biz.service.directive.MoxieDirectivePacket;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveContext;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveProcessor;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.DirectiveProcessorFactory;
 import com.treefinance.saas.taskcenter.common.enums.EDirective;
 import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
-import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
-import com.treefinance.saas.taskcenter.biz.service.directive.MoxieDirectivePacket;
 import com.treefinance.saas.taskcenter.interation.manager.LicenseManager;
 import com.treefinance.saas.taskcenter.service.TaskAttributeService;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +38,13 @@ public class DirectiveServiceImpl implements DirectiveService {
             return;
         }
 
-        DirectiveContext context = DirectiveContext.create(directive);
+        final String alias = directivePacket.getAlias();
+        if (EDirective.CUSTOM.equals(directive) && StringUtils.isEmpty(alias)) {
+            logger.error("not supported directive : {} ...", JSON.toJSONString(directivePacket));
+            return;
+        }
+
+        DirectiveContext context = DirectiveContext.create(directive, alias);
         context.setLicenseManager(licenseManager);
         context.setDirectiveId(directivePacket.getDirectiveId());
         context.setTaskId(directivePacket.getTaskId());
