@@ -74,7 +74,24 @@ public enum EDirective {
     /**
      * 临时成功状态，成功指令处理但回调失败的处理阶段记录成临时成功的过渡状态，即：task_success -> temporary_success -> callback_fail
      */
-    TEMPORARY_SUCCESS("temporary_success", "临时成功");
+    TEMPORARY_SUCCESS("temporary_success", "临时成功"),
+    /**
+     * 需要二次密码
+     */
+    REQUIRE_SECOND_PASSWORD("require_second_password", "需要二次密码"),
+    /**
+     * 校验成功
+     */
+    VALIDATE_SUCCESS("validate_success", "校验成功"),
+    /**
+     * 校验失败
+     */
+    VALIDATE_FAIL("validate_fail", "校验失败"),
+    /**
+     * 校验结束
+     */
+    VALIDATE_OVER("validate_over", "校验结束");
+
 
     private final String value;
     private final String desc;
