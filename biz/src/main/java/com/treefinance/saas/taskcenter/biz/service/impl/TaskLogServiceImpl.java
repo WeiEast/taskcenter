@@ -13,15 +13,14 @@
 
 package com.treefinance.saas.taskcenter.biz.service.impl;
 
-import com.treefinance.saas.taskcenter.biz.service.TaskAliveService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
-import com.treefinance.saas.taskcenter.biz.service.monitor.TaskRealTimeStatMonitorService;
-import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.biz.service.monitor.TaskRealTimeStatMonitor;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.TaskLog;
 import com.treefinance.saas.taskcenter.dao.repository.TaskLogRepository;
+import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +29,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by luoyihua on 2017/4/26.
@@ -47,11 +44,11 @@ public class TaskLogServiceImpl implements TaskLogService {
     private static final Logger logger = LoggerFactory.getLogger(TaskLogServiceImpl.class);
 
     @Autowired
-    private TaskAliveService taskAliveService;
-    @Autowired
-    private TaskRealTimeStatMonitorService taskRealTimeStatMonitorService;
-    @Autowired
     private TaskLogRepository taskLogRepository;
+    @Autowired
+    private TaskLifecycleService taskLifecycleService;
+    @Autowired
+    private TaskRealTimeStatMonitor taskRealTimeStatMonitor;
 
     @Override
     public TaskLog queryLastErrorLog(@Nullable Long taskId) {
@@ -86,16 +83,6 @@ public class TaskLogServiceImpl implements TaskLogService {
     }
 
     @Override
-    public List<TaskLog> queryTaskLogsByTaskIdAndInSteps(@Nonnull Long taskId, ETaskStep... steps) {
-        List<String> msgs = null;
-        if (ArrayUtils.isNotEmpty(steps)) {
-            msgs = Arrays.stream(steps).map(ETaskStep::getText).collect(Collectors.toList());
-        }
-
-        return taskLogRepository.queryTaskLogsByTaskIdAndInMsgs(taskId, msgs);
-    }
-
-    @Override
     public List<TaskLog> queryTaskLogs(Long id, List<Long> taskIds, String msg, String stepCode, String errorMsg, Date occurTime, String order) {
         return taskLogRepository.queryTaskLogs(id, taskIds, msg, stepCode, errorMsg, occurTime, order);
     }
@@ -105,9 +92,9 @@ public class TaskLogServiceImpl implements TaskLogService {
         String stepCode = ETaskStep.getStepCodeByText(msg);
         TaskLog taskLog = taskLogRepository.insertTaskLog(taskId, msg, stepCode, processTime, errorMsg);
 
-        taskAliveService.updateTaskActiveTime(taskId);
+        taskLifecycleService.updateAliveTime(taskId);
 
-        taskRealTimeStatMonitorService.handleTaskLog(taskId, msg, taskLog.getCreateTime());
+        taskRealTimeStatMonitor.sendMessage(taskId, msg, taskLog.getCreateTime());
         logger.info("记录任务日志: {}", taskLog);
         return taskLog.getId();
     }

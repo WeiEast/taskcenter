@@ -4,10 +4,12 @@ package com.treefinance.saas.taskcenter.context.enums;
  * Created by yh-treefinance on 2017/9/28.
  */
 public enum EDataType {
-    MAIN_STREAM((byte)0, "主数据"), DELIVERY_ADDRESS((byte)1, "收货地址"), OPERATOR_FLOW((byte)2, "运营商流量");
+    MAIN_STREAM((byte)0, "主数据"),
+    DELIVERY_ADDRESS((byte)1, "收货地址"),
+    OPERATOR_FLOW((byte)2, "运营商流量");
 
-    private Byte type;
-    private String name;
+    private final Byte type;
+    private final String name;
 
     EDataType(Byte type, String name) {
         this.type = type;

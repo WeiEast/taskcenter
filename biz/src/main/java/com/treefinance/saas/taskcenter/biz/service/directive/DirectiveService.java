@@ -1,15 +1,16 @@
 package com.treefinance.saas.taskcenter.biz.service.directive;
 
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-
 /**
- * 指令消息处理Service Created by yh-treefinance on 2017/7/5.
+ * 指令消息处理Service
+ * 
+ * @author Jerry
+ * @date 2017/7/5.
  */
 public interface DirectiveService {
     /**
-     * 处理消息
+     * 处理指令信息
      *
-     * @param directiveDTO
+     * @param directivePacket 指令信息数据包
      */
-    void process(DirectiveDTO directiveDTO);
+    void process(DirectivePacket directivePacket);
 }

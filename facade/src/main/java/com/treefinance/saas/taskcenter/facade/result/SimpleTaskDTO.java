@@ -13,7 +13,7 @@
 
 package com.treefinance.saas.taskcenter.facade.result;
 
-import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
+ * 纯task表数据
  * @author Jerry
  * @date 2018/12/13 21:12
  */

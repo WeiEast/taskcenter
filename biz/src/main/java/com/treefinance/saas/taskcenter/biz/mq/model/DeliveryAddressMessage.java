@@ -1,5 +1,7 @@
 package com.treefinance.saas.taskcenter.biz.mq.model;
 
+import com.alibaba.fastjson.JSON;
+
 import java.io.Serializable;
 
 /**
@@ -53,5 +55,10 @@ public class DeliveryAddressMessage implements Serializable {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 }

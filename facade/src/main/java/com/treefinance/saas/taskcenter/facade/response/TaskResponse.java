@@ -20,18 +20,37 @@ import java.io.Serializable;
  * @date 2018/12/13 19:44
  */
 public class TaskResponse<T> implements Serializable {
-    private boolean success;
-    private String code;
-    private String message;
-    private T entity;
 
-    public TaskResponse() {}
+    /**
+     * 是否调用成功
+     */
+    private boolean success;
+    /**
+     * 错误编码
+     */
+    private String code;
+    /**
+     * 错误信息
+     */
+    private String message;
+    /**
+     * 数据实体
+     */
+    private T entity;
+    /**
+     * 时间戳
+     */
+    private long timestamp;
+
+    public TaskResponse() {
+    }
 
     private TaskResponse(boolean success, String code, String message, T entity) {
         this.success = success;
         this.code = code;
         this.message = message;
         this.entity = entity;
+        this.timestamp = System.currentTimeMillis();
     }
 
     public static <T> TaskResponse<T> success(T entity) {
@@ -72,5 +91,13 @@ public class TaskResponse<T> implements Serializable {
 
     public void setEntity(T entity) {
         this.entity = entity;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 }

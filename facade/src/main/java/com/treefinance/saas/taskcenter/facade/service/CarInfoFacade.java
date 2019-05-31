@@ -11,6 +11,10 @@ import java.util.List;
  */
 public interface CarInfoFacade {
 
+    /**
+     * @deprecated use {@link TaskFacade#completeTaskAndMonitoring(Long, List)} instead.
+     */
+    @Deprecated
     TaskResult<Void> updateCollectTaskStatusAndTaskLogAndSendMonitor(Long taskId, List<CarInfoCollectTaskLogRequest> logList);
 
 }

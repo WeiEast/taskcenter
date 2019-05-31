@@ -15,32 +15,36 @@ package com.treefinance.saas.taskcenter.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.treefinance.saas.taskcenter.biz.domain.TaskUpdateResult;
-import com.treefinance.saas.taskcenter.biz.param.TaskCreateObject;
-import com.treefinance.saas.taskcenter.biz.param.TaskUpdateObject;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.TaskLogService;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
+import com.treefinance.saas.taskcenter.biz.service.directive.DirectivePacket;
 import com.treefinance.saas.taskcenter.biz.service.directive.DirectiveService;
-import com.treefinance.saas.taskcenter.biz.service.AbstractService;
-import com.treefinance.saas.taskcenter.context.enums.EDirective;
-import com.treefinance.saas.taskcenter.context.enums.ETaskAttribute;
-import com.treefinance.saas.taskcenter.context.enums.ETaskStatus;
-import com.treefinance.saas.taskcenter.context.enums.ETaskStep;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
+import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStep;
 import com.treefinance.saas.taskcenter.context.enums.TaskStatusMsgEnum;
 import com.treefinance.saas.taskcenter.dao.entity.Task;
 import com.treefinance.saas.taskcenter.dao.entity.TaskAndTaskAttribute;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttrCompositeQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskPagingQuery;
 import com.treefinance.saas.taskcenter.dao.param.TaskParams;
 import com.treefinance.saas.taskcenter.dao.param.TaskQuery;
 import com.treefinance.saas.taskcenter.dao.repository.TaskRepository;
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.TaskLifecycleService;
+import com.treefinance.saas.taskcenter.service.domain.AttributedTaskInfo;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
+import com.treefinance.saas.taskcenter.service.domain.TaskUpdateResult;
+import com.treefinance.saas.taskcenter.service.impl.AbstractService;
+import com.treefinance.saas.taskcenter.service.param.TaskCreateObject;
+import com.treefinance.saas.taskcenter.service.param.TaskStepLogObject;
+import com.treefinance.saas.taskcenter.service.param.TaskUpdateObject;
 import com.treefinance.saas.taskcenter.util.SystemUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,9 +57,9 @@ import javax.annotation.Nullable;
 import javax.validation.ValidationException;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author haojiahong
@@ -64,11 +68,9 @@ import java.util.Map;
 @Service
 public class TaskServiceImpl extends AbstractService implements TaskService {
 
+    private static final Logger logger = LoggerFactory.getLogger(TaskServiceImpl.class);
     private static final Byte[] DONE_STATUSES = {ETaskStatus.CANCEL.getStatus(), ETaskStatus.SUCCESS.getStatus(), ETaskStatus.FAIL.getStatus()};
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    // 任务附加属性sourceId
-    private final String sourceId = "sourceId";
     @Autowired
     private TaskAttributeService taskAttributeService;
     @Autowired
@@ -77,6 +79,10 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     private DirectiveService directiveService;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private TaskLifecycleService taskLifecycleService;
+    @Autowired
+    private MonitorService monitorService;
 
     @Override
     public List<TaskAndTaskAttribute> queryCompositeTasks(@Nonnull TaskAttrCompositeQuery query) {
@@ -89,26 +95,20 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     }
 
     @Override
-    public TaskDTO getById(Long taskId) {
+    public AttributedTaskInfo getAttributedTaskInfo(@Nonnull Long taskId, String... attrNames) {
         Task task = getTaskById(taskId);
 
-        return convert(task, TaskDTO.class);
-    }
+        AttributedTaskInfo taskInfo = convertStrict(task, AttributedTaskInfo.class);
 
-    @Override
-    public TaskDTO getTaskandAttribute(Long taskId) {
-
-        String[] strings = new String[] {sourceId};
-        Task task = getTaskById(taskId);
-        List<TaskAttribute> taskAttributeList = taskAttributeService.listTaskAttributesByTaskIdAndInNames(taskId, strings, false);
-        TaskDTO taskDTO = convert(task, TaskDTO.class);
-        if (!org.springframework.util.ObjectUtils.isEmpty(taskAttributeList)) {
-            Map<String, Object> resultMap = new HashMap(1);
-            resultMap.put(sourceId, taskAttributeList.get(0));
-            taskDTO.setAttributes(resultMap);
+        Map<String, String> attributeMap;
+        if (ArrayUtils.isNotEmpty(attrNames)) {
+            attributeMap = taskAttributeService.getAttributeMapByTaskIdAndInNames(taskId, attrNames, false);
+        } else {
+            attributeMap = taskAttributeService.getAttributeMapByTaskId(taskId, false);
         }
+        taskInfo.setAttributes(attributeMap);
 
-        return taskDTO;
+        return taskInfo;
     }
 
     @Override
@@ -140,6 +140,13 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     }
 
     @Override
+    public TaskInfo getTaskInfoById(@Nonnull Long taskId) {
+        Task task = taskRepository.getTaskById(taskId);
+
+        return convert(task, TaskInfo.class);
+    }
+
+    @Override
     public Byte getTaskStatusById(@Nonnull Long taskId) {
         Task task = taskRepository.getTaskById(taskId);
 
@@ -150,6 +157,19 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
     public boolean isTaskCompleted(Long taskId) {
         Byte status = getTaskStatusById(taskId);
         return isCompleted(status);
+    }
+
+    @Override
+    public boolean isCompleted(Byte status) {
+        if (status != null) {
+            for (Byte item : DONE_STATUSES) {
+                if (item.equals(status)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -202,24 +222,85 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         TaskParams params = convertStrict(object, TaskParams.class);
         Task task = taskRepository.insertTask(params);
 
-        Long id = task.getId();
-        String extra = object.getExtra();
-        if (StringUtils.isNotBlank(extra)) {
-            JSONObject jsonObject = JSON.parseObject(extra);
+        Long taskId = task.getId();
+        // 保存额外信息
+        saveExtraParams(taskId, object);
+
+        // 记录创建日志
+        taskLogService.log(taskId, TaskStatusMsgEnum.CREATE_MSG);
+
+        return taskId;
+    }
+
+    private void saveExtraParams(@Nonnull Long id, @Nonnull TaskCreateObject object) {
+        // 保存source参数
+        String source = StringUtils.trim(object.getSource());
+        if (StringUtils.isNotEmpty(source)) {
+             taskAttributeService.insert(id, ETaskAttribute.SOURCE_TYPE.getAttribute(), source, false);
+        }
+
+        // 保存extra参数，extra正常是json格式，若是非法格式忽略不计
+        String extra = StringUtils.trim(object.getExtra());
+        if (StringUtils.isNotEmpty(extra)) {
+            JSONObject jsonObject = null;
+            try {
+                jsonObject = JSON.parseObject(extra);
+            } catch (Exception e) {
+                logger.warn("非法参数extra,解析失败!", e);
+            }
             if (MapUtils.isNotEmpty(jsonObject)) {
-                setAttribute(id, jsonObject);
+                saveExtra2Attributes(id, jsonObject);
+            }
+        }
+    }
+
+    private void saveExtra2Attributes(Long taskId, JSONObject json) {
+        // 检查手机号并保存到附加属性表
+        final String attrName = ETaskAttribute.MOBILE.getAttribute();
+        final Object mobileObj = json.remove(attrName);
+        if (mobileObj != null) {
+            final String mobile = StringUtils.trim(mobileObj.toString());
+            if (StringUtils.isNotEmpty(mobile)) {
+                boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
+                if (!b) {
+                    throw new ValidationException(String.format("the mobile number is illegal! mobile=%s", mobile));
+                }
+
+                logger.info("Save attribute >> {} : {}", attrName, mobile);
+                taskAttributeService.insert(taskId, attrName, mobile, true);
             }
         }
 
-        String source = object.getSource();
-        if (StringUtils.isNotEmpty(source)) {
-            taskAttributeService.insert(id, ETaskAttribute.SOURCE_TYPE.getAttribute(), source, false);
+        if (!json.isEmpty()) {
+            // extra中的参数都会持久化
+            for (Entry<String, Object> entry : json.entrySet()) {
+                final Object value = entry.getValue();
+                if (value != null) {
+                    String val = value.toString();
+
+                    final String key = entry.getKey();
+                    // if key was <code>ETaskAttribute.NAME</code> or <code>ETaskAttribute.ID_CARD</code> or
+                    // <code>ETaskAttribute.SOURCE_ID</code>, do trim operation with the value
+                    if (isSpecial(key)) {
+                        val = StringUtils.trim(val);
+                    }
+
+                    if (StringUtils.isNotEmpty(val)) {
+                        // if key was <code>ETaskAttribute.NAME</code> or <code>ETaskAttribute.ID_CARD</code>, do
+                        // secure operation.
+                        taskAttributeService.insert(taskId, key, val, isSafely(key));
+                    }
+                }
+            }
         }
+    }
 
-        // 记录创建日志
-        taskLogService.log(id, TaskStatusMsgEnum.CREATE_MSG);
+    private static boolean isSafely(@Nonnull String key) {
+        return ETaskAttribute.NAME.getAttribute().equals(key) || ETaskAttribute.ID_CARD.getAttribute().equals(key);
+    }
 
-        return id;
+    private static boolean isSpecial(@Nonnull String key) {
+        return ETaskAttribute.NAME.getAttribute().equals(key) || ETaskAttribute.ID_CARD.getAttribute().equals(key) || ETaskAttribute.SOURCE_ID.getAttribute().equals(key);
     }
 
     @Override
@@ -310,54 +391,32 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
         Task task = taskRepository.getTaskById(taskId);
         if (ETaskStatus.isRunning(task.getStatus())) {
             logger.info("正在取消任务 : taskId={} ", taskId);
-            DirectiveDTO cancelDirective = new DirectiveDTO();
-            cancelDirective.setTaskId(taskId);
-            cancelDirective.setDirective(EDirective.TASK_CANCEL.getText());
-            directiveService.process(cancelDirective);
+            directiveService.process(new DirectivePacket(EDirective.TASK_CANCEL, taskId));
+            // 删除记录的任务活跃时间
+            taskLifecycleService.deleteAliveTime(taskId);
         }
     }
 
-    private boolean isCompleted(Byte status) {
-        if (status != null) {
-            for (Byte item : DONE_STATUSES) {
-                if (item.equals(status)) {
-                    return true;
-                }
-            }
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void completeTaskAndMonitoring(@Nonnull Long taskId, @Nonnull List<TaskStepLogObject> logList) {
+        if (CollectionUtils.isEmpty(logList)) {
+            return;
         }
 
-        return false;
-    }
-
-    private void setAttribute(Long taskId, Map map) {
-        String mobileAttribute = ETaskAttribute.MOBILE.getAttribute();
-        String nameAttribute = ETaskAttribute.NAME.getAttribute();
-        String idCardAttribute = ETaskAttribute.ID_CARD.getAttribute();
-        String sourceIdAttribute = ETaskAttribute.SOURCE_ID.getAttribute();
-
-
-        String mobile = map.get(mobileAttribute) == null ? "" : String.valueOf(map.get(mobileAttribute));
-        if (StringUtils.isNotBlank(mobile)) {
-            boolean b = SystemUtils.regexMatch(mobile, "^1(3|4|5|6|7|8|9)[0-9]\\d{8}$");
-            if (!b) {
-                throw new ValidationException(String.format("the mobile number is illegal! mobile=%s", mobile));
+        for (TaskStepLogObject log : logList) {
+            String stepMsg = log.getStepMsg();
+            if (ETaskStep.TASK_SUCCESS.getText().equals(stepMsg)) {
+                // 任务成功
+                updateStatusWhenProcessing(taskId, ETaskStatus.SUCCESS.getStatus());
+            } else if (ETaskStep.TASK_FAIL.getText().equals(stepMsg)) {
+                // 任务失败
+                updateStatusWhenProcessing(taskId, ETaskStatus.FAIL.getStatus());
             }
 
-            taskAttributeService.insert(taskId, mobileAttribute, mobile, true);
+            taskLogService.insertTaskLog(taskId, stepMsg, log.getOccurTime(), log.getErrorMsg());
         }
-        String name = map.get(nameAttribute) == null ? "" : String.valueOf(map.get(nameAttribute));
-        if (StringUtils.isNotBlank(name)) {
-            taskAttributeService.insert(taskId, nameAttribute, name, true);
-        }
-        String idCard = map.get(idCardAttribute) == null ? "" : String.valueOf(map.get(idCardAttribute));
-        if (StringUtils.isNotBlank(idCard)) {
-            taskAttributeService.insert(taskId, idCardAttribute, idCard, true);
-        }
-
-        String sourceId = map.get(sourceIdAttribute) == null ? "" : String.valueOf(map.get(sourceIdAttribute));
-        if (StringUtils.isNotBlank(sourceId)) {
-            taskAttributeService.insert(taskId, sourceIdAttribute, sourceId, false);
-        }
+        monitorService.sendMonitorMessage(taskId);
     }
 
     private int updateProcessingTaskById(TaskParams params, Long id) {

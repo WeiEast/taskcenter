@@ -48,6 +48,16 @@ public class TaskBuryPointRepositoryImpl extends AbstractRepository implements T
     }
 
     @Override
+    public long countTaskBuryPointLogsByTaskIdAndInCodes(@Nonnull Long taskId, @Nullable List<String> codes) {
+        TaskBuryPointLogCriteria taskBuryPointLogCriteria = new TaskBuryPointLogCriteria();
+        TaskBuryPointLogCriteria.Criteria criteria = taskBuryPointLogCriteria.createCriteria().andTaskIdEqualTo(taskId);
+        if (CollectionUtils.isNotEmpty(codes)) {
+            criteria.andCodeIn(codes);
+        }
+        return taskBuryPointLogMapper.countByExample(taskBuryPointLogCriteria);
+    }
+
+    @Override
     public List<TaskBuryPointLog> queryTaskBuryPointLogs(Long id, String appId, Long taskId, String code, String order) {
         TaskBuryPointLogCriteria taskBuryPointLogCriteria = new TaskBuryPointLogCriteria();
         TaskBuryPointLogCriteria.Criteria criteria = taskBuryPointLogCriteria.createCriteria();

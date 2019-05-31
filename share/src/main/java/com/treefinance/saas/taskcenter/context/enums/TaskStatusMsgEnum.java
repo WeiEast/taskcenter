@@ -18,9 +18,13 @@ package com.treefinance.saas.taskcenter.context.enums;
  * @date 2018/11/21 00:56
  */
 public enum TaskStatusMsgEnum {
-    CREATE_MSG("任务创建"), SUCCESS_MSG("任务成功"), FAILURE_MSG("任务失败"), TIMEOUT_MSG("任务超时"), CANCEL_MSG("任务取消");
+    CREATE_MSG("任务创建"),
+    SUCCESS_MSG("任务成功"),
+    FAILURE_MSG("任务失败"),
+    TIMEOUT_MSG("任务超时"),
+    CANCEL_MSG("任务取消");
 
-    private String text;
+    private final String text;
 
     TaskStatusMsgEnum(String text) {
         this.text = text;

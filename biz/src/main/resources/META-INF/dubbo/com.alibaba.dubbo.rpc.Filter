@@ -1,1 +1,2 @@
 adaptParam=com.treefinance.saas.taskcenter.facade.aop.ParameterAdaptFilter
+adaptResult=com.treefinance.saas.taskcenter.facade.aop.ResultAdaptFilter

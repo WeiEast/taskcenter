@@ -15,10 +15,12 @@ package com.treefinance.saas.taskcenter.dao.repository;
 
 import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
 import com.treefinance.saas.taskcenter.dao.param.TaskAttributeQuery;
+import com.treefinance.toolkit.util.DateUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -28,15 +30,17 @@ import java.util.Map;
  */
 public interface TaskAttributeRepository {
 
+    Map<String, String> getAttributeMapByTaskId(@Nonnull Long taskId, boolean decrypt);
+
     Map<String, String> getAttributeMapByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt);
 
-    TaskAttribute getTaskAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name, boolean decrypt);
+    TaskAttribute queryAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name, boolean decrypt);
 
-    TaskAttribute getTaskAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name);
+    TaskAttribute queryAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name);
 
-    TaskAttribute getTaskAttributeByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt);
+    TaskAttribute queryAttributeByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt);
 
-    List<TaskAttribute> listTaskAttributesByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt);
+    List<TaskAttribute> listAttributesByNameAndValue(@Nonnull String name, @Nonnull String value, boolean encrypt);
 
     /**
      * 根据taskId查询所有属性
@@ -44,21 +48,48 @@ public interface TaskAttributeRepository {
      * @param taskId 任务ID
      * @return a list of task's attributes
      */
-    List<TaskAttribute> listTaskAttributesByTaskId(@Nonnull Long taskId);
+    List<TaskAttribute> listAttributesByTaskId(@Nonnull Long taskId);
 
-    List<TaskAttribute> listTaskAttributesByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name);
+    List<TaskAttribute> listAttributesByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name);
 
-    List<TaskAttribute> listTaskAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names);
+    List<TaskAttribute> listAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names);
 
-    List<TaskAttribute> listTaskAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt);
+    List<TaskAttribute> listAttributesByTaskIdAndInNames(@Nonnull Long taskId, @Nonnull List<String> names, boolean decrypt);
 
-    List<TaskAttribute> listTaskAttributesByNameAndInTaskIds(@Nonnull String name, @Nonnull List<Long> taskIds);
+    List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name);
 
-    List<TaskAttribute> queryTaskAttributes(@Nonnull TaskAttributeQuery query);
+    List<TaskAttribute> listAttributesInTaskIdsAndByName(@Nonnull List<Long> taskIds, @Nonnull String name,
+        boolean decrypt);
 
-    Long insertTagAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt);
+    List<TaskAttribute> queryAttributes(@Nonnull TaskAttributeQuery query);
 
-    void insertOrUpdateTagAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt);
+    Long insertAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt);
+
+    void insertOrUpdateAttribute(@Nonnull Long taskId, @Nonnull String name, @Nullable String value, boolean encrypt);
+
+    /**
+     * 保存或更新属性,默认不加密属性值
+     *
+     * @param taskId 任务ID
+     * @param name 属性名
+     * @param value 属性值
+     * @see #insertOrUpdateAttribute(Long, String, String, boolean)
+     */
+    default void insertOrUpdateAttribute(@Nonnull Long taskId, @Nonnull String name, String value) {
+        this.insertOrUpdateAttribute(taskId, name, value, false);
+    }
+
+    /**
+     * 保存或更新属性,默认不加密属性值
+     *
+     * @param taskId 任务ID
+     * @param name 属性名
+     * @param date 属性值，时间类型
+     * @see #insertOrUpdateAttribute(Long, String, String)
+     */
+    default void insertOrUpdateAttribute(@Nonnull Long taskId, @Nonnull String name, Date date) {
+        this.insertOrUpdateAttribute(taskId, name, DateUtils.format(date));
+    }
 
     /**
      * 根据任务id和name删除属性
@@ -67,5 +98,13 @@ public interface TaskAttributeRepository {
      * @param name 属性名
      * @return the number of records that has been deleted
      */
-    int deleteByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name);
+    int deleteAttributeByTaskIdAndName(@Nonnull Long taskId, @Nonnull String name);
+
+    default Date queryAttributeValueAsDate(@Nonnull Long taskId, @Nonnull String name) {
+        TaskAttribute taskAttribute = this.queryAttributeByTaskIdAndName(taskId, name);
+        if (taskAttribute != null) {
+            return DateUtils.parse(taskAttribute.getValue());
+        }
+        return null;
+    }
 }
