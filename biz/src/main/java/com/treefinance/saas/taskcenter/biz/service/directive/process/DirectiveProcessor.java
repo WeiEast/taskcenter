@@ -1,9 +1,9 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
-import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
 
 /**
- * 指令消息处理器
+ * 指令处理器
  * 
  * @author yh-treefinance
  * @date 2017/7/6.
@@ -11,9 +11,16 @@ import com.treefinance.saas.taskcenter.dto.DirectiveDTO;
 public interface DirectiveProcessor {
 
     /**
-     * 处理消息
+     * 获取指定处理的指令
      *
-     * @param directiveDTO 指令对象
+     * @return 指令
      */
-    void process(DirectiveDTO directiveDTO);
+    EDirective getSpecifiedDirective();
+
+    /**
+     * 处理指令
+     *
+     * @param context 指令信息上下文
+     */
+    void process(DirectiveContext context);
 }

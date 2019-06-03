@@ -16,9 +16,10 @@
 
 package com.treefinance.saas.taskcenter.interation.manager.dubbo;
 
+import com.treefinance.saas.merchant.facade.response.MerchantResponse;
 import com.treefinance.saas.merchant.facade.result.console.MerchantResult;
-import com.treefinance.saas.taskcenter.interation.manager.RpcActionEnum;
 import com.treefinance.saas.taskcenter.exception.RpcServiceException;
+import com.treefinance.saas.taskcenter.interation.manager.RpcActionEnum;
 
 /**
  * @author Jerry
@@ -30,7 +31,8 @@ public abstract class AbstractMerchantServiceAdapter extends AbstractDubboServic
         super.validateResponse(result, action, args);
 
         if (!result.isSuccess()) {
-            throw new RpcServiceException("[MERCHANT] Error server! errorMsg: " + result.getRetMsg() + " - action: " + action + appendArgs(args));
+            throw new RpcServiceException(
+                "[MERCHANT] Error server! errorCode: " + result.getRetCode() + ", errorMsg: " + result.getRetMsg() + " - action: " + action + appendArgs(args));
         }
     }
 
@@ -41,6 +43,26 @@ public abstract class AbstractMerchantServiceAdapter extends AbstractDubboServic
         validateResponse(result, action, args);
 
         if (result.getData() == null) {
+            throw new RpcServiceException("[MERCHANT] Invalid response entity! - action:" + " " + action + appendArgs(args));
+        }
+    }
+
+    protected <T> void validateResponse(MerchantResponse<T> response, RpcActionEnum action, Object... args) {
+        super.validateResponse(response, action, args);
+
+        if (!response.isSuccess()) {
+            throw new RpcServiceException(
+                "[MERCHANT] Error server! errorCode: " + response.getCode() + ", errorMsg: " + response.getMessage() + " - action: " + action + appendArgs(args));
+        }
+    }
+
+    /**
+     * 检查响应是否正常的基础上进一步检查响应的数据实体是否为空
+     */
+    protected <T> void validateResponseEntity(MerchantResponse<T> response, RpcActionEnum action, Object... args) {
+        validateResponse(response, action, args);
+
+        if (response.getEntity() == null) {
             throw new RpcServiceException("[MERCHANT] Invalid response entity! - action:" + " " + action + appendArgs(args));
         }
     }

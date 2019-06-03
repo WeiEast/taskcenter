@@ -1,23 +1,20 @@
 package com.treefinance.saas.taskcenter.biz.mq;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Maps;
 import com.treefinance.saas.assistant.model.TaskCallbackFailureReasonMessage;
 import com.treefinance.saas.assistant.plugin.rocketmq.producer.MonitorMessageProducer;
-import com.treefinance.saas.taskcenter.biz.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.biz.mq.model.CallbackFailureReasonMessage;
 import com.treefinance.saas.taskcenter.biz.service.TaskService;
-import com.treefinance.saas.taskcenter.dao.entity.TaskAttribute;
+import com.treefinance.saas.taskcenter.common.enums.EBizType;
 import com.treefinance.saas.taskcenter.dao.repository.TaskCallbackLogRepository;
-import com.treefinance.saas.taskcenter.dto.CallbackFailureReasonDTO;
-import com.treefinance.saas.taskcenter.dto.TaskDTO;
-import com.treefinance.saas.taskcenter.facade.enums.EBizType;
+import com.treefinance.saas.taskcenter.service.TaskAttributeService;
+import com.treefinance.saas.taskcenter.service.domain.TaskInfo;
 import com.treefinance.saas.taskcenter.share.mq.ConsumeSetting;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import javax.annotation.Nonnull;
+
 import java.util.Map;
 
 /**
@@ -29,7 +26,7 @@ import java.util.Map;
  * @date 2018/6/11
  */
 @Component
-public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessageListener {
+public class CallbackFailureReasonMessageListener extends AbstractJsonMessageListener<CallbackFailureReasonMessage> {
 
     @Autowired
     private TaskCallbackLogRepository taskCallbackLogRepository;
@@ -51,33 +48,25 @@ public class CallbackFailureReasonMessageListener extends AbstractRocketMqMessag
     }
 
     @Override
-    protected void handleMessage(String message) {
-        if (StringUtils.isBlank(message)) {
-            logger.error("接收爬数发送的回调失败具体原因为空,message={}", message);
-            throw new IllegalArgumentException("接收爬数发送的回调失败具体原因为空,message=" + message);
-        }
-        CallbackFailureReasonDTO callbackFailureReasonDTO = JSON.parseObject(message, CallbackFailureReasonDTO.class);
+    protected void processMessage(@Nonnull CallbackFailureReasonMessage message) {
+        Long taskId = message.getTaskId();
+        Long callbackConfigId = message.getCallbackConfigId();
+        Byte failureReason = message.getFailureReason();
         // 更新回调日志表
-        Long taskId = callbackFailureReasonDTO.getTaskId();
-        Long callbackConfigId = callbackFailureReasonDTO.getCallbackConfigId();
-        Byte failureReason = callbackFailureReasonDTO.getFailureReason();
         taskCallbackLogRepository.insertOrUpdateLog(taskId, callbackConfigId, failureReason);
 
         // 发送监控消息
-        TaskDTO taskDTO = taskService.getById(taskId);
-        if (!EBizType.OPERATOR.getCode().equals(taskDTO.getBizType())) {
-            logger.info("接收爬数发送的回调失败具体原因,任务类型非运营商,暂不处理.message={},task={}", message, JSON.toJSONString(taskDTO));
+        TaskInfo task = taskService.getTaskInfoById(taskId);
+        if (!EBizType.OPERATOR.getCode().equals(task.getBizType())) {
+            logger.warn("接收爬数发送的回调失败具体原因,任务类型非运营商,暂不处理.message={},task={}", message, task);
             return;
         }
-        TaskCallbackFailureReasonMessage taskCallbackFailureReasonMessage = convertStrict(taskDTO, TaskCallbackFailureReasonMessage.class);
-        taskCallbackFailureReasonMessage.setTaskId(taskDTO.getId());
-        taskCallbackFailureReasonMessage.setDataTime(taskDTO.getCreateTime());
+
+        TaskCallbackFailureReasonMessage taskCallbackFailureReasonMessage = convertStrict(task, TaskCallbackFailureReasonMessage.class);
+        taskCallbackFailureReasonMessage.setTaskId(task.getId());
+        taskCallbackFailureReasonMessage.setDataTime(task.getCreateTime());
         taskCallbackFailureReasonMessage.setFailureReason(failureReason);
-        List<TaskAttribute> attributeList = taskAttributeService.findByTaskId(taskId);
-        Map<String, String> attributeMap = Maps.newHashMap();
-        if (CollectionUtils.isNotEmpty(attributeList)) {
-            attributeList.forEach(taskAttribute -> attributeMap.put(taskAttribute.getName(), taskAttribute.getValue()));
-        }
+        Map<String, String> attributeMap = taskAttributeService.getAttributeMapByTaskId(taskId, false);
         taskCallbackFailureReasonMessage.setTaskAttributes(attributeMap);
         monitorMessageProducer.send(taskCallbackFailureReasonMessage);
         logger.info("send task callback failure reason to saas-monitor,message={}", JSON.toJSONString(taskCallbackFailureReasonMessage));

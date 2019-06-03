@@ -9,6 +9,7 @@ import java.util.Date;
  * @author haojiahong
  * @date 2018/6/3
  */
+@Deprecated
 public class CarInfoCollectTaskLogRequest implements Serializable {
     private static final long serialVersionUID = -3558126448590095421L;
     private String msg;

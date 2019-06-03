@@ -61,6 +61,14 @@ public class DubboServiceInterceptor {
             String errorCode = ((BadServiceException)e).getErrorCode();
             String errorMsg = e.getMessage();
             LOGGER.error("RPC服务异常！服务名: {}, 参数: {}, errorCode: {}, errorMsg: {}", methodName, Jackson.toJSONString(joinPoint.getArgs()), errorCode, errorMsg, e);
+
+            Class<?> clazz = method.getReturnType();
+            if (clazz.equals(TaskResult.class)) {
+                return TaskResult.wrapErrorResult(errorCode, errorMsg);
+            } else if (clazz.equals(TaskPagingResult.class)) {
+                return TaskPagingResult.wrapErrorResult(errorCode, errorMsg);
+            }
+
             return TaskResponse.failure(errorCode, errorMsg);
         } else {
             // TODO: 李梁杰 2018/12/13 后面逐渐完善异常

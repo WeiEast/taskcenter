@@ -20,32 +20,19 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.treefinance.toolkit.util.reflect.Reflections;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * hessian反序列化过程中一些特殊参数的适配和修正
+ * hessian序列化和反序列化过程中一些特殊参数的适配和修正
  * <p>
- * 比如Byte,Short类型利用序列化整型处理，针对list<Byte>类型参数会被反序列化成List<Integer>
+ * 比如Byte,Short类型序列化当成整型处理，针对list<Byte>类型参数会被反序列化成List<Integer>
  * </p>
  *
  * @author Jerry
  * @date 2018/12/17 16:08
  */
-@Activate(group = Constants.PROVIDER, order = Integer.MAX_VALUE)
-public class ParameterAdaptFilter implements Filter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ParameterAdaptFilter.class);
-
-    private static final String CUSTOM_BEAN_PACKAGE = "com.treefinance.saas.taskcenter.facade.request";
+@Activate(group = {Constants.PROVIDER}, order = Integer.MAX_VALUE)
+public class ParameterAdaptFilter extends AbstractValueAdapterFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -54,31 +41,13 @@ public class ParameterAdaptFilter implements Filter {
             if (ArrayUtils.isNotEmpty(parameterTypes)) {
                 Object[] arguments = invocation.getArguments();
                 for (int i = 0; i < parameterTypes.length; i++) {
-                    if (arguments[i] == null) {
+                    final Object argument = arguments[i];
+                    if (argument == null) {
                         continue;
                     }
 
-                    try {
-                        Package pkg = parameterTypes[i].getPackage();
-                        if (pkg != null && CUSTOM_BEAN_PACKAGE.equals(pkg.getName())) {
-                            List<Field> fields = Reflections.getFields(parameterTypes[i]);
-                            for (Field field : fields) {
-                                if (field.getType() == List.class) {
-                                    Type genericType = field.getGenericType();
-                                    if (genericType instanceof ParameterizedType && ((ParameterizedType)genericType).getActualTypeArguments()[0] == Byte.class) {
-                                        field.setAccessible(true);
-                                        List<Integer> list = (List<Integer>)field.get(arguments[i]);
-                                        if (CollectionUtils.isNotEmpty(list)) {
-                                            List<Byte> result = list.stream().map(Integer::byteValue).collect(Collectors.toList());
-                                            field.set(arguments[i], result);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
-                        LOGGER.warn("Error reading and adapt field in special parameter! parameterType: {}, value: {}", parameterTypes[i], arguments[i], e);
-                    }
+                    final Class<?> parameterType = parameterTypes[i];
+                    fixFieldValueWithByteList(argument, parameterType);
                 }
             }
         } catch (Exception e) {

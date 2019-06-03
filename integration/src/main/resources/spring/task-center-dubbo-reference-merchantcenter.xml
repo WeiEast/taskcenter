@@ -5,9 +5,6 @@
 
 
     <!--merchant-center服务-->
-    <dubbo:reference interface="com.treefinance.saas.merchant.facade.service.AppCallBackBizFacade"
-                     id="appCallBackBizFacade" version="1.0.0"/>
-
     <dubbo:reference interface="com.treefinance.saas.merchant.facade.service.AppCallbackConfigFacade"
                      id="appCallbackConfigFacade" version="1.0.0"/>
 
@@ -19,6 +16,9 @@
 
     <dubbo:reference id="merchantFunctionFacade"
                      interface="com.treefinance.saas.merchant.facade.service.MerchantFunctionFacade" version="1.0.0"/>
+
+    <dubbo:reference id="merchantBaseFacade" interface="com.treefinance.saas.merchant.facade.service.MerchantBaseFacade"
+      version="1.0"/>
 </beans>
 
 
