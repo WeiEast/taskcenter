@@ -1,17 +1,15 @@
 package com.treefinance.saas.taskcenter.biz.service.directive.process;
 
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
 import com.treefinance.b2b.saas.util.RemoteDataUtils;
 import com.treefinance.saas.taskcenter.biz.callback.CallbackResultMonitor;
 import com.treefinance.saas.taskcenter.biz.service.MonitorService;
 import com.treefinance.saas.taskcenter.biz.service.directive.process.CallbackResponse.CallbackData;
-import com.treefinance.saas.taskcenter.common.enums.*;
+import com.treefinance.saas.taskcenter.common.enums.EBizType;
+import com.treefinance.saas.taskcenter.common.enums.ECallbackDataType;
+import com.treefinance.saas.taskcenter.common.enums.EDirective;
+import com.treefinance.saas.taskcenter.common.enums.ETaskAttribute;
+import com.treefinance.saas.taskcenter.common.enums.ETaskStatus;
 import com.treefinance.saas.taskcenter.context.Constants;
 import com.treefinance.saas.taskcenter.context.enums.EDataType;
 import com.treefinance.saas.taskcenter.context.enums.EGrabStatus;
@@ -34,6 +32,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 支持回调的指令处理
@@ -113,8 +117,12 @@ public abstract class AbstractCallbackDirectiveProcessor extends AbstractDirecti
         /**
          * 如果回调参数里没有数据类型，需补上
          */
-        if (StringUtils.isBlank(String.valueOf(entity.get("type"))) || StringUtils.equals(String.valueOf(entity.get("type")), "null")) {
-            entity.put("type", ECallbackDataType.of(context.getTask().getBizType()).getText());
+        final String typeStr = String.valueOf(entity.get("type"));
+        if (StringUtils.isBlank(typeStr) || "null".equals(typeStr)) {
+            final ECallbackDataType type = ECallbackDataType.of(context.getBizType());
+            if (type != null) {
+                entity.put("type", type.getText());
+            }
         }
 
         logger.info("回调数据生成 >> {}, directive={}", entity, context);
