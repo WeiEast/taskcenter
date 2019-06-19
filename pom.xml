@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.treefinance.saas</groupId>
     <artifactId>taskcenter</artifactId>
-    <version>2.3.1</version>
+    <version>2.3.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -22,13 +22,12 @@
     <parent>
         <groupId>com.treefinance.b2b.saas</groupId>
         <artifactId>b2b-saas-data-parent</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.3</version>
         <relativePath/>
     </parent>
 
     <properties>
         <task-center.version>${project.version}</task-center.version>
-        <merchant-center.version>2.3.0-SNAPSHOT</merchant-center.version>
         <curator.version>2.13.0</curator.version>
     </properties>
 
